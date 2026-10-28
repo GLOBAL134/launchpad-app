@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Слайд 1 3D — AI ATS-сканер</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body class="bg-[#0b0f19] text-white flex flex-col justify-between p-7 m-0 overflow-hidden relative" style="width: 720px; height: 1280px;">
+  
+  <!-- Top Branding & Russian Title -->
+  <div class="relative z-20">
+    <div class="flex items-center justify-between mb-3">
+      <div class="flex items-center gap-2.5">
+        <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-xl shadow-lg shadow-blue-500/40">🎯</div>
+        <span class="font-extrabold text-xl tracking-tight">LaunchPad <span class="text-blue-400">AI</span></span>
+      </div>
+      <span class="px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/40 text-blue-300 text-xs font-bold uppercase tracking-wider backdrop-blur-md">
+        🔍 ATS-Аудит резюме
+      </span>
+    </div>
+
+    <h1 class="text-3xl font-black leading-tight tracking-tight mt-2 text-white">
+      75% резюме отсеиваются роботами.<br>
+      <span class="bg-gradient-to-r from-blue-400 via-indigo-300 to-emerald-400 bg-clip-text text-transparent">
+        Пройдите первичный скрининг
+      </span>
+    </h1>
+    <p class="text-xs text-slate-300 mt-2 font-medium">
+      Нейросеть проанализирует стек и структуру резюме глазами алгоритмов до звонка HR
+    </p>
+
+    <!-- Floating Russian Value Tags -->
+    <div class="flex items-center gap-2 mt-3 text-[11px] font-bold">
+      <span class="px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300">✓ 94% точный скор</span>
+      <span class="px-2.5 py-1 rounded-lg bg-blue-500/15 border border-blue-500/30 text-blue-300">✓ Яндекс, Т-Банк, Ozon</span>
+      <span class="px-2.5 py-1 rounded-lg bg-purple-500/15 border border-purple-500/30 text-purple-300">✓ PDF и DOCX</span>
+    </div>
+  </div>
+
+  <!-- 3D Art Centerpiece Container -->
+  <div class="relative z-10 my-auto rounded-3xl overflow-hidden border border-blue-500/40 shadow-2xl shadow-blue-950/80 bg-slate-950" style="height: 720px;">
+    <img src="slide-1-art.jpg" alt="3D ATS Scanner Mockup" class="w-full h-full object-cover" />
+    
+    <!-- Floating Glassmorphic Hologram Badge Overlay inside the 3D art -->
+    <div class="absolute top-4 left-4 right-4 p-3 rounded-2xl bg-slate-900/80 border border-white/15 backdrop-blur-md flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="text-xs font-bold text-white">Целевая вакансия: Яндекс (Senior PM)</span>
+      </div>
+      <span class="text-xs font-mono font-black text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded border border-emerald-500/30">
+        94% PASS
+      </span>
+    </div>
+
+    <!-- Bottom overlay inside art -->
+    <div class="absolute bottom-4 left-4 right-4 p-3 rounded-2xl bg-slate-900/85 border border-white/15 backdrop-blur-md flex items-center justify-between text-xs">
+      <span class="text-slate-300 font-medium">Распознано ключевых навыков: <strong class="text-emerald-400">18 из 19</strong></span>
+      <span class="text-blue-300 font-bold">Время аудита: 5 сек</span>
+    </div>
+  </div>
+
+  <!-- Bottom CTA Footer -->
+  <div class="relative z-20 bg-slate-900/95 border border-white/15 rounded-2xl p-4 flex items-center justify-between backdrop-blur-xl">
+    <div>
+      <span class="text-xs font-bold text-white block">Проверьте своё резюме бесплатно:</span>
+      <span class="text-xs text-blue-400 font-mono font-semibold">launchpad-app-ashy.vercel.app</span>
+    </div>
+    <div class="text-right">
+      <span class="px-3 py-1.5 rounded-xl bg-amber-500/20 border border-amber-500/50 text-amber-300 text-xs font-bold">
+        START30 (-30%)
+      </span>
+    </div>
+  </div>
+
+</body>
+</html>
