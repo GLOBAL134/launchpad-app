@@ -17,6 +17,7 @@ import {
   X,
   CreditCard,
   Lock,
+  Send,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -277,6 +278,28 @@ export default function ATSScannerPage() {
                     ? "Отличный результат! Резюме с высокой вероятностью пройдёт автоматический отбор."
                     : "Средний балл. Добавьте выделенные ключевые слова, чтобы роботы ATS не отсеяли резюме."}
                 </p>
+
+                {/* Social Share & Upgrade Trigger */}
+                <div className="flex flex-wrap items-center gap-2 mt-3">
+                  <a
+                    href={`https://t.me/share/url?url=${encodeURIComponent("https://launchpad-app-ashy.vercel.app/scanner")}&text=${encodeURIComponent(`🎯 Моё резюме прошло проверку ATS-роботов на ${scanResult.match_score}%! Проверь своё резюме бесплатно на LaunchPad:`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#229ED9]/15 text-[#229ED9] hover:bg-[#229ED9]/25 text-xs font-semibold transition-colors border border-[#229ED9]/30"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    <span>Поделиться в Telegram</span>
+                  </a>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setUpgradeModalOpen(true)}
+                    className="text-xs h-7 border-amber-500/40 text-amber-400 hover:bg-amber-500/10 font-semibold"
+                  >
+                    <Sparkles className="w-3 h-3 mr-1" />
+                    Скидка 30% по коду START30
+                  </Button>
+                </div>
               </div>
 
               <div className="relative w-28 h-28 flex items-center justify-center shrink-0">

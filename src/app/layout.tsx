@@ -14,9 +14,50 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LaunchPad — AI-система управления поиском работы",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://launchpad-app-ashy.vercel.app"),
+  title: "LaunchPad — AI-система управления поиском работы и ATS-сканер",
   description:
-    "Проходите роботов ATS, автоматизируйте отклики, создавайте сопроводительные письма и получайте в 3 раза больше приглашений на интервью.",
+    "Проходите фильтры роботов ATS, получайте на 300% больше приглашений на интервью, генерируйте сопроводительные письма и управляйте откликами в едином командном центре.",
+  keywords: [
+    "поиск работы",
+    "ATS сканер",
+    "резюме онлайн",
+    "сопроводительное письмо AI",
+    "канбан трекер вакансий",
+    "Яндекс вакансии",
+    "Т-Банк вакансии",
+    "подготовка к интервью",
+    "проверка резюме",
+  ],
+  authors: [{ name: "LaunchPad AI" }],
+  openGraph: {
+    title: "LaunchPad — AI-система поиска работы и прохождения фильтров ATS",
+    description:
+      "Узнайте, почему роботы ATS отклоняют 75% резюме. Проверьте своё резюме онлайн бесплатно и получайте в 3 раза больше интервью!",
+    url: "https://launchpad-app-ashy.vercel.app",
+    siteName: "LaunchPad AI",
+    locale: "ru_RU",
+    type: "website",
+    images: [
+      {
+        url: "/price-list.png",
+        width: 1200,
+        height: 630,
+        alt: "LaunchPad AI Job Search Command Center",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "LaunchPad — AI Командный центр поиска работы",
+    description:
+      "Проверьте резюме через AI ATS-сканер бесплатно и перестаньте терять вакансии в черных дырах алгоритмов.",
+    images: ["/price-list.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

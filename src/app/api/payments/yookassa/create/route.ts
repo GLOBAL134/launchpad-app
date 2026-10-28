@@ -29,11 +29,25 @@ const PLANS: Record<string, PlanConfig> = {
   },
 };
 
+const PROMO_CODES: Record<string, number> = {
+  START30: 0.3,
+  RADAR20: 0.2,
+  LAUNCH30: 0.3,
+  OFFER50: 0.5,
+};
+
 export async function POST(req: NextRequest) {
   try {
-    const { planId = "pro_monthly", returnUrl } = await req.json();
+    const { planId = "pro_monthly", returnUrl, promoCode } = await req.json();
 
     const plan = PLANS[planId] || PLANS.pro_monthly;
+    let finalPrice = plan.priceRub;
+
+    if (promoCode && PROMO_CODES[promoCode.toUpperCase()]) {
+      const discount = PROMO_CODES[promoCode.toUpperCase()];
+      finalPrice = Math.round(plan.priceRub * (1 - discount));
+    }
+
     const shopId = process.env.YOOKASSA_SHOP_ID;
     const secretKey = process.env.YOOKASSA_SECRET_KEY;
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
@@ -54,7 +68,7 @@ export async function POST(req: NextRequest) {
         },
         body: JSON.stringify({
           amount: {
-            value: `${plan.priceRub}.00`,
+            value: `${finalPrice}.00`,
             currency: "RUB",
           },
           capture: true,
@@ -62,9 +76,11 @@ export async function POST(req: NextRequest) {
             type: "redirect",
             return_url: successUrl,
           },
-          description: plan.description,
+          description: `${plan.description} (сумма: ${finalPrice} ₽${promoCode ? `, промокод: ${promoCode}` : ""})`,
           metadata: {
             plan_id: planId,
+            promo_code: promoCode || "",
+            final_price: finalPrice,
             user_email: "demo@launchpad.app",
           },
         }),
@@ -79,15 +95,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         paymentId: yooData.id,
         confirmationUrl: yooData.confirmation?.confirmation_url,
+        finalPrice,
         isSimulated: false,
       });
     }
 
     // Interactive Demo / Sandbox Mode for testing without production merchant setup
-    // Provides instant feedback and redirects to success state
     return NextResponse.json({
       paymentId: `sim_${idempotenceKey.slice(0, 8)}`,
-      confirmationUrl: `${successUrl}&simulated=true`,
+      confirmationUrl: `${successUrl}&simulated=true&amount=${finalPrice}`,
+      finalPrice,
       isSimulated: true,
       message: "Тестовый режим ЮKassa: оплата подтверждена автоматически",
     });

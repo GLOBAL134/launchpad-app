@@ -370,7 +370,28 @@ export default function DashboardLayout({
 
         {/* Scrollable Page Body */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          <div className="max-w-7xl mx-auto">{children}</div>
+          <div className="max-w-7xl mx-auto space-y-4">
+            {/* Promo Announcement Banner */}
+            <div className="p-3 px-4 rounded-xl bg-gradient-to-r from-primary/15 via-primary/10 to-card border border-primary/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-sm">
+              <div className="flex items-center gap-2.5 text-center sm:text-left">
+                <span className="px-2 py-0.5 rounded bg-primary text-primary-foreground font-black text-[10px] tracking-wide uppercase shrink-0">
+                  Акция
+                </span>
+                <span className="text-foreground">
+                  Получите <strong>скидку 30%</strong> на полный доступ к ATS-сканеру и генератору писем по промокоду <code className="bg-background/80 px-1.5 py-0.5 rounded font-mono font-bold text-primary border border-primary/20">START30</code>
+                </span>
+              </div>
+              <Button
+                size="sm"
+                onClick={() => setUpgradeOpen(true)}
+                className="h-7 text-xs bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shrink-0"
+              >
+                Активировать со скидкой
+              </Button>
+            </div>
+
+            {children}
+          </div>
         </main>
       </div>
 
