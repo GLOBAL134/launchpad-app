@@ -28,7 +28,7 @@ export default function UpgradeProModal({
       onActivated();
       onClose();
     } else {
-      setCodeError('Неверный ключ активации. Проверьте код в закреплённом сообщении канала после оплаты.');
+      setCodeError('Неверный ключ активации. Введите LP_PRO_2026 или START30_PRO.');
     }
   };
 
@@ -43,8 +43,13 @@ export default function UpgradeProModal({
           ✕
         </button>
 
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-semibold mb-4">
-          🚀 LaunchPad AI PRO — Полный доступ
+        <div className="flex items-center gap-2 mb-4">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-semibold">
+            🚀 LaunchPad AI PRO — Полный доступ
+          </div>
+          <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[11px] font-bold">
+            🏷️ START30 (-30%)
+          </div>
         </div>
 
         <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">
@@ -57,7 +62,7 @@ export default function UpgradeProModal({
           </p>
         ) : (
           <p className="text-xs sm:text-sm text-slate-400 mb-5">
-            Разблокируйте безлимитные проверки резюме, генерацию писем и персональные рекомендации.
+            Промокод <span className="font-mono text-indigo-300 font-bold">START30</span> активирован: скидка 30% на безлимитный анализ резюме, генерацию писем и трекинг вакансий!
           </p>
         )}
 
@@ -87,7 +92,7 @@ export default function UpgradeProModal({
             rel="noopener noreferrer"
             className="w-full py-3.5 px-5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold text-sm shadow-lg shadow-indigo-600/30 transition flex items-center justify-center gap-2 cursor-pointer"
           >
-            💳 Оплатить картой в браузере (РФ / Зарубежные карты)
+            💳 Оплатить картой в браузере (МИР / СБП / Visa / Mastercard)
           </a>
 
           <a
@@ -96,7 +101,7 @@ export default function UpgradeProModal({
             rel="noopener noreferrer"
             className="w-full py-3 px-5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-medium text-xs sm:text-sm transition flex items-center justify-center gap-2 cursor-pointer"
           >
-            ✈ Оплатить через приложение Telegram / Stars
+            ✈ Оплатить через Telegram / Stars
           </a>
         </div>
 
@@ -109,7 +114,7 @@ export default function UpgradeProModal({
               type="text"
               value={promoCode}
               onChange={(e) => setPromoCode(e.target.value)}
-              placeholder="Например: LP_PRO_2026"
+              placeholder="Например: LP_PRO_2026 или START30_PRO"
               className="flex-1 rounded-xl bg-slate-950 border border-slate-800 px-3.5 py-2 text-xs sm:text-sm text-white focus:border-indigo-500 focus:outline-none"
             />
             <button

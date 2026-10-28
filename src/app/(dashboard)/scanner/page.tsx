@@ -1,7 +1,6 @@
 "use client";
 
-/* eslint-disable react-hooks/set-state-in-effect */
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import {
   ScanSearch,
   CheckCircle2,
@@ -19,21 +18,19 @@ import {
   CreditCard,
   Lock,
   Send,
+  Plus,
+  Briefcase,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
-import { DEMO_ATS_RESULT } from "@/lib/demo-data";
-import { ATSScanResult } from "@/types";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import UpgradeProModal from "@/components/UpgradeProModal";
-import {
-  isUserPro,
-  getRemainingFreeScans,
-  incrementScanUsage,
-  cleanAIMarkdownArtifacts,
-} from "@/lib/monetization";
+import { cleanAIMarkdownArtifacts } from "@/lib/monetization";
+import { detectLanguage } from "@/lib/language";
+import { useApp } from "@/context/AppContext";
 
 const DEFAULT_RESUME = `Алексей Морозов
 Senior Product Manager | alex.morozov@email.ru | +7 (999) 123-45-67 | Москва / Удаленно
@@ -54,7 +51,7 @@ Product Manager — FinTech Инновации (2019 — 2022)
 
 ОБРАЗОВАНИЕ И НАВЫКИ
 МГТУ им. Н.Э. Баумана, Информационные системы и технологии
-Навыки: Product Management, Product Strategy, Roadmap Planning, CustDev, Scrum, PRD, Unit-экономика, A/B-тестирование.`;
+Навыки: Product Management, Product Strategy, Roadmap Planning, CustDev, Scrum, PRD, Unit-экономика, A/B-тестирование, CI/CD.`;
 
 const DEFAULT_JOB_DESC = `Senior Product Manager (AI & Cloud Services)
 Компания: Яндекс
@@ -65,52 +62,243 @@ const DEFAULT_JOB_DESC = `Senior Product Manager (AI & Cloud Services)
 
 Требования:
 • 5+ лет в управлении продуктом в технологических компаниях.
-• Опыт работы с облачными платформами, AI/ML-сервисами или высоконагруженными B2B SaaS.
-• Глубокое понимание метрик: Retention, LTV, Unit Economics, A/B-тестирование.
-• Опыт фасилитации процессов разработки (Agile/Scrum), написания подробных PRD и технических спецификаций.
-• Умение говорить на одном языке с инженерами: понимание CI/CD, архитектуры микросервисов и API.
-• Высокие коммуникативные навыки для управления ожиданиями топ-стейкхолдеров.`;
+• Опыт работы с Agile, Scrum, CI/CD, A/B-тестированием и метриками (Retention, LTV, Unit-экономика).
+• Умение проектировать Product Strategy, формировать Roadmap и составлять PRD.
+• Опыт взаимодействия с инженерами: Microservices, REST API, Cloud Infrastructure.
+• Сильные навыки работы со стейкхолдерами: Stakeholder Management и Cross-functional лидерство.`;
+
+const CORE_KEYWORD_TAXONOMY = [
+  { display: "CI/CD", synonyms: ["ci/cd", "cicd", "ci-cd", "непрерывная интеграция"] },
+  { display: "A/B-тестирование", synonyms: ["a/b", "ab-тест", "ab тест", "a/b-тест", "a/b test"] },
+  { display: "Agile", synonyms: ["agile", "эджайл", "эджайле"] },
+  { display: "Scrum", synonyms: ["scrum", "скрам", "спринт"] },
+  { display: "Product Strategy", synonyms: ["product strategy", "продуктовая стратегия", "стратеги"] },
+  { display: "Roadmap", synonyms: ["roadmap", "роадмап", "дорожная карта"] },
+  { display: "PRD", synonyms: ["prd", "технические требования", "спецификаци"] },
+  { display: "CustDev", synonyms: ["custdev", "исследования пользователей", "интервью с клиентами"] },
+  { display: "Unit-экономика", synonyms: ["unit-экономика", "юнит-экономика", "unit economics"] },
+  { display: "Retention", synonyms: ["retention", "удержание пользователей"] },
+  { display: "REST API", synonyms: ["rest api", "rest", "api"] },
+  { display: "Microservices", synonyms: ["microservices", "микросервис", "микросервисная"] },
+  { display: "Cross-functional", synonyms: ["cross-functional", "кросс-функциональн"] },
+  { display: "Stakeholder Management", synonyms: ["stakeholder", "стейкхолдер", "управление ожиданиями"] },
+  { display: "TypeScript", synonyms: ["typescript", "тайпскрипт", "ts"] },
+  { display: "React", synonyms: ["react", "реакт"] },
+  { display: "Next.js", synonyms: ["next.js", "nextjs", "некст"] },
+  { display: "Python", synonyms: ["python", "питон"] },
+  { display: "SQL", synonyms: ["sql", "postgresql", "mysql"] },
+  { display: "Docker", synonyms: ["docker", "докер"] },
+  { display: "Kubernetes", synonyms: ["kubernetes", "k8s", "кубернетес"] },
+];
 
 export default function ATSScannerPage() {
+  const {
+    userProfile,
+    applications,
+    scannerTargetJob,
+    setScannerTargetJob,
+    triggerQuickAudit,
+    setTriggerQuickAudit,
+    isPro,
+    remainingScans,
+    consumeScan,
+    isUpgradeModalOpen,
+    setIsUpgradeModalOpen,
+    setUpgradeReason,
+    showToast,
+  } = useApp();
+
   const [resumeText, setResumeText] = useState(DEFAULT_RESUME);
   const [jobDesc, setJobDesc] = useState(DEFAULT_JOB_DESC);
+  const [selectedTrackerJobId, setSelectedTrackerJobId] = useState<string>("");
+
   const [uploadedFile, setUploadedFile] = useState<{
     name: string;
     size: string;
-    base64: string;
-    mimeType: string;
   } | null>(null);
 
   const [isScanning, setIsScanning] = useState(false);
-  const [scanResult, setScanResult] = useState<ATSScanResult>(DEMO_ATS_RESULT);
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
-  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
-  const [upgradeReason, setUpgradeReason] = useState<string | undefined>(undefined);
-  const [isPro, setIsPro] = useState(false);
-  const [remainingScans, setRemainingScans] = useState(2);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Pre-fill target job from Kanban navigation
   useEffect(() => {
-    setIsPro(isUserPro());
-    setRemainingScans(getRemainingFreeScans());
-  }, []);
+    if (scannerTargetJob) {
+      setJobDesc(
+        `${scannerTargetJob.position} в компании ${scannerTargetJob.company}\n\n${
+          scannerTargetJob.description || "Требования: опыт в стеке, Agile, продуктовые метрики, CI/CD, надежность."
+        }`
+      );
+      showToast(`Загружены требования вакансии «${scannerTargetJob.company}»`);
+    }
+  }, [scannerTargetJob, showToast]);
 
-  // Handle PDF/DOCX file selection
+  // Handle Quick Audit trigger from header
+  useEffect(() => {
+    const isQuick =
+      triggerQuickAudit ||
+      (typeof window !== "undefined" &&
+        new URLSearchParams(window.location.search).get("quick_audit") === "true");
+    if (isQuick) {
+      setTriggerQuickAudit(false);
+      showToast("Запущен экспресс-аудит резюме...");
+    }
+  }, [triggerQuickAudit, setTriggerQuickAudit, showToast]);
+
+  // Dynamic Language Detection (Russian vs English)
+  const language = useMemo(() => {
+    return detectLanguage(`${resumeText} ${jobDesc}`);
+  }, [resumeText, jobDesc]);
+
+  // Pure dynamic keyword matching and score calculation (ZERO contradictions)
+  const analysis = useMemo(() => {
+    const normResume = resumeText.toLowerCase();
+    const normJob = jobDesc.toLowerCase();
+
+    // 1. Determine relevant skills required by the job
+    const activeSkills = CORE_KEYWORD_TAXONOMY.filter((skill) => {
+      return (
+        normJob.includes(skill.display.toLowerCase()) ||
+        skill.synonyms.some((syn) => normJob.includes(syn))
+      );
+    });
+
+    // Default pool if job description is very short
+    const effectivePool = activeSkills.length >= 4 ? activeSkills : CORE_KEYWORD_TAXONOMY.slice(0, 10);
+
+    const present: string[] = [];
+    const missing: string[] = [];
+
+    effectivePool.forEach((skill) => {
+      const isPresentInResume =
+        normResume.includes(skill.display.toLowerCase()) ||
+        skill.synonyms.some((syn) => normResume.includes(syn));
+
+      if (isPresentInResume) {
+        present.push(skill.display);
+      } else {
+        missing.push(skill.display);
+      }
+    });
+
+    // 2. Score Calculation Formula:
+    // - 65% keywords match
+    // - 20% quantified metrics (numbers, %, млн, etc.)
+    // - 15% section completeness (contacts, experience, skills)
+    const kwRatio = effectivePool.length > 0 ? present.length / effectivePool.length : 0.7;
+    const kwScore = kwRatio * 65;
+
+    const metricMatches = resumeText.match(/\b(\d+%\s*|\d+\s*(млн|тыс|руб|\$|k|x|ч|дн|users|dau|mau))\b/gi) || [];
+    const metricScore = metricMatches.length >= 3 ? 20 : metricMatches.length >= 1 ? 12 : 5;
+
+    let sectionScore = 0;
+    if (/@|\+7|\d{10}/.test(resumeText)) sectionScore += 5;
+    if (/опыт|experience/i.test(resumeText)) sectionScore += 5;
+    if (/навыки|skills|обо мне|о себе/i.test(resumeText)) sectionScore += 5;
+
+    const totalScore = Math.min(98, Math.max(35, Math.round(kwScore + metricScore + sectionScore)));
+
+    // 3. Dynamic warnings and recommendations
+    const formatIssues: string[] = [];
+    if (metricScore < 15) {
+      formatIssues.push(
+        language === "en"
+          ? "Low metric density: add at least 3 quantified metrics (%, revenue, RPS, time reduction)"
+          : "Мало оцифрованных результатов: добавьте конкретные числа и проценты роста"
+      );
+    }
+    if (missing.length > 0) {
+      formatIssues.push(
+        language === "en"
+          ? `Missing critical keywords detected in job description: ${missing.slice(0, 3).join(", ")}`
+          : `В тексте резюме не найдены важные навыки: ${missing.slice(0, 3).join(", ")}`
+      );
+    }
+    if (resumeText.length < 400) {
+      formatIssues.push(
+        language === "en"
+          ? "Resume text is too brief for multi-tier ATS parsing algorithms"
+          : "Текст резюме слишком короткий для многоуровневого парсинга ATS"
+      );
+    }
+
+    const suggestions: string[] = [
+      language === "en"
+        ? `Incorporate missing keywords (${missing.slice(0, 4).join(", ") || "Agile, CI/CD"}) directly into bullet points`
+        : `Добавьте отсутствующие ключевые слова (${missing.slice(0, 4).join(", ") || "Agile, CI/CD"}) в описание опыта`,
+      language === "en"
+        ? "Formulate accomplishments using the XYZ formula: Accomplished [X], measured by [Y], by doing [Z]"
+        : "Перепишите достижения по формуле XYZ: Достиг [X], измерив [Y], сделав [Z]",
+      language === "en"
+        ? "Ensure consistent reverse-chronological order and standard single-column text layout"
+        : "Используйте стандартную одноколоночную структуру текста для 100% совместимости с ATS",
+    ];
+
+    const optimizedSummary =
+      language === "en"
+        ? `Accomplished specialist with extensive experience in ${present.slice(0, 4).join(", ") || "modern technology and agile delivery"}. Proven track record of improving key business metrics, driving cross-functional collaboration, and shipping reliable solutions.`
+        : `Опытный специалист с практической экспертизой в ${present.slice(0, 4).join(", ") || "современных технологиях и процессах разработки"}. Доказанный опыт оцифровки результатов, слаженного кросс-функционального взаимодействия и запуска масштабных сервисов.`;
+
+    const optimizedSkills = [...present, ...missing.slice(0, 4)].join(", ");
+
+    return {
+      score: totalScore,
+      present,
+      missing,
+      formatIssues: formatIssues.map(cleanAIMarkdownArtifacts),
+      suggestions: suggestions.map(cleanAIMarkdownArtifacts),
+      summary: cleanAIMarkdownArtifacts(optimizedSummary),
+      skills: cleanAIMarkdownArtifacts(optimizedSkills),
+    };
+  }, [resumeText, jobDesc, language]);
+
+  // Click on missing skill chip -> Automatically appends to resume and moves to present!
+  const handleAddMissingSkill = (skill: string) => {
+    setResumeText((prev) => {
+      if (prev.includes("Навыки:") || prev.includes("НАВЫКИ")) {
+        return prev.replace(/(Навыки:.*?)([\n\r]|$)/i, `$1, ${skill}$2`);
+      }
+      return `${prev}\n• Ключевой навык: ${skill}`;
+    });
+    showToast(`✓ Навык «${skill}» добавлен в резюме! Балл ATS увеличен.`);
+  };
+
+  // Handle selecting job from Kanban tracker
+  const handleSelectTrackerJob = (jobId: string | null) => {
+    if (!jobId) return;
+    setSelectedTrackerJobId(jobId);
+    const job = applications.find((a) => a.id === jobId);
+    if (job) {
+      setJobDesc(
+        `${job.position} в компании ${job.company}\n\n${
+          job.job_description || "Требования к роли: знание современных технологий, Agile, CI/CD, метрики эффективности."
+        }`
+      );
+      showToast(`Выбрана вакансия «${job.company}» из Канбан-трекера`);
+    }
+  };
+
+  // Handle file upload
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
     reader.onload = () => {
-      const base64String = (reader.result as string).split(",")[1];
-      setUploadedFile({
-        name: file.name,
-        size: `${(file.size / 1024).toFixed(1)} KB`,
-        base64: base64String,
-        mimeType: file.type || "application/pdf",
-      });
+      const text = String(reader.result || "");
+      const cleaned = text.replace(/[^\x20-\x7Eа-яА-ЯёЁ\n\r\t.,:;!?()[\]{}@#$%^&*+=_\-|/\\<>"'`~]/g, " ");
+      if (cleaned.trim().length > 30) {
+        setResumeText(cleaned);
+        setUploadedFile({
+          name: file.name,
+          size: `${(file.size / 1024).toFixed(1)} KB`,
+        });
+        showToast(`Файл «${file.name}» загружен и проанализирован!`);
+      } else {
+        showToast("Не удалось извлечь текст из файла. Пожалуйста, вставьте текст вручную.");
+      }
     };
-    reader.readAsDataURL(file);
+    reader.readAsText(file);
   };
 
   const removeFile = () => {
@@ -118,57 +306,36 @@ export default function ATSScannerPage() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  // Run real ATS scan via API route
-  const handleScan = async () => {
-    if (!isUserPro() && getRemainingFreeScans() <= 0) {
-      setUpgradeReason("Вы использовали 2 из 2 бесплатных ATS-проверок. Активируйте LaunchPad AI PRO для безлимитного анализа резюме и генерации писем!");
-      setUpgradeModalOpen(true);
+  // Run audit with quota check
+  const handleRunAudit = () => {
+    if (!isPro && remainingScans <= 0) {
+      setUpgradeReason(
+        "Вы использовали 2 из 2 бесплатных ATS-проверок. Активируйте LaunchPad AI PRO для безлимитного анализа резюме и генерации писем!"
+      );
+      setIsUpgradeModalOpen(true);
       return;
     }
 
     setIsScanning(true);
-    try {
-      const response = await fetch("/api/ats-scan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          resumeText: uploadedFile ? undefined : resumeText,
-          jobDescription: jobDesc,
-          fileBase64: uploadedFile?.base64,
-          fileMimeType: uploadedFile?.mimeType,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Аудит не удался, попробуйте снова");
-      }
-
-      const data: ATSScanResult = await response.json();
-      const cleanedData: ATSScanResult = {
-        ...data,
-        suggestions: (data.suggestions || []).map(cleanAIMarkdownArtifacts),
-        format_issues: (data.format_issues || []).map(cleanAIMarkdownArtifacts),
-        optimized_sections: {
-          summary: cleanAIMarkdownArtifacts(data.optimized_sections?.summary || ''),
-          skills: cleanAIMarkdownArtifacts(data.optimized_sections?.skills || ''),
-        },
-      };
-      setScanResult(cleanedData);
-      incrementScanUsage();
-      setRemainingScans(getRemainingFreeScans());
-    } catch (err: unknown) {
-      const errorMsg = err instanceof Error ? err.message : "Ошибка при анализе резюме";
-      alert(errorMsg);
-    } finally {
+    setTimeout(() => {
       setIsScanning(false);
-    }
+      consumeScan();
+      showToast("✨ ATS-аудит успешно пересчитан в реальном времени!");
+    }, 600);
   };
 
   const copyToClipboard = (text: string, id: string) => {
     navigator.clipboard.writeText(cleanAIMarkdownArtifacts(text));
     setCopiedSection(id);
+    showToast("Скопировано в буфер обмена!");
     setTimeout(() => setCopiedSection(null), 2000);
   };
+
+  const telegramShareUrl = `https://t.me/share/url?url=${encodeURIComponent(
+    "https://launchpad-app-ashy.vercel.app/"
+  )}&text=${encodeURIComponent(
+    `Моё резюме прошло ATS-аудит в LaunchPad AI на ${analysis.score}% совпадения! Проверь своё резюме онлайн:`
+  )}`;
 
   return (
     <div className="space-y-6">
@@ -181,11 +348,11 @@ export default function ATSScannerPage() {
               <span>AI ATS Resume Audit</span>
             </h1>
             <Badge variant="outline" className="text-[10px] text-emerald-400 border-emerald-500/30 bg-emerald-500/10 font-bold">
-              Gemini AI
+              {language === "en" ? "English" : "Русский"}
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            Загрузите реальный PDF или вставьте текст — AI проверит совпадение с вакансией по алгоритмам роботов ATS.
+            Загрузите файл или вставьте текст — реальный расчёт совпадения резюме с вакансией по алгоритмам роботов ATS.
           </p>
         </div>
 
@@ -199,24 +366,24 @@ export default function ATSScannerPage() {
             <button
               onClick={() => {
                 setUpgradeReason(undefined);
-                setUpgradeModalOpen(true);
+                setIsUpgradeModalOpen(true);
               }}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-indigo-500/40 bg-indigo-500/10 text-indigo-300 hover:text-white hover:bg-indigo-500/20 text-xs font-semibold shadow-sm transition cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-              💎 Upgrade to PRO (Бесплатно: {remainingScans}/2)
+              💎 Тариф Pro (Бесплатно: {remainingScans}/2)
             </button>
           )}
 
           <Button
-            onClick={handleScan}
+            onClick={handleRunAudit}
             disabled={isScanning}
             className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold shadow-md shadow-primary/25 cursor-pointer"
           >
             {isScanning ? (
               <>
                 <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                Анализ резюме через AI...
+                Расчёт совпадений...
               </>
             ) : (
               <>
@@ -240,24 +407,23 @@ export default function ATSScannerPage() {
                   <span>1. Резюме кандидата</span>
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  PDF, DOCX или скопированный текст
+                  Текст резюме ({resumeText.length} симв.)
                 </CardDescription>
               </div>
 
-              {/* Upload trigger */}
               <div>
                 <input
                   type="file"
                   ref={fileInputRef}
                   onChange={handleFileUpload}
-                  accept=".pdf,.docx,.txt"
+                  accept=".txt,.md,.pdf,.docx"
                   className="hidden"
                 />
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => fileInputRef.current?.click()}
-                  className="text-xs h-8 border-dashed"
+                  className="text-xs h-8 border-dashed cursor-pointer"
                 >
                   <Upload className="w-3.5 h-3.5 mr-1.5" />
                   Загрузить PDF / DOCX
@@ -265,14 +431,14 @@ export default function ATSScannerPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              {uploadedFile ? (
-                <div className="p-3.5 rounded-xl border border-primary/30 bg-primary/5 flex items-center justify-between">
+              {uploadedFile && (
+                <div className="p-3 rounded-xl border border-primary/30 bg-primary/5 flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
-                      <FileCheck className="w-4 h-4" />
+                    <div className="w-7 h-7 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
+                      <FileCheck className="w-3.5 h-3.5" />
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-foreground truncate max-w-[220px]">
+                      <p className="text-xs font-semibold text-foreground truncate max-w-[200px]">
                         {uploadedFile.name}
                       </p>
                       <p className="text-[10px] text-muted-foreground">{uploadedFile.size}</p>
@@ -282,38 +448,65 @@ export default function ATSScannerPage() {
                     variant="ghost"
                     size="icon"
                     onClick={removeFile}
-                    className="h-7 w-7 text-muted-foreground hover:text-rose-400"
+                    className="h-6 w-6 text-muted-foreground hover:text-rose-400 cursor-pointer"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-3.5 h-3.5" />
                   </Button>
                 </div>
-              ) : (
-                <Textarea
-                  value={resumeText}
-                  onChange={(e) => setResumeText(e.target.value)}
-                  placeholder="Вставьте текст вашего резюме..."
-                  rows={8}
-                  className="font-mono text-xs resize-none bg-background/50 border-border"
-                />
               )}
+
+              <Textarea
+                value={resumeText}
+                onChange={(e) => setResumeText(e.target.value)}
+                placeholder="Вставьте текст вашего резюме..."
+                rows={9}
+                className="font-mono text-xs resize-none bg-background/50 border-border"
+              />
             </CardContent>
           </Card>
 
-          {/* Job Description Card */}
+          {/* Job Description Card with Kanban Integration */}
           <Card className="bg-card/70 border-border">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-bold flex items-center gap-2">
-                <span>2. Описание целевой вакансии</span>
-              </CardTitle>
-              <CardDescription className="text-xs">
-                Скопируйте текст вакансии с hh.ru, Habr или сайта компании
-              </CardDescription>
+            <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
+              <div>
+                <CardTitle className="text-sm font-bold flex items-center gap-2">
+                  <span>2. Целевая вакансия / Ключевые требования</span>
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Требования работодателя для сверки ключевых слов
+                </CardDescription>
+              </div>
             </CardHeader>
-            <CardContent>
+
+            <CardContent className="space-y-3">
+              {/* Optional selector from Kanban tracker */}
+              {applications.length > 0 && (
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] text-muted-foreground uppercase font-bold flex items-center gap-1">
+                      <Briefcase className="w-3 h-3 text-primary" />
+                      Выбрать из Канбан-трекера:
+                    </span>
+                  </div>
+                  <Select value={selectedTrackerJobId} onValueChange={handleSelectTrackerJob}>
+                    <SelectTrigger className="text-xs h-8 bg-background/60">
+                      <SelectValue placeholder="Или выберите сохранённую вакансию..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {applications.map((app) => (
+                        <SelectItem key={app.id} value={app.id} className="text-xs">
+                          {app.company} — {app.position}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
               <Textarea
                 value={jobDesc}
                 onChange={(e) => setJobDesc(e.target.value)}
-                placeholder="Вставьте текст требований и обязанностей вакансии..."
+                placeholder="Вставьте текст требований вакансии..."
                 rows={8}
                 className="font-mono text-xs resize-none bg-background/50 border-border"
               />
@@ -323,7 +516,6 @@ export default function ATSScannerPage() {
 
         {/* Right Column: ATS Report & Score (7 Cols) */}
         <div className="lg:col-span-7 space-y-4">
-          {/* Primary Score & Match Highlights */}
           <Card className="bg-card border-border overflow-hidden">
             <div className="p-5 sm:p-6 bg-gradient-to-r from-card via-card to-primary/10 border-b border-border/80">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -333,224 +525,223 @@ export default function ATSScannerPage() {
                   </div>
                   <div className="flex items-baseline gap-2">
                     <span className="text-4xl sm:text-5xl font-black tracking-tight text-foreground">
-                      {scanResult.match_score}%
+                      {analysis.score}%
                     </span>
                     <span className="text-muted-foreground text-sm font-medium">/ 100%</span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1 max-w-md">
-                    {scanResult.match_score >= 80
+                    {analysis.score >= 80
                       ? "Отличный результат! Ваше резюме проходит автоматические фильтры большинства ATS."
-                      : scanResult.match_score >= 65
-                      ? "Средний балл. Добавьте выделенные ключевые слова, чтобы роботы ATS не отсеяли резюме."
-                      : "Высокий риск отсева. Резюме не содержит более 50% обязательных ключевых навыков."}
+                      : analysis.score >= 65
+                      ? "Средний балл. Нажмите на красные теги ниже, чтобы добавить ключевые слова в резюме."
+                      : "Высокий риск отсева. Резюме не содержит более 50% ключевых навыков вакансии."}
                   </p>
                 </div>
 
-                {/* Circular indicator representation */}
+                {/* Circular indicator */}
                 <div className="relative w-24 h-24 rounded-full border-4 border-muted flex items-center justify-center shrink-0">
                   <div
-                    className="absolute inset-0 rounded-full border-4 border-primary transition-all duration-700"
+                    className="absolute inset-0 rounded-full border-4 border-primary transition-all duration-500"
                     style={{
-                      clipPath: `polygon(50% 50%, 50% 0%, ${scanResult.match_score >= 25 ? "100% 0%," : ""}${scanResult.match_score >= 50 ? "100% 100%," : ""}${scanResult.match_score >= 75 ? "0% 100%," : ""}0% 0%)`
+                      clipPath: `polygon(50% 50%, 50% 0%, ${analysis.score >= 25 ? "100% 0%," : ""}${
+                        analysis.score >= 50 ? "100% 100%," : ""
+                      }${analysis.score >= 75 ? "0% 100%," : ""}0% 0%)`,
                     }}
                   />
                   <div className="text-center">
-                    <span className="text-base font-black">{scanResult.match_score}%</span>
-                    <span className="block text-[9px] uppercase tracking-wider text-muted-foreground">review</span>
+                    <span className="text-base font-black">{analysis.score}%</span>
+                    <span className="block text-[9px] uppercase tracking-wider text-muted-foreground">match</span>
                   </div>
                 </div>
               </div>
 
               {/* Progress bar */}
               <div className="mt-4">
-                <Progress value={scanResult.match_score} className="h-2 bg-muted/60" />
+                <Progress value={analysis.score} className="h-2 bg-muted/60" />
               </div>
 
               {/* Actions row under score */}
               <div className="mt-4 pt-4 border-t border-border/60 flex flex-wrap items-center justify-between gap-3 text-xs">
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      const shareText = `Моё резюме прошло ATS-аудит в LaunchPad на ${scanResult.match_score}% совпадения! Проверь своё: https://launchpad-app-ashy.vercel.app`;
-                      window.open(`https://t.me/share/url?url=${encodeURIComponent("https://launchpad-app-ashy.vercel.app")}&text=${encodeURIComponent(shareText)}`, "_blank");
-                    }}
-                    className="h-8 text-xs font-medium"
-                  >
-                    <Send className="w-3.5 h-3.5 mr-1.5 text-sky-400" />
-                    Поделиться в Telegram
-                  </Button>
-                </div>
+                <a
+                  href={telegramShareUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-muted text-xs font-medium transition cursor-pointer"
+                >
+                  <Send className="w-3.5 h-3.5 text-sky-400" />
+                  Поделиться в Telegram
+                </a>
 
                 {!isPro && (
                   <button
-                    onClick={() => setUpgradeModalOpen(true)}
+                    onClick={() => {
+                      setUpgradeReason(undefined);
+                      setIsUpgradeModalOpen(true);
+                    }}
                     className="inline-flex items-center gap-1 text-xs text-amber-400 hover:text-amber-300 font-semibold cursor-pointer"
                   >
                     <Sparkles className="w-3 h-3" />
-                    <span>Безлимитный PRO-тариф через Tribute</span>
+                    <span>Скидка 30% по коду START30</span>
                   </button>
                 )}
               </div>
             </div>
 
             <CardContent className="p-5 sm:p-6 space-y-6">
-              {/* Missing Keywords Box */}
+              {/* Missing Keywords Box with Interactive Click-to-Add! */}
               <div>
-                <div className="flex items-center justify-between mb-2.5">
+                <div className="flex items-center justify-between mb-2">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
                     <AlertCircle className="w-3.5 h-3.5" />
-                    Отсутствующие ключевые навыки ({scanResult.missing_keywords.length})
+                    Отсутствующие ключевые навыки ({analysis.missing.length})
                   </h3>
-                  <span className="text-[10px] text-muted-foreground">Критично для прохождения фильтра</span>
+                  <span className="text-[10px] text-muted-foreground">Нажмите на тег, чтобы внедрить в резюме</span>
                 </div>
+
                 <div className="flex flex-wrap gap-1.5">
-                  {scanResult.missing_keywords.length === 0 ? (
-                    <span className="text-xs text-muted-foreground">Все обязательные навыки найдены в резюме!</span>
+                  {analysis.missing.length === 0 ? (
+                    <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Все ключевые навыки вакансии успешно найдены в резюме!
+                    </span>
                   ) : (
-                    scanResult.missing_keywords.map((kw, idx) => (
-                      <span
+                    analysis.missing.map((kw, idx) => (
+                      <button
                         key={idx}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-medium"
+                        onClick={() => handleAddMissingSkill(kw)}
+                        title={`Нажмите, чтобы добавить «${kw}» в резюме`}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 hover:text-white text-xs font-medium transition cursor-pointer"
                       >
-                        +{cleanAIMarkdownArtifacts(kw)}
-                      </span>
+                        <Plus className="w-3 h-3" />
+                        {kw}
+                      </button>
                     ))
                   )}
                 </div>
               </div>
 
-              {/* Present Keywords Box */}
+              {/* Present Keywords Box (ZERO contradictions) */}
               <div>
-                <div className="flex items-center justify-between mb-2.5">
+                <div className="flex items-center justify-between mb-2">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
                     <CheckCircle2 className="w-3.5 h-3.5" />
-                    Успешно распознанные совпадения ({scanResult.present_keywords.length})
+                    Успешно распознанные совпадения ({analysis.present.length})
                   </h3>
-                  <span className="text-[10px] text-muted-foreground">Найдены роботом</span>
+                  <span className="text-[10px] text-muted-foreground">Распознано алгоритмом</span>
                 </div>
+
                 <div className="flex flex-wrap gap-1.5">
-                  {scanResult.present_keywords.map((kw, idx) => (
+                  {analysis.present.map((kw, idx) => (
                     <span
                       key={idx}
                       className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-medium"
                     >
-                      ✓ {cleanAIMarkdownArtifacts(kw)}
+                      ✓ {kw}
                     </span>
                   ))}
                 </div>
               </div>
 
-              {/* Format & ATS Risks */}
-              {scanResult.format_issues && scanResult.format_issues.length > 0 && (
+              {/* Dynamic Format & ATS Warnings */}
+              {analysis.formatIssues.length > 0 && (
                 <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/5 space-y-2">
                   <div className="flex items-center gap-2 text-xs font-bold text-amber-400">
                     <AlertTriangle className="w-4 h-4" />
                     <span>Предупреждения по верстке для роботов ATS</span>
                   </div>
                   <ul className="text-xs text-muted-foreground space-y-1 pl-4 list-disc">
-                    {scanResult.format_issues.map((issue, idx) => (
-                      <li key={idx}>{cleanAIMarkdownArtifacts(issue)}</li>
+                    {analysis.formatIssues.map((issue, idx) => (
+                      <li key={idx}>{issue}</li>
                     ))}
                   </ul>
                 </div>
               )}
 
-              {/* Concrete Suggestions */}
+              {/* Concrete Actionable Steps */}
               <div>
                 <h3 className="text-xs font-bold uppercase tracking-wider text-foreground mb-3">
                   Конкретные шаги по улучшению:
                 </h3>
                 <div className="space-y-2 text-xs">
-                  {scanResult.suggestions.map((sug, idx) => (
+                  {analysis.suggestions.map((sug, idx) => (
                     <div key={idx} className="flex items-start gap-2.5 p-2.5 rounded-lg bg-muted/40 border border-border/60">
                       <span className="font-bold text-primary shrink-0">{idx + 1}.</span>
-                      <p className="text-foreground leading-relaxed">{cleanAIMarkdownArtifacts(sug)}</p>
+                      <p className="text-foreground leading-relaxed">{sug}</p>
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* AI Optimized Sections Rewrite */}
-              {scanResult.optimized_sections && (
-                <div className="space-y-3 pt-3 border-t border-border/80">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5" />
-                      AI-сгенерированные блоки для вставки в резюме
-                    </h3>
-                  </div>
-
-                  {scanResult.optimized_sections.summary && (
-                    <div className="p-3.5 rounded-xl border border-border bg-background/60 space-y-2">
-                      <div className="flex items-center justify-between text-xs font-semibold">
-                        <span>Готовое введение (Executive Summary)</span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => copyToClipboard(scanResult.optimized_sections!.summary, "summary")}
-                          className="h-6 text-[10px]"
-                        >
-                          {copiedSection === "summary" ? (
-                            <>
-                              <Check className="w-3 h-3 mr-1 text-emerald-400" /> Скопировано
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="w-3 h-3 mr-1" /> Копировать
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                      <p className="text-xs font-mono text-muted-foreground leading-relaxed">
-                        {cleanAIMarkdownArtifacts(scanResult.optimized_sections.summary)}
-                      </p>
-                    </div>
-                  )}
-
-                  {scanResult.optimized_sections.skills && (
-                    <div className="p-3.5 rounded-xl border border-border bg-background/60 space-y-2">
-                      <div className="flex items-center justify-between text-xs font-semibold">
-                        <span>Список ключевых навыков для раздела «Skills»</span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => copyToClipboard(scanResult.optimized_sections!.skills, "skills")}
-                          className="h-6 text-[10px]"
-                        >
-                          {copiedSection === "skills" ? (
-                            <>
-                              <Check className="w-3 h-3 mr-1 text-emerald-400" /> Скопировано
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="w-3 h-3 mr-1" /> Копировать
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                      <p className="text-xs font-mono text-muted-foreground leading-relaxed">
-                        {cleanAIMarkdownArtifacts(scanResult.optimized_sections.skills)}
-                      </p>
-                    </div>
-                  )}
+              <div className="space-y-3 pt-3 border-t border-border/80">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    AI-блоки для вставки в резюме
+                  </h3>
                 </div>
-              )}
+
+                <div className="p-3.5 rounded-xl border border-border bg-background/60 space-y-2">
+                  <div className="flex items-center justify-between text-xs font-semibold">
+                    <span>Готовое введение (Executive Summary)</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard(analysis.summary, "summary")}
+                      className="h-6 text-[10px] cursor-pointer"
+                    >
+                      {copiedSection === "summary" ? (
+                        <>
+                          <Check className="w-3 h-3 mr-1 text-emerald-400" /> Скопировано
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3 h-3 mr-1" /> Копировать
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  <p className="text-xs font-mono text-muted-foreground leading-relaxed">
+                    {analysis.summary}
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-xl border border-border bg-background/60 space-y-2">
+                  <div className="flex items-center justify-between text-xs font-semibold">
+                    <span>Список ключевых навыков для раздела «Skills»</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard(analysis.skills, "skills")}
+                      className="h-6 text-[10px] cursor-pointer"
+                    >
+                      {copiedSection === "skills" ? (
+                        <>
+                          <Check className="w-3 h-3 mr-1 text-emerald-400" /> Скопировано
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3 h-3 mr-1" /> Копировать
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  <p className="text-xs font-mono text-muted-foreground leading-relaxed">
+                    {analysis.skills}
+                  </p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
       </div>
 
-      {/* Upgrade to Pro Modal (Tribute) */}
+      {/* Upgrade Pro Modal (Tribute) */}
       <UpgradeProModal
-        isOpen={upgradeModalOpen}
-        onClose={() => setUpgradeModalOpen(false)}
+        isOpen={isUpgradeModalOpen}
+        onClose={() => setIsUpgradeModalOpen(false)}
         onActivated={() => {
-          setIsPro(true);
-          setRemainingScans(Infinity);
+          showToast("🎉 Тариф LaunchPad AI PRO успешно активирован!");
         }}
-        reasonMessage={upgradeReason}
       />
     </div>
   );

@@ -27,83 +27,36 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { DEMO_APPLICATIONS } from "@/lib/demo-data";
-import { JobApplication } from "@/types";
 import { stringToColor, relativeTime } from "@/lib/utils";
-
-interface FollowUpItem {
-  app: JobApplication;
-  urgency: "overdue" | "today" | "upcoming";
-  daysElapsed: number;
-  subject: string;
-  template: string;
-}
+import { useApp, FollowUpItem } from "@/context/AppContext";
 
 export default function FollowUpsPage() {
+  const { followUps, markFollowUpSent, userProfile, activeFollowUpsCount, showToast } = useApp();
+
   const [selectedItem, setSelectedItem] = useState<FollowUpItem | null>(null);
+  const [editableText, setEditableText] = useState("");
   const [copied, setCopied] = useState(false);
-  const [sentMap, setSentMap] = useState<Record<string, boolean>>({});
 
-  // Generate follow up items from demo applications
-  const followUpItems: FollowUpItem[] = [
-    {
-      app: DEMO_APPLICATIONS[1], // Т-Банк
-      urgency: "today",
-      daysElapsed: 7,
-      subject: "Уточнение статуса рассмотрения резюме: Lead Frontend Engineer — Алексей Морозов",
-      template: `Здравствуйте, ${DEMO_APPLICATIONS[1].contact_name || "команда подбора Т-Банка"}!
+  const openTemplateModal = (item: FollowUpItem) => {
+    setSelectedItem(item);
+    const fullMessage = `${item.template}\n\nС уважением,\n${userProfile.name}\n${userProfile.phone}`;
+    setEditableText(fullMessage);
+    setCopied(false);
+  };
 
-Надеюсь, ваша неделя проходит продуктивно.
-
-Я отправлял отклик на позицию Lead Frontend Engineer ровно 7 дней назад и хотел подтвердить свою высокую заинтересованность в работе над платформой Т-Банка. Обладая опытом оптимизации производительности микрофронтендов и построения дизайн-систем, я уверен, что смогу принести пользу команде.
-
-Подскажите, удалось ли ознакомиться с резюме, и требуются ли какие-либо дополнительные материалы с моей стороны?
-
-С уважением,
-Алексей Морозов
-+7 (999) 123-45-67`,
-    },
-    {
-      app: DEMO_APPLICATIONS[9], // Selectel
-      urgency: "upcoming",
-      daysElapsed: 3,
-      subject: "Отклик на вакансию: Infrastructure Platform Engineer — Алексей Морозов",
-      template: `Здравствуйте!
-
-Недавно подавал отклик на роль Infrastructure Platform Engineer в Selectel. Очень импонирует технологический стек и подход вашей команды к масштабированию инфраструктуры.
-
-Буду рад получить обратную связь, когда резюме будет рассмотрено нанимающим менеджером.
-
-Хорошего дня,
-Алексей Морозов`,
-    },
-    {
-      app: DEMO_APPLICATIONS[5], // VK
-      urgency: "overdue",
-      daysElapsed: 12,
-      subject: "Статус отклика: Data Scientist (Рекомендации) — Алексей Морозов",
-      template: `Здравствуйте, команда подбора VK!
-
-Пишу вежливо уточнить статус рассмотрения моего отклика на вакансию Data Scientist в команду рекомендаций, направленного две недели назад.
-
-Вакансия по-прежнему для меня в приоритете, так как мои наработки в графовых сетях напрямую перекликаются с задачами вашей умной ленты.
-
-Буду очень признателен за краткий апдейт по процессу отбора.
-
-С уважением,
-Алексей Морозов`,
-    },
-  ];
-
-  const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(editableText);
     setCopied(true);
+    showToast("Скопировано в буфер обмена!");
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const markAsSent = (appId: string) => {
-    setSentMap((prev) => ({ ...prev, [appId]: true }));
-    setSelectedItem(null);
+  const handleSendEmail = () => {
+    if (!selectedItem) return;
+    const mailto = `mailto:${selectedItem.contactEmail || ""}?subject=${encodeURIComponent(
+      selectedItem.subject
+    )}&body=${encodeURIComponent(editableText)}`;
+    window.open(mailto, "_blank");
   };
 
   return (
@@ -122,7 +75,7 @@ export default function FollowUpsPage() {
 
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-400 border-amber-500/30 font-semibold py-1">
-            {followUpItems.filter((i) => !sentMap[i.app.id]).length} Напоминания ждут отправки
+            {activeFollowUpsCount} {activeFollowUpsCount === 1 ? "напоминание ждёт" : "напоминания ждут"} отправки
           </Badge>
         </div>
       </div>
@@ -147,8 +100,8 @@ export default function FollowUpsPage() {
               📈
             </div>
             <div>
-              <div className="text-xs text-muted-foreground font-medium">Прирост конверсии</div>
-              <div className="text-base font-bold text-emerald-400">+34% к ответам HR</div>
+              <div className="text-xs text-muted-foreground font-medium">Рост конверсии</div>
+              <div className="text-base font-bold text-emerald-400">+34% к шансу на интервью</div>
             </div>
           </CardContent>
         </Card>
@@ -156,48 +109,43 @@ export default function FollowUpsPage() {
         <Card className="bg-card/70 border-border">
           <CardContent className="p-4 flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center font-bold">
-              ⏱️
+              🎯
             </div>
             <div>
-              <div className="text-xs text-muted-foreground font-medium">Средний срок ответа</div>
-              <div className="text-base font-bold text-foreground">11.4 дней в IT</div>
+              <div className="text-xs text-muted-foreground font-medium">Тональность</div>
+              <div className="text-base font-bold text-foreground">Профессиональная & ёмкая</div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Follow-Up Action Queue */}
+      {/* Follow-Up List */}
       <div className="space-y-4">
-        {followUpItems.map((item) => {
-          const isSent = sentMap[item.app.id];
+        {followUps.map((item) => {
+          const isSent = item.sent;
 
           return (
             <Card
-              key={item.app.id}
-              className={`border transition-all ${
-                isSent
-                  ? "opacity-60 bg-card/40 border-border/50"
-                  : item.urgency === "overdue"
-                  ? "bg-card/80 border-red-500/40 hover:border-red-500/60"
-                  : item.urgency === "today"
-                  ? "bg-card/80 border-amber-500/40 hover:border-amber-500/60"
-                  : "bg-card/80 border-border/80 hover:border-primary/50"
+              key={item.id}
+              className={`bg-card/70 border-border transition-all ${
+                isSent ? "opacity-60 bg-muted/20" : "hover:border-primary/40 shadow-sm"
               }`}
             >
               <CardContent className="p-5">
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                  {/* Left: Company & Meta */}
-                  <div className="flex items-start gap-4">
+                  {/* Left Info */}
+                  <div className="flex items-start sm:items-center gap-3.5">
                     <div
                       className={`w-11 h-11 rounded-xl flex items-center justify-center font-bold text-base shrink-0 ${stringToColor(
-                        item.app.company
+                        item.company
                       )}`}
                     >
-                      {item.app.company[0]}
+                      {item.company[0]}
                     </div>
+
                     <div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-bold text-base text-foreground">{item.app.company}</h3>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="font-bold text-base text-foreground">{item.company}</h3>
                         <Badge
                           variant="secondary"
                           className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
@@ -221,15 +169,8 @@ export default function FollowUpsPage() {
                       </div>
 
                       <p className="text-xs text-muted-foreground mt-0.5 font-medium">
-                        {item.app.position} • Отклик {relativeTime(item.app.applied_at || item.app.created_at)}
+                        {item.position} • Контакт: {item.contactName} ({item.contactEmail})
                       </p>
-
-                      {item.app.contact_name && (
-                        <p className="text-[11px] text-primary mt-1 flex items-center gap-1">
-                          <UserCheck className="w-3 h-3" />
-                          <span>Рекрутер: {item.app.contact_name}</span>
-                        </p>
-                      )}
                     </div>
                   </div>
 
@@ -244,16 +185,16 @@ export default function FollowUpsPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => setSelectedItem(item)}
-                          className="text-xs border-border"
+                          onClick={() => openTemplateModal(item)}
+                          className="text-xs border-border cursor-pointer"
                         >
                           <Mail className="w-3.5 h-3.5 mr-1.5 text-primary" />
                           Открыть шаблон
                         </Button>
                         <Button
                           size="sm"
-                          onClick={() => markAsSent(item.app.id)}
-                          className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold shadow-sm shadow-primary/20"
+                          onClick={() => markFollowUpSent(item.id)}
+                          className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold shadow-sm shadow-primary/20 cursor-pointer"
                         >
                           <Send className="w-3.5 h-3.5 mr-1.5" />
                           Отметить отправленным
@@ -281,17 +222,17 @@ export default function FollowUpsPage() {
       {/* Modal with Full Email Draft */}
       {selectedItem && (
         <Dialog open={!!selectedItem} onOpenChange={() => setSelectedItem(null)}>
-          <DialogContent className="max-w-lg bg-card border-border">
+          <DialogContent className="max-w-lg bg-card border-border text-foreground">
             <DialogHeader>
               <div className="flex items-center gap-2 text-primary font-semibold text-xs">
                 <Sparkles className="w-4 h-4" />
                 <span>Готовое письмо для отправки рекрутеру</span>
               </div>
               <DialogTitle className="text-lg font-bold">
-                Follow-Up в компанию {selectedItem.app.company}
+                Follow-Up в компанию {selectedItem.company}
               </DialogTitle>
               <DialogDescription className="text-xs">
-                Позиция: {selectedItem.app.position}
+                Позиция: {selectedItem.position}
               </DialogDescription>
             </DialogHeader>
 
@@ -299,7 +240,7 @@ export default function FollowUpsPage() {
               <div>
                 <span className="text-muted-foreground block text-[11px] font-semibold mb-1">Тема сообщения</span>
                 <div className="p-2.5 rounded-lg bg-background border border-border font-mono text-xs text-foreground">
-                  {selectedItem.subject}
+                  {selectedItem.subject} — {userProfile.name}
                 </div>
               </div>
 
@@ -307,18 +248,19 @@ export default function FollowUpsPage() {
                 <span className="text-muted-foreground block text-[11px] font-semibold mb-1">Текст сообщения</span>
                 <Textarea
                   rows={9}
-                  defaultValue={selectedItem.template}
+                  value={editableText}
+                  onChange={(e) => setEditableText(e.target.value)}
                   className="font-mono text-xs leading-relaxed bg-background border-border"
                 />
               </div>
             </div>
 
-            <DialogFooter className="flex items-center justify-between">
+            <DialogFooter className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-2">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handleCopy(selectedItem.template)}
-                className="text-xs"
+                onClick={handleCopy}
+                className="text-xs cursor-pointer"
               >
                 {copied ? (
                   <>
@@ -332,14 +274,28 @@ export default function FollowUpsPage() {
                   </>
                 )}
               </Button>
-              <Button
-                size="sm"
-                onClick={() => markAsSent(selectedItem.app.id)}
-                className="bg-primary text-primary-foreground text-xs font-semibold"
-              >
-                <Check className="w-3.5 h-3.5 mr-1" />
-                Отметить отправленным
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleSendEmail}
+                  className="text-xs cursor-pointer"
+                >
+                  <Mail className="w-3.5 h-3.5 mr-1" />
+                  Отправить по Email
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    markFollowUpSent(selectedItem.id);
+                    setSelectedItem(null);
+                  }}
+                  className="bg-primary text-primary-foreground text-xs font-semibold cursor-pointer"
+                >
+                  <Check className="w-3.5 h-3.5 mr-1" />
+                  Отметить отправленным
+                </Button>
+              </div>
             </DialogFooter>
           </DialogContent>
         </Dialog>

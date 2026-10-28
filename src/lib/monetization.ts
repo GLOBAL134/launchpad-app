@@ -5,6 +5,7 @@ export const TRIBUTE_LINKS = {
 
 export const VALID_PRO_KEYS = [
   'LP_PRO_2026',
+  'START30_PRO',
   'LAUNCHPAD_VIP',
   'PRO2026',
 ];

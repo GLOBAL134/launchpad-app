@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   PenTool,
   Sparkles,
@@ -11,6 +11,7 @@ import {
   RotateCcw,
   Send,
   Sliders,
+  Globe,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,42 +21,77 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { cleanAIMarkdownArtifacts } from "@/lib/monetization";
-
-const SAMPLE_GENERATED_LETTER = `Здравствуйте, команда найма Яндекс!
-
-Пишу, чтобы выразить искреннюю заинтересованность в позиции Senior Product Manager в направлении Cloud AI. Внимательно слежу за развитием инфраструктурных сервисов Яндекса и хочу применить свой практический опыт масштабирования технологических B2B-продуктов в вашей команде.
-
-За последние 6 лет в CloudScale Solutions и FinTech Инновациях я руководил продуктовыми командами разработки до 12 инженеров. Моим ключевым достижением стал запуск аналитического AI-модуля, который сократил время получения ценности клиентами с трёх недель до 4 часов, а внедрение регулярного A/B-тестирования подняло конверсию в повторные заказы на 24%. Я глубоко понимаю баланс между технической архитектурой, продуктовыми метриками и ожиданиями стейкхолдеров.
-
-Культура инженерного превосходства и масштабы задач Яндекса полностью соответствуют моим профессиональным ценностям. Буду рад встретиться на онлайн-интервью и подробнее обсудить, как мои навыки помогут вашей команде достигать ключевых целей в этом квартале.
-
-С уважением,
-Алексей Морозов
-alex.morozov@email.ru | +7 (999) 123-45-67`;
+import { detectLanguage } from "@/lib/language";
+import { useApp } from "@/context/AppContext";
 
 export default function CoverLetterPage() {
+  const { userProfile, coverLetterTargetJob, showToast } = useApp();
+
   const [company, setCompany] = useState("Яндекс");
   const [role, setRole] = useState("Senior Product Manager");
-  const [tone, setTone] = useState("professional");
+  const [tone, setTone] = useState<"professional" | "enthusiastic" | "concise">("professional");
   const [keyAchievement, setKeyAchievement] = useState(
     "Руководил командой из 12 инженеров, поднял конверсию на 24% за счёт A/B-тестирования, ускорил онбординг клиентов с 3 недель до 4 часов."
   );
-  const [letterContent, setLetterContent] = useState(cleanAIMarkdownArtifacts(SAMPLE_GENERATED_LETTER));
+  const [letterContent, setLetterContent] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // Pre-fill target job if routed from Kanban tracker
+  useEffect(() => {
+    if (coverLetterTargetJob) {
+      setCompany(coverLetterTargetJob.company);
+      setRole(coverLetterTargetJob.position);
+      showToast(`Подставлены данные вакансии «${coverLetterTargetJob.company}»`);
+    }
+  }, [coverLetterTargetJob, showToast]);
+
+  // Initial letter generator on load or user profile update
+  useEffect(() => {
+    const lang = detectLanguage(`${company} ${role} ${keyAchievement}`);
+    const initialText =
+      lang === "en"
+        ? `Dear Hiring Team at ${company},\n\nI am writing to express my strong enthusiasm for the ${role} position. Having closely followed your technological initiatives, I am eager to contribute my hands-on expertise to your mission.\n\nThroughout my career, I have consistently focused on high-impact execution. In particular, ${keyAchievement} My methodology is grounded in rigorous data analysis, user empathy, and efficient collaboration across cross-functional teams.\n\nI welcome the opportunity to discuss how my skill set aligns with your current priorities during an interview.\n\nSincerely,\n${userProfile.name}\n${userProfile.email} | ${userProfile.phone}`
+        : `Здравствуйте, команда найма ${company}!\n\nПишу, чтобы выразить искреннюю заинтересованность в позиции ${role}. Внимательно слежу за развитием ваших продуктов и хочу применить свой практический опыт для решения ключевых задач команды.\n\nЗа время карьеры я руководил запуском сложных технологических сервисов. Моим ключевым результатом стало следующее: ${keyAchievement} Мой подход строится на строгой data-driven аналитике, глубоких качественных исследованиях пользователей и слаженном взаимодействии с инженерами.\n\nКультура инженерного превосходства и масштабы задач ${company} полностью соответствуют моим профессиональным ценностям. Буду рад встретиться на онлайн-интервью и подробнее обсудить, как мои навыки помогут вашей команде достигать поставленных целей.\n\nС уважением,\n${userProfile.name}\n${userProfile.email} | ${userProfile.phone}`;
+
+    setLetterContent(cleanAIMarkdownArtifacts(initialText));
+  }, [company, role, keyAchievement, userProfile]);
 
   const handleGenerate = () => {
     setIsGenerating(true);
     setTimeout(() => {
       setIsGenerating(false);
-      const rawGenerated = `Здравствуйте, команда ${company}!\n\nМеня очень заинтересовала вакансия ${role} в вашей компании. Обладая 6-летним опытом руководства продуктовыми командами и сильным бэкграундом в IT, я уверен, что смогу усилить ваши процессы с первых дней.\n\nВ частности, ${keyAchievement} Мой подход строится на строгой data-driven аналитике, глубоких качественных исследованиях пользователей и слаженном взаимодействии с инженерной командой.\n\nБуду рад обсудить подробности на техническом интервью.\n\nС уважением,\nАлексей Морозов\n+7 (999) 123-45-67`;
-      setLetterContent(cleanAIMarkdownArtifacts(rawGenerated));
-    }, 1000);
+      const lang = detectLanguage(`${company} ${role} ${keyAchievement}`);
+
+      let generated = "";
+
+      if (lang === "en") {
+        if (tone === "enthusiastic") {
+          generated = `Hi ${company} team,\n\nI am thrilled to submit my application for the ${role} role! I have long admired your vision and would love to bring my energy, dedication, and product mindset to your team.\n\nDelivering high-impact milestones is what drives me forward. For example: ${keyAchievement} I thrive in fast-paced environments where curiosity, team synergy, and quick execution make a tangible difference for users.\n\nI would be excited to connect and explore how we can build great things together!\n\nBest regards,\n${userProfile.name}\n${userProfile.email} | ${userProfile.phone}`;
+        } else if (tone === "concise") {
+          generated = `Dear ${company} Hiring Team,\n\nPlease accept my application for the ${role} position.\n\nKey accomplishment: ${keyAchievement} I specialize in driving measurable outcomes with rapid execution and structured cross-functional collaboration.\n\nI look forward to discussing next steps at your convenience.\n\nBest regards,\n${userProfile.name}\n${userProfile.phone}`;
+        } else {
+          generated = `Dear Hiring Team at ${company},\n\nI am writing to express my strong enthusiasm for the ${role} position. Having closely followed your technological initiatives, I am eager to contribute my hands-on expertise to your mission.\n\nThroughout my career, I have consistently focused on high-impact execution. In particular, ${keyAchievement} My methodology is grounded in rigorous data analysis, user empathy, and efficient collaboration across cross-functional teams.\n\nI welcome the opportunity to discuss how my skill set aligns with your current priorities during an interview.\n\nSincerely,\n${userProfile.name}\n${userProfile.email} | ${userProfile.phone}`;
+        }
+      } else {
+        if (tone === "enthusiastic") {
+          generated = `Здравствуйте, команда ${company}!\n\nС огромным энтузиазмом откликаюсь на вакансию ${role}! Давно слежу за вашими запусками и искренне хочу стать частью команды, создающей по-настоящему классные продукты.\n\nУ меня за плечами сильный трек успешных запусков. Вот один из ярких примеров: ${keyAchievement} Я люблю смелые вызовы, ценю открытую коммуникацию и умею быстро превращать продуктовые гипотезы в работающие решения, которые драйвят метрики бизнеса.\n\nУверен, что моя энергия и практический опыт помогут ${company} взять новые высоты уже в первые месяцы работы. С нетерпением жду возможности пообщаться лично!\n\nС наилучшими пожеланиями,\n${userProfile.name}\n${userProfile.email} | ${userProfile.phone}`;
+        } else if (tone === "concise") {
+          generated = `Здравствуйте, команда ${company}!\n\nНаправляю отклик на позицию ${role}.\n\nКратко о ключевом опыте: ${keyAchievement} Отлично ориентируюсь в современных процессах разработки, приоритизации бэклога и достижении оцифрованных результатов.\n\nБуду рад встретиться на онлайн-интервью и ответить на ваши вопросы.\n\nС уважением,\n${userProfile.name}\n${userProfile.phone}`;
+        } else {
+          generated = `Здравствуйте, команда найма ${company}!\n\nПишу, чтобы выразить искреннюю заинтересованность в позиции ${role}. Внимательно слежу за развитием ваших продуктов и хочу применить свой практический опыт для решения ключевых задач команды.\n\nЗа время карьеры я руководил запуском сложных технологических сервисов. Моим ключевым результатом стало следующее: ${keyAchievement} Мой подход строится на строгой data-driven аналитике, глубоких качественных исследованиях пользователей и слаженном взаимодействии с инженерами.\n\nКультура инженерного превосходства и масштабы задач ${company} полностью соответствуют моим профессиональным ценностям. Буду рад встретиться на онлайн-интервью и подробнее обсудить, как мои навыки помогут вашей команде достигать поставленных целей.\n\nС уважением,\n${userProfile.name}\n${userProfile.email} | ${userProfile.phone}`;
+        }
+      }
+
+      setLetterContent(cleanAIMarkdownArtifacts(generated));
+      showToast("✨ Новое сопроводительное письмо успешно сгенерировано!");
+    }, 700);
   };
 
   const handleCopy = () => {
     navigator.clipboard.writeText(cleanAIMarkdownArtifacts(letterContent));
     setCopied(true);
+    showToast("Скопировано в буфер обмена!");
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -68,19 +104,31 @@ export default function CoverLetterPage() {
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
+    showToast("Файл .txt успешно скачан!");
   };
+
+  const detectedLang = detectLanguage(`${company} ${role} ${keyAchievement}`);
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
-          <PenTool className="w-6 h-6 text-primary" />
-          <span>Генератор сопроводительных писем (Cover Letter AI)</span>
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Создавайте персонализированные, живые сопроводительные письма за 10 секунд. С учётом культуры компании, тональности и ваших сильных сторон.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
+            <PenTool className="w-6 h-6 text-primary" />
+            <span>Генератор сопроводительных писем (Cover Letter AI)</span>
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Создавайте персонализированные, живые сопроводительные письма за 10 секунд без шаблонов и артефактов.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="text-xs text-primary border-primary/30 bg-primary/10 flex items-center gap-1.5 py-1">
+            <Globe className="w-3.5 h-3.5" />
+            <span>Язык: {detectedLang === "en" ? "English" : "Русский"}</span>
+          </Badge>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -93,12 +141,12 @@ export default function CoverLetterPage() {
                 <span>Параметры вакансии</span>
               </CardTitle>
               <CardDescription className="text-xs">
-                Укажите данные для генерации письма с помощью нейросети
+                Подпись автора автоматически подтягивается из вашего профиля ({userProfile.name})
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3.5 text-xs">
               <div>
-                <Label htmlFor="company-name" className="text-xs">Название компании</Label>
+                <Label htmlFor="company-name" className="text-xs">Название компании *</Label>
                 <Input
                   id="company-name"
                   value={company}
@@ -109,7 +157,7 @@ export default function CoverLetterPage() {
               </div>
 
               <div>
-                <Label htmlFor="role-name" className="text-xs">Целевая должность</Label>
+                <Label htmlFor="role-name" className="text-xs">Целевая должность *</Label>
                 <Input
                   id="role-name"
                   value={role}
@@ -120,16 +168,15 @@ export default function CoverLetterPage() {
               </div>
 
               <div>
-                <Label htmlFor="tone-select" className="text-xs">Тональность письма</Label>
-                <Select value={tone} onValueChange={(val) => val && setTone(val)}>
+                <Label htmlFor="tone-select" className="text-xs">Тональность письма *</Label>
+                <Select value={tone} onValueChange={(val) => val && setTone(val as any)}>
                   <SelectTrigger id="tone-select" className="mt-1 text-xs">
                     <SelectValue placeholder="Выберите стиль" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="professional">👔 Профессиональный и сбалансированный</SelectItem>
-                    <SelectItem value="bold">🚀 Уверенный и результативный</SelectItem>
+                    <SelectItem value="enthusiastic">🚀 Уверенный и результативный</SelectItem>
                     <SelectItem value="concise">⚡ Краткий и ёмкий (3 абзаца)</SelectItem>
-                    <SelectItem value="startup">💡 Энергичный для стартапа</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -156,7 +203,7 @@ export default function CoverLetterPage() {
                 {isGenerating ? (
                   <>
                     <Sparkles className="w-4 h-4 mr-2 animate-spin" />
-                    Нейросеть составляет письмо...
+                    Составляем персонализированное письмо...
                   </>
                 ) : (
                   <>
@@ -179,7 +226,7 @@ export default function CoverLetterPage() {
                   <span>Сгенерированное письмо</span>
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  Доступно для редактирования • {letterContent.split(/\s+/).filter(Boolean).length} слов • ~1 мин чтения
+                  Доступно для редактирования • {letterContent.split(/\s+/).filter(Boolean).length} слов • Автор: {userProfile.name}
                 </CardDescription>
               </div>
 
@@ -228,15 +275,15 @@ export default function CoverLetterPage() {
                   <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-400 border-emerald-500/30">
                     Готово к отправке
                   </Badge>
-                  <span>Формат: чистый текст без таблиц для 100% совместимости с ATS</span>
+                  <span>Чистый человеческий текст без нейрозвёздочек и решёток</span>
                 </span>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setLetterContent(cleanAIMarkdownArtifacts(SAMPLE_GENERATED_LETTER))}
+                  onClick={handleGenerate}
                   className="h-7 text-[11px] text-muted-foreground hover:text-foreground cursor-pointer"
                 >
-                  <RotateCcw className="w-3 h-3 mr-1" /> Сбросить
+                  <RotateCcw className="w-3 h-3 mr-1" /> Переписать
                 </Button>
               </div>
             </CardContent>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Search,
   Filter,
@@ -13,6 +14,10 @@ import {
   MoveRight,
   Trash2,
   Edit3,
+  ScanSearch,
+  PenTool,
+  RotateCcw,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,14 +32,27 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DEMO_APPLICATIONS } from "@/lib/demo-data";
 import { STAGE_COLUMNS, JobApplication, ApplicationStage } from "@/types";
 import { stringToColor, relativeTime } from "@/lib/utils";
+import { useApp } from "@/context/AppContext";
 
 export default function TrackerPage() {
-  const [applications, setApplications] = useState<JobApplication[]>(DEMO_APPLICATIONS);
+  const router = useRouter();
+  const {
+    applications,
+    moveStage,
+    deleteApplication,
+    resetToDemo,
+    clearAllApplications,
+    setIsAddJobModalOpen,
+    setScannerTargetJob,
+    setCoverLetterTargetJob,
+    showToast,
+  } = useApp();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedJob, setSelectedJob] = useState<JobApplication | null>(null);
 
@@ -48,23 +66,21 @@ export default function TrackerPage() {
     );
   });
 
-  // Move card to next or previous stage
-  const moveStage = (appId: string, newStage: ApplicationStage) => {
-    setApplications((prev) =>
-      prev.map((app) =>
-        app.id === appId
-          ? { ...app, stage: newStage, updated_at: new Date().toISOString() }
-          : app
-      )
-    );
-    if (selectedJob && selectedJob.id === appId) {
-      setSelectedJob((prev) => (prev ? { ...prev, stage: newStage } : null));
-    }
+  const handleInspectInScanner = (app: JobApplication) => {
+    setScannerTargetJob({
+      company: app.company,
+      position: app.position,
+      description: app.job_description || `Требования к роли ${app.position} в компании ${app.company}. Необходим релевантный опыт, знание современных инструментов и участие в запуске ключевых фич.`,
+    });
+    router.push("/scanner");
   };
 
-  const deleteApp = (appId: string) => {
-    setApplications((prev) => prev.filter((a) => a.id !== appId));
-    setSelectedJob(null);
+  const handleGenerateCoverLetter = (app: JobApplication) => {
+    setCoverLetterTargetJob({
+      company: app.company,
+      position: app.position,
+    });
+    router.push("/cover-letter");
   };
 
   return (
@@ -81,43 +97,36 @@ export default function TrackerPage() {
           />
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline" className="text-xs py-1 px-3 bg-muted/40">
             Всего в пайплайне: <span className="font-bold ml-1 text-foreground">{applications.length}</span>
           </Badge>
+
+          {/* Database management dropdown (Сбросить демо / Очистить базу) */}
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button variant="outline" size="sm" className="text-xs border-border/80">
+                  <RotateCcw className="w-3.5 h-3.5 mr-1 text-muted-foreground" />
+                  База данных
+                </Button>
+              }
+            />
+            <DropdownMenuContent align="end" className="text-xs">
+              <DropdownMenuItem onClick={resetToDemo} className="cursor-pointer">
+                ↺ Восстановить демо-вакансии (10 шт.)
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={clearAllApplications} className="text-rose-400 focus:text-rose-400 cursor-pointer">
+                🗑 Очистить базу для личных откликов
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <Button
             size="sm"
-            onClick={() => {
-              const company = prompt("Введите название компании (например: Ozon):");
-              const position = prompt("Введите должность (например: Senior Go Developer):");
-              if (company && position) {
-                const newApp: JobApplication = {
-                  id: String(Date.now()),
-                  user_id: "demo",
-                  company,
-                  position,
-                  url: null,
-                  stage: "wishlist",
-                  salary_min: 250000,
-                  salary_max: 350000,
-                  location: "Москва / Удаленно",
-                  remote: true,
-                  notes: "Новый отклик добавлен вручную",
-                  job_description: null,
-                  resume_version: "Версия 1",
-                  cover_letter: null,
-                  contact_name: null,
-                  contact_email: null,
-                  applied_at: new Date().toISOString(),
-                  followed_up_at: null,
-                  next_follow_up: null,
-                  created_at: new Date().toISOString(),
-                  updated_at: new Date().toISOString(),
-                };
-                setApplications([newApp, ...applications]);
-              }
-            }}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold"
+            onClick={() => setIsAddJobModalOpen(true)}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold cursor-pointer"
           >
             <Plus className="w-4 h-4 mr-1" />
             Быстрое добавление
@@ -134,38 +143,37 @@ export default function TrackerPage() {
             return (
               <div
                 key={column.id}
-                className="w-80 shrink-0 bg-card/40 rounded-2xl border border-border/80 flex flex-col max-h-[calc(100vh-220px)]"
+                className="flex-1 min-w-[250px] max-w-[280px] bg-card/40 rounded-2xl border border-border/80 flex flex-col max-h-[calc(100vh-250px)]"
               >
                 {/* Column Header */}
                 <div className="p-3.5 border-b border-border/70 flex items-center justify-between bg-card/60 rounded-t-2xl">
                   <div className="flex items-center gap-2">
-                    <span className="text-base">{column.icon}</span>
-                    <span className="font-bold text-sm text-foreground">{column.title}</span>
+                    <span className="text-sm">{column.icon}</span>
+                    <h3 className="font-bold text-xs text-foreground tracking-tight">
+                      {column.title}
+                    </h3>
                   </div>
-                  <Badge
-                    variant="secondary"
-                    className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-muted text-muted-foreground"
-                  >
+                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
                     {columnApps.length}
-                  </Badge>
+                  </span>
                 </div>
 
-                {/* Column Cards Scrollable Area */}
-                <div className="p-2.5 overflow-y-auto space-y-2.5 flex-1">
+                {/* Column Cards Drop Area */}
+                <div className="p-2.5 flex-1 overflow-y-auto space-y-2.5">
                   {columnApps.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground text-xs border border-dashed border-border/60 rounded-xl">
-                      В этой колонке нет вакансий
+                    <div className="h-28 border border-dashed border-border/50 rounded-xl flex items-center justify-center text-[11px] text-muted-foreground/60 text-center px-4">
+                      Переместите карточку сюда
                     </div>
                   ) : (
                     columnApps.map((app) => (
                       <div
                         key={app.id}
-                        className="group bg-card rounded-xl p-3 border border-border/80 shadow-sm hover:border-primary/50 transition-all hover:shadow-md cursor-pointer relative"
                         onClick={() => setSelectedJob(app)}
+                        className="group relative p-3 rounded-xl border border-border/70 bg-card hover:border-primary/50 hover:shadow-md transition-all cursor-pointer"
                       >
-                        {/* Company & Role */}
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <div className="flex items-center gap-2.5">
+                        {/* Card Top: Company Avatar, Name, and Menu */}
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-2 overflow-hidden">
                             <div
                               className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ${stringToColor(
                                 app.company
@@ -198,23 +206,40 @@ export default function TrackerPage() {
                                 }
                               />
                               <DropdownMenuContent align="end" className="text-xs">
-                                <DropdownMenuItem onClick={() => moveStage(app.id, "screening")}>
-                                  Перевести в Скрининг
+                                <DropdownMenuItem onClick={() => handleInspectInScanner(app)} className="cursor-pointer">
+                                  <ScanSearch className="w-3.5 h-3.5 mr-2 text-primary" />
+                                  Проверить в ATS-сканере
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => moveStage(app.id, "interviewing")}>
-                                  Перевести в Интервью
+                                <DropdownMenuItem onClick={() => handleGenerateCoverLetter(app)} className="cursor-pointer">
+                                  <PenTool className="w-3.5 h-3.5 mr-2 text-indigo-400" />
+                                  Создать сопроводительное письмо
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => moveStage(app.id, "offer")}>
-                                  Получен оффер 🎉
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => moveStage(app.id, "wishlist")} className="cursor-pointer">
+                                  📌 В Избранное
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => moveStage(app.id, "rejected")}>
-                                  Отметить отказ
+                                <DropdownMenuItem onClick={() => moveStage(app.id, "applied")} className="cursor-pointer">
+                                  📨 В Отправлено
                                 </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => moveStage(app.id, "screening")} className="cursor-pointer">
+                                  🔍 В Скрининг
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => moveStage(app.id, "interviewing")} className="cursor-pointer">
+                                  📞 В Интервью
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => moveStage(app.id, "offer")} className="cursor-pointer text-emerald-400">
+                                  🎉 Получен оффер
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => moveStage(app.id, "rejected")} className="cursor-pointer">
+                                  ❌ Отказ
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
                                 <DropdownMenuItem
-                                  onClick={() => deleteApp(app.id)}
-                                  className="text-red-400 focus:text-red-400"
+                                  onClick={() => deleteApplication(app.id)}
+                                  className="text-rose-400 focus:text-rose-400 cursor-pointer"
                                 >
-                                  Удалить
+                                  <Trash2 className="w-3.5 h-3.5 mr-2" />
+                                  Удалить карточку
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -258,7 +283,7 @@ export default function TrackerPage() {
       {/* Detailed Modal for viewing and changing an application */}
       {selectedJob && (
         <Dialog open={!!selectedJob} onOpenChange={() => setSelectedJob(null)}>
-          <DialogContent className="max-w-lg bg-card border-border">
+          <DialogContent className="max-w-lg bg-card border-border text-foreground">
             <DialogHeader>
               <div className="flex items-center gap-3">
                 <div
@@ -276,32 +301,50 @@ export default function TrackerPage() {
             </DialogHeader>
 
             <div className="space-y-4 py-3 text-xs">
+              {/* Quick Actions row */}
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    handleInspectInScanner(selectedJob);
+                    setSelectedJob(null);
+                  }}
+                  className="text-xs justify-center cursor-pointer"
+                >
+                  <ScanSearch className="w-3.5 h-3.5 mr-1.5 text-primary" />
+                  ATS-аудит резюме
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    handleGenerateCoverLetter(selectedJob);
+                    setSelectedJob(null);
+                  }}
+                  className="text-xs justify-center cursor-pointer"
+                >
+                  <PenTool className="w-3.5 h-3.5 mr-1.5 text-indigo-400" />
+                  Написать письмо
+                </Button>
+              </div>
+
               {/* Quick Move Stage Selector */}
               <div>
                 <label className="text-xs font-semibold text-muted-foreground block mb-1.5">
                   Переместить на этап:
                 </label>
-                <div className="grid grid-cols-4 gap-1.5">
-                  {STAGE_COLUMNS.slice(0, 4).map((col) => (
+                <div className="grid grid-cols-3 gap-1.5">
+                  {STAGE_COLUMNS.map((col) => (
                     <Button
                       key={col.id}
                       size="sm"
                       variant={selectedJob.stage === col.id ? "default" : "outline"}
-                      className={`text-[11px] h-8 ${selectedJob.stage === col.id ? "bg-primary text-primary-foreground font-bold" : ""}`}
-                      onClick={() => moveStage(selectedJob.id, col.id)}
-                    >
-                      {col.icon} {col.title}
-                    </Button>
-                  ))}
-                </div>
-                <div className="grid grid-cols-3 gap-1.5 mt-1.5">
-                  {STAGE_COLUMNS.slice(4).map((col) => (
-                    <Button
-                      key={col.id}
-                      size="sm"
-                      variant={selectedJob.stage === col.id ? "default" : "outline"}
-                      className={`text-[11px] h-8 ${selectedJob.stage === col.id ? "bg-primary text-primary-foreground font-bold" : ""}`}
-                      onClick={() => moveStage(selectedJob.id, col.id)}
+                      className={`text-[11px] h-8 cursor-pointer ${selectedJob.stage === col.id ? "bg-primary text-primary-foreground font-bold" : ""}`}
+                      onClick={() => {
+                        moveStage(selectedJob.id, col.id);
+                        setSelectedJob({ ...selectedJob, stage: col.id });
+                      }}
                     >
                       {col.icon} {col.title}
                     </Button>
@@ -325,24 +368,13 @@ export default function TrackerPage() {
                 </div>
               </div>
 
-              {/* Recruiter / Contact details */}
-              {selectedJob.contact_name && (
-                <div className="p-3 bg-muted/30 rounded-xl border border-border/60">
-                  <span className="text-muted-foreground block text-[10px] uppercase font-bold">Рекрутер / Контакт</span>
-                  <div className="flex items-center justify-between mt-1">
-                    <span className="font-semibold text-foreground">{selectedJob.contact_name}</span>
-                    <span className="text-muted-foreground">{selectedJob.contact_email || "Telegram"}</span>
-                  </div>
-                </div>
-              )}
-
               {/* Notes */}
               <div>
                 <span className="text-muted-foreground block text-[10px] uppercase font-bold mb-1">
-                  Заметки и история собеседований
+                  Заметки и история отклика
                 </span>
                 <div className="p-3 bg-background/50 rounded-xl border border-border text-xs leading-relaxed text-foreground">
-                  {selectedJob.notes || "Заметок пока нет."}
+                  {selectedJob.notes || selectedJob.job_description || "Заметок пока нет."}
                 </div>
               </div>
             </div>
@@ -351,8 +383,11 @@ export default function TrackerPage() {
               <Button
                 variant="destructive"
                 size="sm"
-                onClick={() => deleteApp(selectedJob.id)}
-                className="text-xs"
+                onClick={() => {
+                  deleteApplication(selectedJob.id);
+                  setSelectedJob(null);
+                }}
+                className="text-xs cursor-pointer"
               >
                 <Trash2 className="w-3.5 h-3.5 mr-1" />
                 Удалить
@@ -361,9 +396,9 @@ export default function TrackerPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => setSelectedJob(null)}
-                className="text-xs"
+                className="text-xs cursor-pointer"
               >
-                Сохранить
+                Закрыть
               </Button>
             </div>
           </DialogContent>
