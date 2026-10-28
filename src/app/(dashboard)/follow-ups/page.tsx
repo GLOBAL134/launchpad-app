@@ -47,51 +47,51 @@ export default function FollowUpsPage() {
   // Generate follow up items from demo applications
   const followUpItems: FollowUpItem[] = [
     {
-      app: DEMO_APPLICATIONS[1], // Stripe
+      app: DEMO_APPLICATIONS[1], // Т-Банк
       urgency: "today",
       daysElapsed: 7,
-      subject: "Checking In: Software Engineer, Payments Application — Alex Morgan",
-      template: `Hi ${DEMO_APPLICATIONS[1].contact_name || "Stripe Recruiting Team"},
+      subject: "Уточнение статуса рассмотрения резюме: Lead Frontend Engineer — Алексей Морозов",
+      template: `Здравствуйте, ${DEMO_APPLICATIONS[1].contact_name || "команда подбора Т-Банка"}!
 
-I hope your week is off to a great start.
+Надеюсь, ваша неделя проходит продуктивно.
 
-I submitted my application for the Software Engineer, Payments role 7 days ago and wanted to reiterate my enthusiasm for Stripe's infrastructure work. With my background in payment gateway integrations and low-latency APIs, I am confident I can contribute from day one.
+Я отправлял отклик на позицию Lead Frontend Engineer ровно 7 дней назад и хотел подтвердить свою высокую заинтересованность в работе над платформой Т-Банка. Обладая опытом оптимизации производительности микрофронтендов и построения дизайн-систем, я уверен, что смогу принести пользу команде.
 
-Please let me know if there are any additional portfolio samples or details I can provide to support my application.
+Подскажите, удалось ли ознакомиться с резюме, и требуются ли какие-либо дополнительные материалы с моей стороны?
 
-Best regards,
-Alex Morgan
-(555) 234-5678`,
+С уважением,
+Алексей Морозов
++7 (999) 123-45-67`,
     },
     {
-      app: DEMO_APPLICATIONS[9], // Netflix
+      app: DEMO_APPLICATIONS[9], // Selectel
       urgency: "upcoming",
       daysElapsed: 3,
-      subject: "Following Up: Senior SWE, UI Platform — Alex Morgan",
-      template: `Hello Netflix Talent Acquisition,
+      subject: "Отклик на вакансию: Infrastructure Platform Engineer — Алексей Морозов",
+      template: `Здравствуйте!
 
-I recently applied for the Senior SWE, UI Platform role. I've been closely following Netflix's open-source UI tooling and wanted to share a quick note of appreciation for your team's architecture.
+Недавно подавал отклик на роль Infrastructure Platform Engineer в Selectel. Очень импонирует технологический стек и подход вашей команды к масштабированию инфраструктуры.
 
-Looking forward to hearing about next steps when the team begins review.
+Буду рад получить обратную связь, когда резюме будет рассмотрено нанимающим менеджером.
 
-Warm regards,
-Alex Morgan`,
+Хорошего дня,
+Алексей Морозов`,
     },
     {
-      app: DEMO_APPLICATIONS[5], // Meta
+      app: DEMO_APPLICATIONS[5], // VK
       urgency: "overdue",
       daysElapsed: 12,
-      subject: "Status Update: Data Scientist, Ads Application — Alex Morgan",
-      template: `Hi Meta Recruiting Team,
+      subject: "Статус отклика: Data Scientist (Рекомендации) — Алексей Морозов",
+      template: `Здравствуйте, команда подбора VK!
 
-I am writing to check in on the status of my application for the Data Scientist, Ads role submitted two weeks ago. 
+Пишу вежливо уточнить статус рассмотрения моего отклика на вакансию Data Scientist в команду рекомендаций, направленного две недели назад.
 
-I remain very eager about the opportunity to contribute to Meta's advertiser measurement pipelines and would love to know if any further details are required on my end.
+Вакансия по-прежнему для меня в приоритете, так как мои наработки в графовых сетях напрямую перекликаются с задачами вашей умной ленты.
 
-Thank you so much for your time and guidance.
+Буду очень признателен за краткий апдейт по процессу отбора.
 
-Sincerely,
-Alex Morgan`,
+С уважением,
+Алексей Морозов`,
     },
   ];
 
@@ -113,16 +113,16 @@ Alex Morgan`,
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
             <BellRing className="w-6 h-6 text-amber-400" />
-            <span>Follow-Up Command Center</span>
+            <span>Центр напоминаний (Follow-Up)</span>
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Recruiters review dozens of applications daily. Smart, polite follow-ups increase interview conversion by ~34%.
+            Рекрутеры получают сотни откликов в день. Вежливые и своевременные напоминания повышают конверсию в интервью на ~34%.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-400 border-amber-500/30 font-semibold py-1">
-            {followUpItems.filter((i) => !sentMap[i.app.id]).length} Actions Pending
+            {followUpItems.filter((i) => !sentMap[i.app.id]).length} Напоминания ждут отправки
           </Badge>
         </div>
       </div>
@@ -135,8 +135,8 @@ Alex Morgan`,
               ⚡
             </div>
             <div>
-              <div className="text-xs text-muted-foreground font-medium">Optimal Window</div>
-              <div className="text-base font-bold text-foreground">5 - 7 Days Post-Apply</div>
+              <div className="text-xs text-muted-foreground font-medium">Оптимальное окно</div>
+              <div className="text-base font-bold text-foreground">5 — 7 дней после подачи</div>
             </div>
           </CardContent>
         </Card>
@@ -147,8 +147,8 @@ Alex Morgan`,
               📈
             </div>
             <div>
-              <div className="text-xs text-muted-foreground font-medium">Conversion Lift</div>
-              <div className="text-base font-bold text-emerald-400">+34% Reply Rate</div>
+              <div className="text-xs text-muted-foreground font-medium">Прирост конверсии</div>
+              <div className="text-base font-bold text-emerald-400">+34% к ответам HR</div>
             </div>
           </CardContent>
         </Card>
@@ -159,8 +159,8 @@ Alex Morgan`,
               ⏱️
             </div>
             <div>
-              <div className="text-xs text-muted-foreground font-medium">Avg Recruiter Turnaround</div>
-              <div className="text-base font-bold text-foreground">11.4 Days</div>
+              <div className="text-xs text-muted-foreground font-medium">Средний срок ответа</div>
+              <div className="text-base font-bold text-foreground">11.4 дней в IT</div>
             </div>
           </CardContent>
         </Card>
@@ -211,23 +211,23 @@ Alex Morgan`,
                           }`}
                         >
                           {isSent
-                            ? "✓ Sent"
+                            ? "✓ Отправлено"
                             : item.urgency === "overdue"
-                            ? "⚠️ Overdue (12+ Days)"
+                            ? "⚠️ Просрочено (12+ дней)"
                             : item.urgency === "today"
-                            ? "📅 Due Today (7 Days)"
-                            : "📋 Upcoming (3 Days)"}
+                            ? "📅 Написать сегодня (7 дней)"
+                            : "📋 Запланировано (через 3 дня)"}
                         </Badge>
                       </div>
 
                       <p className="text-xs text-muted-foreground mt-0.5 font-medium">
-                        {item.app.position} • Applied {relativeTime(item.app.applied_at || item.app.created_at)}
+                        {item.app.position} • Отклик {relativeTime(item.app.applied_at || item.app.created_at)}
                       </p>
 
                       {item.app.contact_name && (
                         <p className="text-[11px] text-primary mt-1 flex items-center gap-1">
                           <UserCheck className="w-3 h-3" />
-                          <span>Contact: {item.app.contact_name}</span>
+                          <span>Рекрутер: {item.app.contact_name}</span>
                         </p>
                       )}
                     </div>
@@ -237,7 +237,7 @@ Alex Morgan`,
                   <div className="flex items-center gap-2.5 self-end lg:self-center">
                     {isSent ? (
                       <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1.5">
-                        <Check className="w-4 h-4" /> Follow-up recorded
+                        <Check className="w-4 h-4" /> Напоминание отправлено
                       </span>
                     ) : (
                       <>
@@ -248,7 +248,7 @@ Alex Morgan`,
                           className="text-xs border-border"
                         >
                           <Mail className="w-3.5 h-3.5 mr-1.5 text-primary" />
-                          View Draft
+                          Открыть шаблон
                         </Button>
                         <Button
                           size="sm"
@@ -256,7 +256,7 @@ Alex Morgan`,
                           className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold shadow-sm shadow-primary/20"
                         >
                           <Send className="w-3.5 h-3.5 mr-1.5" />
-                          Mark Sent
+                          Отметить отправленным
                         </Button>
                       </>
                     )}
@@ -267,7 +267,7 @@ Alex Morgan`,
                 {!isSent && (
                   <div className="mt-4 pt-3 border-t border-border/50 text-xs text-muted-foreground bg-background/40 p-3 rounded-lg font-mono">
                     <span className="text-[10px] uppercase font-bold text-foreground/80 block mb-1">
-                      Subject: {item.subject}
+                      Тема: {item.subject}
                     </span>
                     <p className="line-clamp-2 italic">"{item.template}"</p>
                   </div>
@@ -285,26 +285,26 @@ Alex Morgan`,
             <DialogHeader>
               <div className="flex items-center gap-2 text-primary font-semibold text-xs">
                 <Sparkles className="w-4 h-4" />
-                <span>AI Polished Follow-Up Message</span>
+                <span>Готовое письмо для отправки рекрутеру</span>
               </div>
               <DialogTitle className="text-lg font-bold">
-                Follow Up with {selectedItem.app.company}
+                Follow-Up в компанию {selectedItem.app.company}
               </DialogTitle>
               <DialogDescription className="text-xs">
-                For role: {selectedItem.app.position}
+                Позиция: {selectedItem.app.position}
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-3 py-2 text-xs">
               <div>
-                <span className="text-muted-foreground block text-[11px] font-semibold mb-1">Subject Line</span>
+                <span className="text-muted-foreground block text-[11px] font-semibold mb-1">Тема сообщения</span>
                 <div className="p-2.5 rounded-lg bg-background border border-border font-mono text-xs text-foreground">
                   {selectedItem.subject}
                 </div>
               </div>
 
               <div>
-                <span className="text-muted-foreground block text-[11px] font-semibold mb-1">Email Body</span>
+                <span className="text-muted-foreground block text-[11px] font-semibold mb-1">Текст сообщения</span>
                 <Textarea
                   rows={9}
                   defaultValue={selectedItem.template}
@@ -323,12 +323,12 @@ Alex Morgan`,
                 {copied ? (
                   <>
                     <Check className="w-3.5 h-3.5 mr-1 text-emerald-400" />
-                    Copied to Clipboard
+                    Скопировано в буфер
                   </>
                 ) : (
                   <>
                     <Copy className="w-3.5 h-3.5 mr-1" />
-                    Copy Body Text
+                    Копировать текст
                   </>
                 )}
               </Button>
@@ -338,7 +338,7 @@ Alex Morgan`,
                 className="bg-primary text-primary-foreground text-xs font-semibold"
               >
                 <Check className="w-3.5 h-3.5 mr-1" />
-                Mark as Sent Today
+                Отметить отправленным
               </Button>
             </DialogFooter>
           </DialogContent>

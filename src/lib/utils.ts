@@ -9,29 +9,29 @@ export function cn(...inputs: ClassValue[]) {
 const REFERENCE_TIME = new Date("2026-10-28T00:00:00Z").getTime();
 
 /**
- * Format a date string relative to now
+ * Format a date string relative to now (in Russian)
  */
 export function relativeTime(dateStr: string): string {
-  if (!dateStr) return "Recently";
+  if (!dateStr) return "Недавно";
   const date = new Date(dateStr);
   const diffMs = REFERENCE_TIME - date.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-  if (diffDays < 0) return `in ${Math.abs(diffDays)}d`;
-  if (diffDays === 0) return "Today";
-  if (diffDays === 1) return "Yesterday";
-  if (diffDays < 7) return `${diffDays}d ago`;
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
-  return `${Math.floor(diffDays / 30)}mo ago`;
+  if (diffDays < 0) return `через ${Math.abs(diffDays)} дн.`;
+  if (diffDays === 0) return "Сегодня";
+  if (diffDays === 1) return "Вчера";
+  if (diffDays < 7) return `${diffDays} дн. назад`;
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} нед. назад`;
+  return `${Math.floor(diffDays / 30)} мес. назад`;
 }
 
 /**
- * Format a date for display
+ * Format a date for display (in Russian)
  */
 export function formatDate(dateStr: string): string {
   if (!dateStr) return "";
   const d = new Date(dateStr);
-  return `${d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
+  return `${d.toLocaleDateString("ru-RU", { month: "short", day: "numeric", year: "numeric" })}`;
 }
 
 /**

@@ -7,7 +7,6 @@ import {
   Plus,
   MoreVertical,
   MapPin,
-  DollarSign,
   Calendar,
   ExternalLink,
   ChevronRight,
@@ -75,7 +74,7 @@ export default function TrackerPage() {
         <div className="relative flex-1 max-w-md">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search by company, role, or location..."
+            placeholder="Поиск по компании, должности или городу..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 text-xs"
@@ -84,13 +83,13 @@ export default function TrackerPage() {
 
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="text-xs py-1 px-3 bg-muted/40">
-            Total Tracked: <span className="font-bold ml-1 text-foreground">{applications.length}</span>
+            Всего в пайплайне: <span className="font-bold ml-1 text-foreground">{applications.length}</span>
           </Badge>
           <Button
             size="sm"
             onClick={() => {
-              const company = prompt("Enter company name:");
-              const position = prompt("Enter job title:");
+              const company = prompt("Введите название компании (например: Ozon):");
+              const position = prompt("Введите должность (например: Senior Go Developer):");
               if (company && position) {
                 const newApp: JobApplication = {
                   id: String(Date.now()),
@@ -99,13 +98,13 @@ export default function TrackerPage() {
                   position,
                   url: null,
                   stage: "wishlist",
-                  salary_min: 150000,
-                  salary_max: 200000,
-                  location: "Remote",
+                  salary_min: 250000,
+                  salary_max: 350000,
+                  location: "Москва / Удаленно",
                   remote: true,
-                  notes: "Newly tracked application",
+                  notes: "Новый отклик добавлен вручную",
                   job_description: null,
-                  resume_version: "Standard v1",
+                  resume_version: "Версия 1",
                   cover_letter: null,
                   contact_name: null,
                   contact_email: null,
@@ -121,7 +120,7 @@ export default function TrackerPage() {
             className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold"
           >
             <Plus className="w-4 h-4 mr-1" />
-            Quick Add
+            Быстрое добавление
           </Button>
         </div>
       </div>
@@ -155,7 +154,7 @@ export default function TrackerPage() {
                 <div className="p-2.5 overflow-y-auto space-y-2.5 flex-1">
                   {columnApps.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground text-xs border border-dashed border-border/60 rounded-xl">
-                      No jobs in this stage
+                      В этой колонке нет вакансий
                     </div>
                   ) : (
                     columnApps.map((app) => (
@@ -200,22 +199,22 @@ export default function TrackerPage() {
                               />
                               <DropdownMenuContent align="end" className="text-xs">
                                 <DropdownMenuItem onClick={() => moveStage(app.id, "screening")}>
-                                  Move to Screening
+                                  Перевести в Скрининг
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => moveStage(app.id, "interviewing")}>
-                                  Move to Interview
+                                  Перевести в Интервью
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => moveStage(app.id, "offer")}>
-                                  Move to Offer 🎉
+                                  Получен оффер 🎉
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => moveStage(app.id, "rejected")}>
-                                  Mark Rejected
+                                  Отметить отказ
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() => deleteApp(app.id)}
                                   className="text-red-400 focus:text-red-400"
                                 >
-                                  Delete
+                                  Удалить
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -226,13 +225,13 @@ export default function TrackerPage() {
                         <div className="flex flex-wrap items-center gap-1.5 mt-2.5 text-[10px]">
                           {app.salary_min && (
                             <span className="font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                              ${(app.salary_min / 1000).toFixed(0)}k - ${(app.salary_max! / 1000).toFixed(0)}k
+                              {app.salary_min.toLocaleString("ru-RU")} — {app.salary_max!.toLocaleString("ru-RU")} ₽
                             </span>
                           )}
                           {app.location && (
                             <span className="px-1.5 py-0.5 rounded bg-muted text-muted-foreground flex items-center gap-1">
                               <MapPin className="w-2.5 h-2.5" />
-                              {app.location.split(",")[0]}
+                              {app.location.split("/")[0].trim()}
                             </span>
                           )}
                         </div>
@@ -242,7 +241,7 @@ export default function TrackerPage() {
                           <span>{relativeTime(app.applied_at || app.created_at)}</span>
                           {app.next_follow_up && (
                             <span className="text-amber-400 font-semibold flex items-center gap-1">
-                              Follow-up due
+                              Пора написать
                             </span>
                           )}
                         </div>
@@ -280,7 +279,7 @@ export default function TrackerPage() {
               {/* Quick Move Stage Selector */}
               <div>
                 <label className="text-xs font-semibold text-muted-foreground block mb-1.5">
-                  Change Pipeline Stage:
+                  Переместить на этап:
                 </label>
                 <div className="grid grid-cols-4 gap-1.5">
                   {STAGE_COLUMNS.slice(0, 4).map((col) => (
@@ -313,26 +312,26 @@ export default function TrackerPage() {
               {/* Compensation & Location */}
               <div className="grid grid-cols-2 gap-3 p-3 bg-muted/30 rounded-xl border border-border/60">
                 <div>
-                  <span className="text-muted-foreground block text-[10px] uppercase font-bold">Salary Range</span>
+                  <span className="text-muted-foreground block text-[10px] uppercase font-bold">Уровень дохода</span>
                   <span className="font-semibold text-emerald-400 text-sm">
                     {selectedJob.salary_min
-                      ? `$${(selectedJob.salary_min / 1000).toFixed(0)}k - $${(selectedJob.salary_max! / 1000).toFixed(0)}k / year`
-                      : "Not specified"}
+                      ? `${selectedJob.salary_min.toLocaleString("ru-RU")} — ${selectedJob.salary_max!.toLocaleString("ru-RU")} ₽`
+                      : "Не указан"}
                   </span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground block text-[10px] uppercase font-bold">Location</span>
-                  <span className="text-foreground text-sm">{selectedJob.location || "Remote"}</span>
+                  <span className="text-muted-foreground block text-[10px] uppercase font-bold">Локация</span>
+                  <span className="text-foreground text-sm">{selectedJob.location || "Удаленно"}</span>
                 </div>
               </div>
 
               {/* Recruiter / Contact details */}
               {selectedJob.contact_name && (
                 <div className="p-3 bg-muted/30 rounded-xl border border-border/60">
-                  <span className="text-muted-foreground block text-[10px] uppercase font-bold">Primary Recruiter</span>
+                  <span className="text-muted-foreground block text-[10px] uppercase font-bold">Рекрутер / Контакт</span>
                   <div className="flex items-center justify-between mt-1">
                     <span className="font-semibold text-foreground">{selectedJob.contact_name}</span>
-                    <span className="text-muted-foreground">{selectedJob.contact_email || "No email listed"}</span>
+                    <span className="text-muted-foreground">{selectedJob.contact_email || "Telegram"}</span>
                   </div>
                 </div>
               )}
@@ -340,10 +339,10 @@ export default function TrackerPage() {
               {/* Notes */}
               <div>
                 <span className="text-muted-foreground block text-[10px] uppercase font-bold mb-1">
-                  Interview Notes & History
+                  Заметки и история собеседований
                 </span>
                 <div className="p-3 bg-background/50 rounded-xl border border-border text-xs leading-relaxed text-foreground">
-                  {selectedJob.notes || "No notes recorded yet."}
+                  {selectedJob.notes || "Заметок пока нет."}
                 </div>
               </div>
             </div>
@@ -356,7 +355,7 @@ export default function TrackerPage() {
                 className="text-xs"
               >
                 <Trash2 className="w-3.5 h-3.5 mr-1" />
-                Remove
+                Удалить
               </Button>
               <Button
                 variant="outline"
@@ -364,7 +363,7 @@ export default function TrackerPage() {
                 onClick={() => setSelectedJob(null)}
                 className="text-xs"
               >
-                Done
+                Сохранить
               </Button>
             </div>
           </DialogContent>

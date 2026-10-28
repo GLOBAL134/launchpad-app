@@ -56,14 +56,14 @@ export default function DashboardOverviewPage() {
           <div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/20 text-primary border border-primary/30 mb-2">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Job Hunt Season • Week 4</span>
+              <span>Активный поиск • Неделя 4</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-              Welcome back, Alex! 👋
+              С возвращением, Алексей! 👋
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              You have <span className="text-foreground font-semibold">2 upcoming interviews</span> and{" "}
-              <span className="text-amber-400 font-semibold">{followUpQueue.length} follow-ups</span> waiting for action.
+              У вас <span className="text-foreground font-semibold">2 назначенных интервью</span> и{" "}
+              <span className="text-amber-400 font-semibold">{followUpQueue.length} напоминания</span> требуют отправки письма рекрутерам.
             </p>
           </div>
 
@@ -71,13 +71,13 @@ export default function DashboardOverviewPage() {
             <Link href="/scanner">
               <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold shadow-md shadow-primary/20">
                 <ScanSearch className="w-4 h-4 mr-1.5" />
-                Scan Resume
+                Проверить резюме
               </Button>
             </Link>
             <Link href="/cover-letter">
               <Button size="sm" variant="outline" className="text-xs font-semibold border-border">
                 <PenTool className="w-4 h-4 mr-1.5 text-primary" />
-                Draft Letter
+                Создать письмо
               </Button>
             </Link>
           </div>
@@ -90,7 +90,7 @@ export default function DashboardOverviewPage() {
         <Card className="bg-card/70 border-border/80">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Active In Pipeline
+              В активном пайплайне
             </CardTitle>
             <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
               <Briefcase className="w-4 h-4" />
@@ -99,8 +99,8 @@ export default function DashboardOverviewPage() {
           <CardContent>
             <div className="text-2xl font-black">{activeCount}</div>
             <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-              <span className="text-emerald-400 font-semibold">+3 this week</span>
-              <span>across 8 companies</span>
+              <span className="text-emerald-400 font-semibold">+3 на этой неделе</span>
+              <span>в 8 компаниях</span>
             </p>
           </CardContent>
         </Card>
@@ -109,7 +109,7 @@ export default function DashboardOverviewPage() {
         <Card className="bg-card/70 border-border/80">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Response Rate
+              Конверсия в ответ
             </CardTitle>
             <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
               <TrendingUp className="w-4 h-4" />
@@ -118,8 +118,8 @@ export default function DashboardOverviewPage() {
           <CardContent>
             <div className="text-2xl font-black">{DEMO_ANALYTICS.response_rate}%</div>
             <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-              <span className="text-emerald-400 font-semibold">+18% above</span>
-              <span>industry avg (22%)</span>
+              <span className="text-emerald-400 font-semibold">+18% выше</span>
+              <span>среднего по IT (22%)</span>
             </p>
           </CardContent>
         </Card>
@@ -128,7 +128,7 @@ export default function DashboardOverviewPage() {
         <Card className="bg-card/70 border-border/80">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Interviews Scheduled
+              Назначено интервью
             </CardTitle>
             <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
               <Calendar className="w-4 h-4" />
@@ -137,7 +137,7 @@ export default function DashboardOverviewPage() {
           <CardContent>
             <div className="text-2xl font-black">{interviewCount}</div>
             <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-              <span className="text-amber-400 font-semibold">Google & Notion</span>
+              <span className="text-amber-400 font-semibold">Яндекс и Ozon</span>
             </p>
           </CardContent>
         </Card>
@@ -146,7 +146,7 @@ export default function DashboardOverviewPage() {
         <Card className="bg-card/70 border-border/80 bg-gradient-to-br from-emerald-500/5 to-card">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Offers Received
+              Получено офферов
             </CardTitle>
             <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
               <CheckCircle2 className="w-4 h-4" />
@@ -155,8 +155,8 @@ export default function DashboardOverviewPage() {
           <CardContent>
             <div className="text-2xl font-black text-emerald-400">{offerCount}</div>
             <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-              <span className="text-emerald-400 font-semibold">Linear ($185k)</span>
-              <span>• Deadline Nov 3</span>
+              <span className="text-emerald-400 font-semibold">Авито (370 000 ₽)</span>
+              <span>• До 5 ноября</span>
             </p>
           </CardContent>
         </Card>
@@ -166,30 +166,30 @@ export default function DashboardOverviewPage() {
       <Card className="bg-card/70 border-border/80">
         <CardContent className="p-4 sm:p-5">
           <div className="flex items-center justify-between mb-3 text-xs">
-            <span className="font-semibold text-foreground">Pipeline Funnel Distribution</span>
+            <span className="font-semibold text-foreground">Распределение откликов по воронке</span>
             <Link href="/tracker" className="text-primary hover:underline flex items-center gap-1">
-              <span>View Full Kanban</span>
+              <span>Открыть Канбан</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
           <div className="h-3 w-full bg-muted/60 rounded-full overflow-hidden flex">
-            <div style={{ width: "20%" }} className="bg-slate-400" title="Wishlist: 2" />
-            <div style={{ width: "30%" }} className="bg-blue-500" title="Applied: 3" />
-            <div style={{ width: "10%" }} className="bg-cyan-500" title="Screening: 1" />
-            <div style={{ width: "10%" }} className="bg-amber-500" title="Interviewing: 1" />
-            <div style={{ width: "10%" }} className="bg-emerald-500" title="Offer: 1" />
-            <div style={{ width: "10%" }} className="bg-rose-500" title="Rejected: 1" />
-            <div style={{ width: "10%" }} className="bg-zinc-600" title="Ghosted: 1" />
+            <div style={{ width: "20%" }} className="bg-slate-400" title="Избранное: 2" />
+            <div style={{ width: "30%" }} className="bg-blue-500" title="Отправлено: 3" />
+            <div style={{ width: "10%" }} className="bg-cyan-500" title="Скрининг: 1" />
+            <div style={{ width: "10%" }} className="bg-amber-500" title="Интервью: 1" />
+            <div style={{ width: "10%" }} className="bg-emerald-500" title="Оффер: 1" />
+            <div style={{ width: "10%" }} className="bg-rose-500" title="Отказ: 1" />
+            <div style={{ width: "10%" }} className="bg-zinc-600" title="Без ответа: 1" />
           </div>
 
           <div className="mt-3 flex flex-wrap gap-4 text-[11px] text-muted-foreground">
-            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-slate-400" /> Wishlist (2)</div>
-            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500" /> Applied (3)</div>
-            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-cyan-500" /> Screening (1)</div>
-            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500" /> Interview (1)</div>
-            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500" /> Offer (1)</div>
-            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-500" /> Rejected (1)</div>
+            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-slate-400" /> Избранное (2)</div>
+            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500" /> Отправлено (3)</div>
+            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-cyan-500" /> Скрининг (1)</div>
+            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500" /> Интервью (1)</div>
+            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500" /> Оффер (1)</div>
+            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-500" /> Отказ (1)</div>
           </div>
         </CardContent>
       </Card>
@@ -204,15 +204,15 @@ export default function DashboardOverviewPage() {
               <div>
                 <CardTitle className="text-base font-bold flex items-center gap-2">
                   <BellRing className="w-4 h-4 text-amber-400" />
-                  <span>Action Required: Follow-Up Queue</span>
+                  <span>Требует действий: Очередь Follow-Up</span>
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  Recruiters forget. Sending a polite note boosts response by ~30%.
+                  Рекрутеры получают сотни писем. Вежливое напоминание увеличивает шанс ответа на ~34%.
                 </CardDescription>
               </div>
               <Link href="/follow-ups">
                 <Button variant="ghost" size="sm" className="text-xs text-primary hover:text-primary">
-                  View All
+                  Все напоминания
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               </Link>
@@ -244,12 +244,12 @@ export default function DashboardOverviewPage() {
 
                   <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/40">
                     <div className="text-left sm:text-right text-xs">
-                      <span className="text-amber-400 font-semibold block text-[11px]">Due Today</span>
-                      <span className="text-muted-foreground text-[10px]">Applied {relativeTime(app.applied_at || app.created_at)}</span>
+                      <span className="text-amber-400 font-semibold block text-[11px]">Пора написать</span>
+                      <span className="text-muted-foreground text-[10px]">Отклик {relativeTime(app.applied_at || app.created_at)}</span>
                     </div>
                     <Link href="/follow-ups">
                       <Button size="sm" variant="secondary" className="h-8 text-xs font-medium">
-                        Draft Email
+                        Готовый шаблон
                       </Button>
                     </Link>
                   </div>
@@ -262,14 +262,14 @@ export default function DashboardOverviewPage() {
           <Card className="bg-card/70 border-border/80">
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <div>
-                <CardTitle className="text-base font-bold">Recent Pipeline Activity</CardTitle>
+                <CardTitle className="text-base font-bold">Последние отклики</CardTitle>
                 <CardDescription className="text-xs">
-                  Your most recent job updates and submissions
+                  Актуальные обновления статусов в вашем пайплайне
                 </CardDescription>
               </div>
               <Link href="/tracker">
                 <Button variant="ghost" size="sm" className="text-xs text-primary">
-                  Manage Pipeline
+                  Все вакансии
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               </Link>
@@ -301,7 +301,7 @@ export default function DashboardOverviewPage() {
                     <div className="flex items-center gap-3">
                       <div className="text-right hidden sm:block">
                         <span className="text-xs text-muted-foreground">
-                          {app.salary_min ? `$${(app.salary_min / 1000).toFixed(0)}k - $${(app.salary_max! / 1000).toFixed(0)}k` : "Salary unspecified"}
+                          {app.salary_min ? `${app.salary_min.toLocaleString("ru-RU")} — ${app.salary_max!.toLocaleString("ru-RU")} ₽` : "Доход не указан"}
                         </span>
                       </div>
                       <Badge
@@ -334,21 +334,21 @@ export default function DashboardOverviewPage() {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-bold flex items-center gap-2">
                   <ScanSearch className="w-4 h-4 text-primary" />
-                  <span>Latest ATS Audit</span>
+                  <span>Последний ATS-аудит</span>
                 </CardTitle>
                 <Badge className="bg-emerald-500/20 text-emerald-400 text-xs font-bold">
-                  {DEMO_ATS_RESULT.match_score}% Score
+                  {DEMO_ATS_RESULT.match_score}% Совпадение
                 </Badge>
               </div>
               <CardDescription className="text-xs">
-                Audited against Google Senior Product Manager role
+                Аудит под вакансию: Яндекс Senior Product Manager
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-1.5">
                 <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Keywords Matched</span>
-                  <span className="font-semibold text-foreground">9 of 15 detected</span>
+                  <span className="text-muted-foreground">Ключевые навыки найдены</span>
+                  <span className="font-semibold text-foreground">9 из 15 распознано</span>
                 </div>
                 <Progress value={DEMO_ATS_RESULT.match_score} className="h-2" />
               </div>
@@ -356,7 +356,7 @@ export default function DashboardOverviewPage() {
               <div>
                 <p className="text-xs font-semibold text-red-400 mb-1.5 flex items-center gap-1">
                   <AlertCircle className="w-3.5 h-3.5" />
-                  <span>Missing Crucial Keywords:</span>
+                  <span>Пропущенные ключевые навыки:</span>
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {DEMO_ATS_RESULT.missing_keywords.slice(0, 4).map((kw) => (
@@ -373,7 +373,7 @@ export default function DashboardOverviewPage() {
               <div className="pt-2">
                 <Link href="/scanner">
                   <Button variant="outline" size="sm" className="w-full text-xs">
-                    View Complete Audit & Fixes
+                    Открыть полный аудит и правки
                     <ArrowUpRight className="w-3.5 h-3.5 ml-1.5" />
                   </Button>
                 </Link>
@@ -385,18 +385,18 @@ export default function DashboardOverviewPage() {
           <div className="p-4 rounded-xl border border-primary/30 bg-gradient-to-br from-primary/10 via-card to-card space-y-2.5">
             <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-wider">
               <Sparkles className="w-4 h-4" />
-              <span>AI Search Intelligence</span>
+              <span>AI-аналитика рынка</span>
             </div>
             <h4 className="text-sm font-semibold text-foreground">
-              Tuesday 10 AM is the highest reply window
+              Вторник, 10:00 — лучшее окно для откликов
             </h4>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Applications submitted between 9:00 AM and 11:00 AM on Tuesdays receive a 38% faster initial screening than applications submitted on weekends.
+              Отклики, отправленные во вторник с 9:00 до 11:00 утра, получают на 38% более быстрый ответ от HR-менеджеров по сравнению с откликами в выходные дни.
             </p>
             <div className="pt-1">
               <Link href="/tracker">
                 <span className="text-xs font-semibold text-primary hover:underline inline-flex items-center gap-1">
-                  Queue applications for tomorrow →
+                  Запланировать отклики на завтра →
                 </span>
               </Link>
             </div>
@@ -426,7 +426,7 @@ export default function DashboardOverviewPage() {
 
             <div className="space-y-3 py-2 text-xs">
               <div className="flex justify-between p-2 rounded bg-muted/40">
-                <span className="text-muted-foreground">Current Stage:</span>
+                <span className="text-muted-foreground">Текущий этап:</span>
                 <Badge variant="outline" className="capitalize text-xs font-semibold">
                   {selectedJob.stage}
                 </Badge>
@@ -434,23 +434,23 @@ export default function DashboardOverviewPage() {
 
               {selectedJob.salary_min && (
                 <div className="flex justify-between p-2 rounded bg-muted/40">
-                  <span className="text-muted-foreground">Target Salary:</span>
+                  <span className="text-muted-foreground">Доход:</span>
                   <span className="font-semibold text-emerald-400">
-                    ${(selectedJob.salary_min / 1000).toFixed(0)}k - ${(selectedJob.salary_max! / 1000).toFixed(0)}k
+                    {selectedJob.salary_min.toLocaleString("ru-RU")} — {selectedJob.salary_max!.toLocaleString("ru-RU")} ₽
                   </span>
                 </div>
               )}
 
               {selectedJob.location && (
                 <div className="flex justify-between p-2 rounded bg-muted/40">
-                  <span className="text-muted-foreground">Location:</span>
+                  <span className="text-muted-foreground">Локация:</span>
                   <span className="text-foreground">{selectedJob.location}</span>
                 </div>
               )}
 
               {selectedJob.notes && (
                 <div className="p-3 rounded-lg border border-border bg-background/50 space-y-1">
-                  <span className="font-semibold text-foreground block">Interview Notes:</span>
+                  <span className="font-semibold text-foreground block">Заметки по собеседованию:</span>
                   <p className="text-muted-foreground leading-relaxed">{selectedJob.notes}</p>
                 </div>
               )}
@@ -458,11 +458,11 @@ export default function DashboardOverviewPage() {
 
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" size="sm" onClick={() => setSelectedJob(null)} className="text-xs">
-                Close
+                Закрыть
               </Button>
               <Link href="/tracker">
                 <Button size="sm" className="bg-primary text-primary-foreground text-xs font-semibold">
-                  Open in Kanban
+                  Открыть в Канбане
                 </Button>
               </Link>
             </div>

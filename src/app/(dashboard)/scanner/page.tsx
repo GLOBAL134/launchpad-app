@@ -27,41 +27,40 @@ import { DEMO_ATS_RESULT } from "@/lib/demo-data";
 import { ATSScanResult } from "@/types";
 import { UpgradeModal } from "@/components/UpgradeModal";
 
-const DEFAULT_RESUME = `Alex Morgan
-Senior Product Manager | alex.morgan@email.com | (555) 234-5678 | San Francisco, CA
+const DEFAULT_RESUME = `Алексей Морозов
+Senior Product Manager | alex.morozov@email.ru | +7 (999) 123-45-67 | Москва / Удаленно
 
-SUMMARY
-Results-oriented Product Manager with 5+ years of experience leading cross-functional teams in SaaS environments. Strong background in product strategy, roadmap planning, and user research. Proven track record of launching user-centric features and improving product retention.
+О СЕБЕ
+Продуктовый менеджер с опытом 6+ лет в создании B2B SaaS и AI-платформ. Сильная экспертиза в продуктовой стратегии, формулировании гипотез, исследованиях пользователей (CJM, CustDev) и управлении бэклогом. Руководил кросс-функциональной командой из 12 инженеров и дизайнеров.
 
-EXPERIENCE
-Lead Product Manager — CloudScale Solutions (2022 - Present)
-• Owned the product roadmap for the core SaaS enterprise analytics product, prioritizing feature backlog.
-• Led daily scrum rituals, sprint planning, and backlog grooming for an engineering team of 8.
-• Authored comprehensive Product Requirements Documents (PRDs) and wireframes for 12+ major feature releases.
-• Collaborated closely with sales and customer support to gather user feedback and improve NPS by 18 points.
+ОПЫТ РАБОТЫ
+Ведущий Product Manager — CloudScale Solutions (2022 — настоящее время)
+• Управлял продуктовым роадмапом аналитической B2B-платформы (DAU вырос с 5 000 до 45 000).
+• Внедрил процесс регулярных A/B-тестирований, что увеличило конверсию в оплату на 24%.
+• Составлял детальные PRD, формулировал продуктовые метрики и координировал спринты по Scrum.
+• Совместно с инженерной командой интегрировал процессы с современным CI/CD пайплайном.
 
-Product Manager — FinTech Global (2019 - 2022)
-• Defined KPI targets and managed execution for the customer onboarding experience.
-• Conducted qualitative user interviews with over 60 enterprise clients to uncover workflows.
-• Partnered with UX design to redesign account management dashboard.
+Product Manager — FinTech Инновации (2019 — 2022)
+• Отвечал за онбординг юридических лиц и платёжный шлюз. Сократил time-to-first-value с 7 дней до 4 часов.
+• Провёл более 50 глубинных интервью с корпоративными клиентами.
 
-EDUCATION & SKILLS
-B.S. in Computer Science — University of California, Berkeley
-Skills: Product Management, Product Strategy, Roadmap Planning, User Research, Scrum, KPIs, PRDs, Sprint Planning.`;
+ОБРАЗОВАНИЕ И НАВЫКИ
+МГТУ им. Н.Э. Баумана, Информационные системы и технологии
+Навыки: Product Management, Product Strategy, Roadmap Planning, CustDev, Scrum, PRD, Unit-экономика, A/B-тестирование.`;
 
-const DEFAULT_JOB_DESC = `Senior Product Manager, Cloud Infrastructure & AI
-Company: Google LLC
-Location: Mountain View, CA / Remote
+const DEFAULT_JOB_DESC = `Senior Product Manager (AI & Cloud Services)
+Компания: Яндекс
+Локация: Москва / Удаленно
 
-About the Role:
-We are seeking a Senior Product Manager to accelerate developer velocity in our Cloud AI ecosystem. In this role, you will define product vision, align cross-functional collaboration between engineering, research, and sales, and deliver enterprise-ready CI/CD tooling.
+О команде и роли:
+Мы ищем Senior Product Manager для развития облачной AI-инфраструктуры. Вам предстоит определять видение продукта, выстраивать кросс-функциональное взаимодействие между разработкой, исследователями данных и продажами, а также запускать инструменты для масштабирования сервисов.
 
-Key Qualifications:
-• 5+ years in Product Management with Agile methodologies and CI/CD development pipelines.
-• Proven ability in stakeholder management, communicating across engineering leadership and executives.
-• Expertise with A/B testing methodologies and data-driven decisions to optimize conversion funnels.
-• Strong experience writing PRDs and collaborating with distributed cross-functional teams.
-• B.S. or equivalent practical experience in technical domain.`;
+Требования:
+• 5+ лет в управлении продуктом в технологических компаниях.
+• Понимание инженерных практик: Agile/Scrum методологии, CI/CD пайплайны и микросервисная архитектура.
+• Умение управлять стейкхолдерами и защищать стратегию перед C-level руководством.
+• Опыт проведения A/B-тестирования и data-driven подход к развитию продукта.
+• Опыт написания качественных PRD и работы с распределенными командами.`;
 
 export default function ATSScannerPage() {
   const [resumeText, setResumeText] = useState(DEFAULT_RESUME);

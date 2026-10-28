@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import {
   ScanSearch,
@@ -17,12 +18,51 @@ import {
   FileText,
   Target,
   ChevronRight,
+  ChevronDown,
+  Star,
+  Quote,
+  Briefcase,
+  Layers,
+  Award,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { UpgradeModal } from "@/components/UpgradeModal";
 
 export default function LandingPage() {
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [targetPlan, setTargetPlan] = useState<"pro_monthly" | "pro_quarterly">("pro_monthly");
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+
+  const handleOpenUpgrade = (plan: "pro_monthly" | "pro_quarterly") => {
+    setTargetPlan(plan);
+    setUpgradeOpen(true);
+  };
+
+  const faqs = [
+    {
+      q: "Что такое ATS и почему 75% резюме отсеиваются роботами?",
+      a: "ATS (Applicant Tracking System) — это автоматизированное ПО (Workday, Taleo, Greenhouse, E-Staff, Поток и др.), которое парсит и фильтрует резюме соискателей до того, как их увидит человек. Если в тексте резюме не хватает точных ключевых слов из описания вакансии или используется несовместимое форматирование (таблицы, графика, многоколоночные блоки), кандидат автоматически получает низкий рейтинг соответствия и отсеивается.",
+    },
+    {
+      q: "Как работает оплата тарифа через ЮKassa?",
+      a: "Мы подключены к официальному сертифицированному платежному шлюзу ЮKassa. Вы можете безопасно оплатить подписку любой российской банковской картой (МИР, Visa, Mastercard) или через Систему быстрых платежей (СБП). Платежи надежно зашифрованы по протоколу PCI DSS, чек высылается на вашу электронную почту согласно 54-ФЗ.",
+    },
+    {
+      q: "Безопасны ли мои персональные данные и файлы резюме?",
+      a: "Абсолютно. Ваши резюме и данные об откликах принадлежат только вам. Мы не передаем персональные данные сторонним рекрутинговым агентствам и не продаем базу резюме. Анализ текста осуществляется в изолированном контексте нейросети без обучения на ваших конфиденциальных данных.",
+    },
+    {
+      q: "Могу ли я полноценно использовать LaunchPad бесплатно?",
+      a: "Да! Базовый тариф Starter навсегда бесплатен. Вы получаете доступ к Канбан-доске откликов, до 15 активных вакансий в пайплайне, а также стартовому пакету сканирований резюме и генераций сопроводительных писем. Этого достаточно, чтобы оценить всю силу сервиса.",
+    },
+    {
+      q: "Подходит ли сервис для международного поиска работы (FAANG, удаленка, релокация)?",
+      a: "Да, наш AI-сканер и модуль сопроводительных писем одинаково эффективно работают как с вакансиями на русском языке (hh.ru, Хабр Карьера, Т-Банк, Яндекс), так и на английском языке (LinkedIn, RemoteOK, Wellfound, Crunchbase) с учётом стандартов международного резюме формата US/EU.",
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary selection:text-primary-foreground">
       {/* Top Navbar */}
@@ -44,28 +84,34 @@ export default function LandingPage() {
 
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
             <a href="#features" className="hover:text-foreground transition-colors">
-              Features
+              Возможности
             </a>
             <a href="#pain-points" className="hover:text-foreground transition-colors">
-              The Problem
+              Проблема
             </a>
             <a href="#workflow" className="hover:text-foreground transition-colors">
-              How it works
+              Как это работает
+            </a>
+            <a href="#reviews" className="hover:text-foreground transition-colors">
+              Отзывы
             </a>
             <a href="#pricing" className="hover:text-foreground transition-colors">
-              Pricing
+              Тарифы
+            </a>
+            <a href="#faq" className="hover:text-foreground transition-colors">
+              FAQ
             </a>
           </nav>
 
           <div className="flex items-center gap-3">
             <Link href="/dashboard">
               <Button variant="ghost" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-                Sign in
+                Войти
               </Button>
             </Link>
             <Link href="/dashboard">
               <Button className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20 font-medium">
-                Try Free Demo
+                Открыть демо
                 <ArrowRight className="w-4 h-4 ml-1.5" />
               </Button>
             </Link>
@@ -81,33 +127,33 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-primary/30 bg-primary/10 text-xs font-semibold text-primary mb-6 animate-pulse">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Built for the 2026 AI-driven Job Market</span>
+            <span>Платформа поиска работы 2026 с поддержкой нейросетей</span>
           </div>
 
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight max-w-4xl mx-auto leading-[1.1]">
-            Your AI Job Search{" "}
+            Ваш персональный командный центр{" "}
             <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-primary bg-clip-text text-transparent">
-              Command Center
+              поиска работы с ИИ
             </span>
           </h1>
 
           <p className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Stop losing opportunities to ATS black holes and messy spreadsheets.
-            Audit your resume with AI, organize pipeline stages, generate tailored letters,
-            and never miss a critical follow-up.
+            Хватит терять вакансии в черных дырах фильтров ATS и путаться в хаосе таблиц.
+            Анализируйте резюме с помощью ИИ, ведите прозрачную воронку откликов, создавайте точечные
+            сопроводительные письма и не упускайте важные фоллоу-апы.
           </p>
 
           <div className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/dashboard">
               <Button size="lg" className="h-12 px-8 text-base bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl shadow-primary/25 font-semibold">
-                Launch Workspace (Demo)
+                Запустить командный центр
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </Link>
             <Link href="/scanner">
               <Button size="lg" variant="outline" className="h-12 px-6 text-base border-border bg-card/50 hover:bg-card">
                 <ScanSearch className="w-4 h-4 mr-2 text-primary" />
-                Scan My Resume
+                Проверить резюме в ATS
               </Button>
             </Link>
           </div>
@@ -116,15 +162,15 @@ export default function LandingPage() {
           <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span>No credit card required</span>
+              <span>Без привязки банковской карты</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span>Free tier forever</span>
+              <span>Бесплатный базовый тариф навсегда</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span>Ready-to-use demo data preloaded</span>
+              <span>Официальная оплата через ЮKassa (МИР / СБП)</span>
             </div>
           </div>
 
@@ -138,7 +184,9 @@ export default function LandingPage() {
                 <span className="ml-2 font-mono text-[11px] text-muted-foreground/80">launchpad.app/tracker</span>
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="text-[10px] bg-primary/10 border-primary/30 text-primary">Live Workspace</Badge>
+                <Badge variant="outline" className="text-[10px] bg-primary/10 border-primary/30 text-primary">
+                  Интерактивное рабочее пространство
+                </Badge>
               </div>
             </div>
 
@@ -147,25 +195,25 @@ export default function LandingPage() {
               <div className="bg-background/60 rounded-xl p-3 border border-border/60">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-semibold flex items-center gap-1.5">
-                    <span>📌</span> Wishlist
+                    <span>📌</span> Избранное
                   </span>
                   <Badge variant="secondary" className="text-[10px] px-1.5 py-0">2</Badge>
                 </div>
                 <div className="space-y-2">
                   <div className="p-2.5 rounded-lg bg-card border border-border/80 text-xs shadow-sm">
-                    <p className="font-semibold text-foreground">Figma</p>
-                    <p className="text-muted-foreground text-[11px]">UX Researcher</p>
+                    <p className="font-semibold text-foreground">Т-Банк</p>
+                    <p className="text-muted-foreground text-[11px]">Senior Product Designer</p>
                     <div className="mt-2 flex items-center justify-between text-[10px] text-muted-foreground">
-                      <span className="text-emerald-400 font-mono">$140k - $190k</span>
-                      <span>Added 2d ago</span>
+                      <span className="text-emerald-400 font-mono">280 000 — 350 000 ₽</span>
+                      <span>2 дня назад</span>
                     </div>
                   </div>
                   <div className="p-2.5 rounded-lg bg-card border border-border/80 text-xs shadow-sm">
-                    <p className="font-semibold text-foreground">Airbnb</p>
-                    <p className="text-muted-foreground text-[11px]">Staff Search Eng</p>
+                    <p className="font-semibold text-foreground">Авито</p>
+                    <p className="text-muted-foreground text-[11px]">Lead Backend Go Developer</p>
                     <div className="mt-2 flex items-center justify-between text-[10px] text-muted-foreground">
-                      <span className="text-emerald-400 font-mono">$200k+</span>
-                      <span>Target role</span>
+                      <span className="text-emerald-400 font-mono">380 000+ ₽</span>
+                      <span>Целевая роль</span>
                     </div>
                   </div>
                 </div>
@@ -175,18 +223,18 @@ export default function LandingPage() {
               <div className="bg-background/60 rounded-xl p-3 border border-border/60">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-semibold flex items-center gap-1.5">
-                    <span>📨</span> Applied
+                    <span>📨</span> Отправлено
                   </span>
                   <Badge variant="secondary" className="text-[10px] px-1.5 py-0">3</Badge>
                 </div>
                 <div className="space-y-2">
                   <div className="p-2.5 rounded-lg bg-card border border-blue-500/40 text-xs shadow-sm relative overflow-hidden">
                     <div className="absolute top-0 left-0 bottom-0 w-1 bg-blue-500" />
-                    <p className="font-semibold text-foreground">Stripe</p>
-                    <p className="text-muted-foreground text-[11px]">Software Engineer, Payments</p>
+                    <p className="font-semibold text-foreground">Ozon</p>
+                    <p className="text-muted-foreground text-[11px]">Senior Frontend Engineer (React)</p>
                     <div className="mt-2 flex items-center justify-between text-[10px]">
-                      <span className="text-blue-400 font-medium">Follow-up: Today</span>
-                      <span className="text-muted-foreground">Applied 7d ago</span>
+                      <span className="text-blue-400 font-medium">Фоллоу-ап: Сегодня</span>
+                      <span className="text-muted-foreground">Отправлено 7 дн. назад</span>
                     </div>
                   </div>
                 </div>
@@ -196,17 +244,17 @@ export default function LandingPage() {
               <div className="bg-background/60 rounded-xl p-3 border border-border/60">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-semibold flex items-center gap-1.5">
-                    <span>📞</span> Interviewing
+                    <span>📞</span> Интервью
                   </span>
                   <Badge variant="secondary" className="text-[10px] px-1.5 py-0">1</Badge>
                 </div>
                 <div className="space-y-2">
                   <div className="p-2.5 rounded-lg bg-card border border-yellow-500/40 text-xs shadow-sm relative overflow-hidden">
                     <div className="absolute top-0 left-0 bottom-0 w-1 bg-yellow-500" />
-                    <p className="font-semibold text-foreground">Google</p>
+                    <p className="font-semibold text-foreground">Яндекс</p>
                     <p className="text-muted-foreground text-[11px]">Senior Product Manager</p>
                     <div className="mt-2 flex items-center justify-between text-[10px]">
-                      <span className="text-amber-400 font-medium">Tech Round Next</span>
+                      <span className="text-amber-400 font-medium">Технический этап завтра</span>
                       <span className="text-muted-foreground font-mono">94% ATS</span>
                     </div>
                   </div>
@@ -217,18 +265,18 @@ export default function LandingPage() {
               <div className="bg-background/60 rounded-xl p-3 border border-border/60">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-semibold flex items-center gap-1.5">
-                    <span>🎉</span> Offers
+                    <span>🎉</span> Офферы
                   </span>
                   <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-emerald-500/20 text-emerald-400">1</Badge>
                 </div>
                 <div className="space-y-2">
                   <div className="p-2.5 rounded-lg bg-card border border-emerald-500/40 text-xs shadow-sm relative overflow-hidden bg-emerald-500/5">
                     <div className="absolute top-0 left-0 bottom-0 w-1 bg-emerald-500" />
-                    <p className="font-semibold text-foreground">Linear</p>
-                    <p className="text-muted-foreground text-[11px]">Full Stack Engineer</p>
+                    <p className="font-semibold text-foreground">VK</p>
+                    <p className="text-muted-foreground text-[11px]">Principal ML Engineer</p>
                     <div className="mt-2 flex items-center justify-between text-[10px]">
-                      <span className="text-emerald-400 font-bold">$185,000 + Equity</span>
-                      <span className="text-muted-foreground">Expires Nov 3</span>
+                      <span className="text-emerald-400 font-bold">420 000 ₽ + Опционы</span>
+                      <span className="text-muted-foreground">До 3 ноября</span>
                     </div>
                   </div>
                 </div>
@@ -243,13 +291,14 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-xs uppercase font-bold text-red-400 tracking-wider mb-2">
-              The Brutal Reality
+              Суровая реальность рынка труда
             </h2>
             <h3 className="text-3xl sm:text-4xl font-bold tracking-tight">
-              Why applying online feels like shouting into an abyss
+              Почему отправка резюме вслепую превращается в крик в пустоту?
             </h3>
             <p className="mt-4 text-muted-foreground text-sm sm:text-base">
-              The modern hiring funnel is automated by bots. Candidates using outdated tools get buried in the screening filter.
+              Современный процесс найма автоматизирован алгоритмами. Соискатели с сильным опытом
+              отсеиваются роботами еще до того, как их резюме откроет человек.
             </p>
           </div>
 
@@ -259,9 +308,9 @@ export default function LandingPage() {
                 <div className="w-10 h-10 rounded-lg bg-red-500/10 text-red-400 flex items-center justify-center font-bold text-lg mb-4">
                   75%
                 </div>
-                <h4 className="font-semibold text-base mb-2">ATS Rejection Rate</h4>
+                <h4 className="font-semibold text-base mb-2">Автоматический отсев ATS</h4>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Three out of four resumes are rejected by applicant tracking software before a human recruiter ever sees them.
+                  3 из 4 резюме отклоняются роботами на этапе первичного скрининга из-за несовпадения ключевых слов или ошибок верстки.
                 </p>
               </CardContent>
             </Card>
@@ -271,9 +320,9 @@ export default function LandingPage() {
                 <div className="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold text-lg mb-4">
                   150+
                 </div>
-                <h4 className="font-semibold text-base mb-2">Applications Lost</h4>
+                <h4 className="font-semibold text-base mb-2">Потерянных откликов</h4>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Spreadsheets quickly become chaotic. Candidates forget where they applied, who the contact was, and which resume was sent.
+                  Таблицы Excel и заметки быстро превращаются в хаос. Кандидаты забывают, кому писали, кто HR и какую версию резюме отправляли.
                 </p>
               </CardContent>
             </Card>
@@ -281,11 +330,11 @@ export default function LandingPage() {
             <Card className="bg-card/70 border-border/80 hover:border-yellow-500/40 transition-colors">
               <CardContent className="p-6">
                 <div className="w-10 h-10 rounded-lg bg-yellow-500/10 text-yellow-400 flex items-center justify-center font-bold text-lg mb-4">
-                  45m
+                  45 мин
                 </div>
-                <h4 className="font-semibold text-base mb-2">Wasted on Each Letter</h4>
+                <h4 className="font-semibold text-base mb-2">На каждое письмо</h4>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Writing tailored cover letters from scratch drains hours every single day, leading to burnout and sloppy copy-paste errors.
+                  Ручное написание качественных сопроводительных писем отнимает часы, приводя к выгоранию и шаблонным ошибкам «копировать-вставить».
                 </p>
               </CardContent>
             </Card>
@@ -295,9 +344,9 @@ export default function LandingPage() {
                 <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-lg mb-4">
                   85%
                 </div>
-                <h4 className="font-semibold text-base mb-2">Complete Ghosting</h4>
+                <h4 className="font-semibold text-base mb-2">Игнорирование и молчание</h4>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Candidates never follow up because there is no reminder system. Yet timely follow-ups increase interview conversion by over 30%.
+                  Кандидаты не отправляют повторные напоминания. При этом вежливый и своевременный фоллоу-ап увеличивает конверсию в ответ на 30+%.
                 </p>
               </CardContent>
             </Card>
@@ -310,13 +359,13 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <Badge variant="outline" className="mb-3 text-primary border-primary/30 bg-primary/10">
-              Complete Feature Suite
+              Полный набор инструментов
             </Badge>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
-              Everything you need to turn applications into offers
+              Всё необходимое, чтобы превратить отклики в офферы
             </h2>
             <p className="mt-4 text-muted-foreground text-sm sm:text-base">
-              LaunchPad replaces 5 separate tools with an integrated command center.
+              LaunchPad заменяет 5 разрозненных сервисов и хаос в заметках единым удобным центром управления карьерой.
             </p>
           </div>
 
@@ -327,13 +376,14 @@ export default function LandingPage() {
                 <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center mb-5">
                   <ScanSearch className="w-6 h-6" />
                 </div>
-                <h3 className="text-lg font-bold mb-2">AI ATS Scanner</h3>
+                <h3 className="text-lg font-bold mb-2">AI ATS-сканер резюме</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Upload your resume and paste any job listing. Our LLM parses keyword density, formatting bugs, missing skills, and predicts your exact match percentage.
+                  Загрузите PDF или вставьте текст резюме и вакансии. Нейросеть оценит плотность ключевых навыков,
+                  риски форматирования и покажет точный процент соответствия алгоритмам отбора.
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-border/40 flex items-center justify-between text-xs font-medium text-blue-400">
-                <span>94% match target score</span>
+                <span>Целевой скор 90%+</span>
                 <ChevronRight className="w-4 h-4" />
               </div>
             </div>
@@ -344,13 +394,14 @@ export default function LandingPage() {
                 <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-5">
                   <Kanban className="w-6 h-6" />
                 </div>
-                <h3 className="text-lg font-bold mb-2">Kanban Pipeline Tracker</h3>
+                <h3 className="text-lg font-bold mb-2">Канбан-пайплайн откликов</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  A high-velocity visual board built specifically for job hunts. Track status from wishlist to offer with salary filters, company notes, and recruiter contacts.
+                  Высокоскоростная визуальная доска, созданная специально для соискателей. Отслеживайте стадии
+                  от сохранения до оффера, фиксируйте зарплатные вилки и контакты нанимающих менеджеров.
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-border/40 flex items-center justify-between text-xs font-medium text-emerald-400">
-                <span>No more spreadsheet clutter</span>
+                <span>Никакого хаоса в таблицах</span>
                 <ChevronRight className="w-4 h-4" />
               </div>
             </div>
@@ -361,13 +412,14 @@ export default function LandingPage() {
                 <div className="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center mb-5">
                   <PenTool className="w-6 h-6" />
                 </div>
-                <h3 className="text-lg font-bold mb-2">Smart Cover Letter Studio</h3>
+                <h3 className="text-lg font-bold mb-2">Студия сопроводительных писем</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Generate tailored, human-sounding cover letters in seconds based on your real experience and the specific requirements of the role.
+                  Генерируйте живые, убедительные и персонализированные письма за считанные секунды на базе вашего
+                  реального бэкграунда и ключевых требований целевой компании.
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-border/40 flex items-center justify-between text-xs font-medium text-purple-400">
-                <span>Custom tones & PDF export</span>
+                <span>Разные тональности и экспорт</span>
                 <ChevronRight className="w-4 h-4" />
               </div>
             </div>
@@ -378,13 +430,14 @@ export default function LandingPage() {
                 <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center mb-5">
                   <BellRing className="w-6 h-6" />
                 </div>
-                <h3 className="text-lg font-bold mb-2">Follow-Up Reminders</h3>
+                <h3 className="text-lg font-bold mb-2">Умный контроль фоллоу-апов</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Never let an application slip into silence. Get calculated reminders when 7, 14, or 21 days pass, complete with pre-drafted polite emails to send.
+                  Не позволяйте отклику раствориться в молчании. Получайте расчетные напоминания на 7-й, 14-й и 21-й день
+                  с уже составленными вежливыми письмами для отправки рекрутеру.
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-border/40 flex items-center justify-between text-xs font-medium text-amber-400">
-                <span>+30% response rate</span>
+                <span>+30% к конверсии в ответ</span>
                 <ChevronRight className="w-4 h-4" />
               </div>
             </div>
@@ -395,13 +448,14 @@ export default function LandingPage() {
                 <div className="w-12 h-12 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center mb-5">
                   <BarChart3 className="w-6 h-6" />
                 </div>
-                <h3 className="text-lg font-bold mb-2">Funnel Analytics</h3>
+                <h3 className="text-lg font-bold mb-2">Аналитика воронки найма</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  See where your candidates drop off. Understand which resume versions convert best, how long responses take, and what industries provide the highest yield.
+                  Узнайте, где отсеиваются отклики. Сравнивайте эффективность каналов поиска (hh.ru, Хабр, рефералы),
+                  среднее время ответа и конверсию каждого этапа воронки.
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-border/40 flex items-center justify-between text-xs font-medium text-rose-400">
-                <span>Data-driven job hunting</span>
+                <span>Поиск работы на основе данных</span>
                 <ChevronRight className="w-4 h-4" />
               </div>
             </div>
@@ -412,13 +466,14 @@ export default function LandingPage() {
                 <div className="w-12 h-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center mb-5">
                   <Zap className="w-6 h-6" />
                 </div>
-                <h3 className="text-lg font-bold mb-2">Instant 1-Click Capture</h3>
+                <h3 className="text-lg font-bold mb-2">Мгновенное добавление вакансий</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Clip openings from LinkedIn, Indeed, Greenhouse, or Lever directly to your pipeline in 1 click with parsed role titles and compensation.
+                  Быстро фиксируйте позиции с любых job-сайтов и Telegram-каналов в 1 клик с автоматическим выделением
+                  стека технологий, локации и зарплатной вилки.
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-border/40 flex items-center justify-between text-xs font-medium text-primary">
-                <span>Fastest workflow in the game</span>
+                <span>Экономия до 10 часов в неделю</span>
                 <ChevronRight className="w-4 h-4" />
               </div>
             </div>
@@ -431,51 +486,142 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-xs uppercase font-bold text-primary tracking-wider mb-2">
-              Simple 3-Step Process
+              Простой процесс из 3 шагов
             </h2>
             <h3 className="text-3xl sm:text-4xl font-bold tracking-tight">
-              From application to offer letter in record time
+              От первого отклика до заветного оффера в рекордные сроки
             </h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
             <div className="bg-card/70 border border-border p-6 rounded-2xl">
               <div className="text-3xl font-black text-primary/40 mb-3">01</div>
-              <h4 className="text-lg font-semibold mb-2">Save & Inspect</h4>
+              <h4 className="text-lg font-semibold mb-2">Сохраните и проверьте</h4>
               <p className="text-sm text-muted-foreground">
-                Paste the job listing and run the AI ATS scan to discover critical keyword gaps before you hit send.
+                Вставьте описание вакансии и запустите проверку в ATS-сканере, чтобы устранить пробелы в ключевых навыках до отправки.
               </p>
             </div>
             <div className="bg-card/70 border border-border p-6 rounded-2xl">
               <div className="text-3xl font-black text-primary/40 mb-3">02</div>
-              <h4 className="text-lg font-semibold mb-2">Tailor & Apply</h4>
+              <h4 className="text-lg font-semibold mb-2">Адаптируйте и откликнитесь</h4>
               <p className="text-sm text-muted-foreground">
-                Generate a custom cover letter and tailored summary bullet points matched to the job description requirements.
+                Сгенерируйте точечное сопроводительное письмо и усильте формулировки опыта под ожидания нанимающего менеджера.
               </p>
             </div>
             <div className="bg-card/70 border border-border p-6 rounded-2xl">
               <div className="text-3xl font-black text-primary/40 mb-3">03</div>
-              <h4 className="text-lg font-semibold mb-2">Track & Follow Up</h4>
+              <h4 className="text-lg font-semibold mb-2">Контролируйте воронку</h4>
               <p className="text-sm text-muted-foreground">
-                Move cards across your Kanban stages, receive automated follow-up reminders, and ace interview loops.
+                Передвигайте карточки по этапам Канбана, отправляйте напоминания вовремя и уверенно проходите интервью.
               </p>
             </div>
           </div>
         </div>
       </section>
 
+      {/* Reviews / Testimonials Section */}
+      <section id="reviews" className="py-24 border-t border-border/60">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <Badge variant="outline" className="mb-3 text-emerald-400 border-emerald-500/30 bg-emerald-500/10">
+              Истории успеха
+            </Badge>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
+              Специалисты, получившие офферы мечты
+            </h2>
+            <p className="mt-4 text-muted-foreground text-sm sm:text-base">
+              Посмотрите, как соискатели увеличили конверсию откликов и вышли на новый уровень дохода.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Review 1 */}
+            <div className="bg-card border border-border/80 rounded-2xl p-6 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-1 text-amber-400 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed italic mb-6">
+                  «Благодаря ATS-сканеру понял, почему мои отклики игнорировали крупные компании: в моем PDF не считывались
+                  библиотеки и архитектурные термины. Исправил формулировки — и получил 4 приглашения на интервью за первую же неделю!»
+                </p>
+              </div>
+              <div className="pt-4 border-t border-border/50 flex items-center justify-between">
+                <div>
+                  <h4 className="font-semibold text-sm text-foreground">Михаил Воронов</h4>
+                  <p className="text-xs text-muted-foreground">Lead Backend Developer, Т-Банк</p>
+                </div>
+                <Badge variant="secondary" className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  3 оффера за 18 дней
+                </Badge>
+              </div>
+            </div>
+
+            {/* Review 2 */}
+            <div className="bg-card border border-border/80 rounded-2xl p-6 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-1 text-amber-400 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed italic mb-6">
+                  «Студия сопроводительных писем сэкономила мне десятки часов. Письма получаются персонализированными и без
+                  шаблонной водянистости. А напоминания помогли реанимировать отклик, который в итоге стал моим оффером.»
+                </p>
+              </div>
+              <div className="pt-4 border-t border-border/50 flex items-center justify-between">
+                <div>
+                  <h4 className="font-semibold text-sm text-foreground">Елена Смирнова</h4>
+                  <p className="text-xs text-muted-foreground">Senior Product Manager, Ozon</p>
+                </div>
+                <Badge variant="secondary" className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  Конверсия +45%
+                </Badge>
+              </div>
+            </div>
+
+            {/* Review 3 */}
+            <div className="bg-card border border-border/80 rounded-2xl p-6 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-1 text-amber-400 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed italic mb-6">
+                  «Канбан-трекер невероятно удобен. Раньше вел Excel-таблицу на 60 строк и постоянно забывал, кто мне ответил,
+                  а кто нет. В LaunchPad вся воронка как на ладони, прямо как привычная рабочая Jira.»
+                </p>
+              </div>
+              <div className="pt-4 border-t border-border/50 flex items-center justify-between">
+                <div>
+                  <h4 className="font-semibold text-sm text-foreground">Артём Кузнецов</h4>
+                  <p className="text-xs text-muted-foreground">Senior QA Automation, Яндекс</p>
+                </div>
+                <Badge variant="secondary" className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  Зарплата +35%
+                </Badge>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing Section */}
-      <section id="pricing" className="py-24 border-t border-border/60">
+      <section id="pricing" className="py-24 border-t border-border/60 bg-muted/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <Badge variant="outline" className="mb-3 text-primary border-primary/30 bg-primary/10">
-              Fair & Transparent
+              Честные и прозрачные тарифы
             </Badge>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
-              Invest in your career, not overpriced subscriptions
+              Инвестируйте в карьеру, а не в переплаты
             </h2>
             <p className="mt-4 text-muted-foreground text-sm">
-              Competitors charge $40-$50/month. We give you all the power for half the price.
+              Официальная оплата через ЮKassa любыми российскими банковскими картами (МИР, Visa, Mastercard, СБП).
             </p>
           </div>
 
@@ -483,91 +629,145 @@ export default function LandingPage() {
             {/* Free Tier */}
             <div className="bg-card border border-border rounded-2xl p-6 flex flex-col justify-between">
               <div>
-                <h3 className="text-lg font-bold mb-1">Starter</h3>
-                <p className="text-xs text-muted-foreground mb-4">Essential tools for casual seekers</p>
-                <div className="text-3xl font-bold mb-6">0 ₽ <span className="text-xs font-normal text-muted-foreground">/ бесплатно</span></div>
+                <h3 className="text-lg font-bold mb-1">Базовый старт</h3>
+                <p className="text-xs text-muted-foreground mb-4">Для спокойного поиска и первого знакомства</p>
+                <div className="text-3xl font-bold mb-6">0 ₽ <span className="text-xs font-normal text-muted-foreground">/ навсегда</span></div>
                 <ul className="space-y-3 text-xs text-muted-foreground">
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Up to 15 tracked applications
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" /> До 15 активных откликов
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" /> 5 AI ATS resume scans / mo
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" /> 5 AI ATS-сканирований в месяц
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" /> 3 AI cover letters / mo
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" /> 3 AI сопроводительных письма в месяц
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Kanban pipeline board
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Канбан-доска пайплайна
                   </li>
                 </ul>
               </div>
               <Link href="/dashboard" className="mt-8">
-                <Button variant="outline" className="w-full">Get Started</Button>
+                <Button variant="outline" className="w-full">Начать бесплатно</Button>
               </Link>
             </div>
 
             {/* Pro Tier (Popular) */}
             <div className="bg-card border-2 border-primary rounded-2xl p-6 flex flex-col justify-between relative shadow-xl shadow-primary/10 bg-primary/[0.02]">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-full uppercase tracking-wider">
-                Most Popular
+                Хит продаж
               </div>
               <div>
                 <h3 className="text-lg font-bold mb-1">Job Hunter Pro</h3>
-                <p className="text-xs text-muted-foreground mb-4">Full firepower to land interviews fast</p>
+                <p className="text-xs text-muted-foreground mb-4">Максимальная мощность для быстрого оффера</p>
                 <div className="text-3xl font-bold mb-6">1 490 ₽ <span className="text-xs font-normal text-muted-foreground">/ месяц</span></div>
                 <ul className="space-y-3 text-xs text-foreground">
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-primary" /> Unlimited tracked applications
+                    <CheckCircle2 className="w-4 h-4 text-primary" /> Безлимитный трекинг откликов
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-primary" /> Unlimited AI ATS resume scans
+                    <CheckCircle2 className="w-4 h-4 text-primary" /> Безлимитные AI ATS-проверки резюме
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-primary" /> Unlimited AI cover letters & emails
+                    <CheckCircle2 className="w-4 h-4 text-primary" /> Безлимитные сопроводительные письма
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-primary" /> Automated smart follow-up reminders
+                    <CheckCircle2 className="w-4 h-4 text-primary" /> Умные напоминания и фоллоу-апы
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-primary" /> Full conversion funnel analytics
+                    <CheckCircle2 className="w-4 h-4 text-primary" /> Полная аналитика воронки конверсии
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-primary" /> Export to PDF & Word
+                    <CheckCircle2 className="w-4 h-4 text-primary" /> Экспорт документов в PDF и Word
                   </li>
                 </ul>
               </div>
-              <Link href="/dashboard" className="mt-8">
-                <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-md shadow-primary/20">
-                  Start 7-Day Trial
-                </Button>
-              </Link>
+              <Button
+                onClick={() => handleOpenUpgrade("pro_monthly")}
+                className="mt-8 w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-md shadow-primary/20"
+              >
+                Оформить подписку
+              </Button>
             </div>
 
-            {/* Coach Tier */}
+            {/* Pro Quarterly / Coach */}
             <div className="bg-card border border-border rounded-2xl p-6 flex flex-col justify-between">
               <div>
-                <h3 className="text-lg font-bold mb-1">Career Coach</h3>
-                <p className="text-xs text-muted-foreground mb-4">For advisors managing multiple clients</p>
-                <div className="text-3xl font-bold mb-6">4 990 ₽ <span className="text-xs font-normal text-muted-foreground">/ месяц</span></div>
+                <div className="inline-block px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mb-2">
+                  Экономия 25%
+                </div>
+                <h3 className="text-lg font-bold mb-1">Карьерный рывок (3 мес)</h3>
+                <p className="text-xs text-muted-foreground mb-4">Полный цикл до получения и выбора оффера</p>
+                <div className="text-3xl font-bold mb-6">3 490 ₽ <span className="text-xs font-normal text-muted-foreground">/ 3 месяца</span></div>
                 <ul className="space-y-3 text-xs text-muted-foreground">
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Everything in Pro
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Все возможности тарифа Pro на 3 месяца
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Manage up to 25 job seekers
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Шаблоны для зарубежных вакансий
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Client progress overview
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Персональная воронка целей
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" /> White-label audit reports
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Приоритетный доступ к новым моделям ИИ
                   </li>
                 </ul>
               </div>
-              <Link href="/dashboard" className="mt-8">
-                <Button variant="outline" className="w-full">Contact Sales</Button>
-              </Link>
+              <Button
+                variant="outline"
+                onClick={() => handleOpenUpgrade("pro_quarterly")}
+                className="mt-8 w-full border-border hover:bg-card"
+              >
+                Выбрать 3 месяца
+              </Button>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section id="faq" className="py-24 border-t border-border/60">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <Badge variant="outline" className="mb-3 text-primary border-primary/30 bg-primary/10">
+              Вопросы и ответы
+            </Badge>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
+              Часто задаваемые вопросы
+            </h2>
+            <p className="mt-4 text-muted-foreground text-sm">
+              Всё, что вам нужно знать о работе сервиса и возможностях платформы.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {faqs.map((faq, index) => {
+              const isOpen = openFaq === index;
+              return (
+                <div
+                  key={index}
+                  className="rounded-2xl border border-border/80 bg-card/60 overflow-hidden transition-all"
+                >
+                  <button
+                    onClick={() => setOpenFaq(isOpen ? null : index)}
+                    className="w-full p-5 text-left flex items-center justify-between gap-4 font-semibold text-sm sm:text-base hover:text-primary transition-colors"
+                  >
+                    <span>{faq.q}</span>
+                    <ChevronDown
+                      className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200 ${
+                        isOpen ? "rotate-180 text-primary" : ""
+                      }`}
+                    />
+                  </button>
+                  {isOpen && (
+                    <div className="px-5 pb-5 text-xs sm:text-sm text-muted-foreground leading-relaxed border-t border-border/40 pt-4 bg-background/40">
+                      {faq.a}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -576,15 +776,15 @@ export default function LandingPage() {
       <section className="py-20 border-t border-border/60 bg-gradient-to-b from-card to-background text-center">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight">
-            Stop waiting. Start landing interviews.
+            Перестаньте ждать у моря погоды. Получите оффер мечты.
           </h2>
           <p className="mt-4 text-muted-foreground text-base max-w-xl mx-auto">
-            Experience the entire workflow right now with our interactive workspace pre-filled with demo applications.
+            Опробуйте все возможности сервиса прямо сейчас в интерактивном рабочем кабинете с готовыми демонстрационными данными.
           </p>
           <div className="mt-8 flex justify-center">
             <Link href="/dashboard">
               <Button size="lg" className="h-12 px-9 text-base bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl shadow-primary/25 font-bold">
-                Open Command Center
+                Открыть командный центр
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </Link>
@@ -597,18 +797,25 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 font-medium text-foreground">
             <span>🎯</span>
-            <span>LaunchPad © 2026. All rights reserved.</span>
+            <span>LaunchPad © 2026. Все права защищены. Интеллектуальный помощник для поиска работы.</span>
           </div>
           <div className="flex items-center gap-6">
-            <Link href="/dashboard" className="hover:text-foreground transition-colors">Dashboard</Link>
-            <Link href="/tracker" className="hover:text-foreground transition-colors">Tracker</Link>
-            <Link href="/scanner" className="hover:text-foreground transition-colors">ATS Scanner</Link>
-            <Link href="/cover-letter" className="hover:text-foreground transition-colors">Cover Letter AI</Link>
-            <Link href="/follow-ups" className="hover:text-foreground transition-colors">Follow-ups</Link>
-            <Link href="/analytics" className="hover:text-foreground transition-colors">Analytics</Link>
+            <Link href="/dashboard" className="hover:text-foreground transition-colors">Обзор</Link>
+            <Link href="/tracker" className="hover:text-foreground transition-colors">Канбан-трекер</Link>
+            <Link href="/scanner" className="hover:text-foreground transition-colors">ATS-сканер</Link>
+            <Link href="/cover-letter" className="hover:text-foreground transition-colors">Генератор писем</Link>
+            <Link href="/follow-ups" className="hover:text-foreground transition-colors">Фоллоу-апы</Link>
+            <Link href="/analytics" className="hover:text-foreground transition-colors">Аналитика</Link>
           </div>
         </div>
       </footer>
+
+      {/* Upgrade Modal for YooKassa checkout */}
+      <UpgradeModal
+        open={upgradeOpen}
+        onOpenChange={setUpgradeOpen}
+        defaultPlan={targetPlan}
+      />
     </div>
   );
 }

@@ -103,11 +103,11 @@ export interface StageColumn {
 }
 
 export const STAGE_COLUMNS: StageColumn[] = [
-  { id: "wishlist", title: "Wishlist", icon: "📌", color: "bg-slate-500/20" },
-  { id: "applied", title: "Applied", icon: "📨", color: "bg-blue-500/20" },
-  { id: "screening", title: "Screening", icon: "🔍", color: "bg-cyan-500/20" },
-  { id: "interviewing", title: "Interview", icon: "📞", color: "bg-yellow-500/20" },
-  { id: "offer", title: "Offer", icon: "🎉", color: "bg-green-500/20" },
-  { id: "rejected", title: "Rejected", icon: "❌", color: "bg-red-500/20" },
-  { id: "ghosted", title: "Ghosted", icon: "👻", color: "bg-gray-500/20" },
+  { id: "wishlist", title: "Избранное", icon: "📌", color: "bg-slate-500/20" },
+  { id: "applied", title: "Отправлено", icon: "📨", color: "bg-blue-500/20" },
+  { id: "screening", title: "Скрининг", icon: "🔍", color: "bg-cyan-500/20" },
+  { id: "interviewing", title: "Интервью", icon: "📞", color: "bg-yellow-500/20" },
+  { id: "offer", title: "Оффер 🎉", icon: "🎉", color: "bg-green-500/20" },
+  { id: "rejected", title: "Отказ", icon: "❌", color: "bg-red-500/20" },
+  { id: "ghosted", title: "Без ответа", icon: "👻", color: "bg-gray-500/20" },
 ];

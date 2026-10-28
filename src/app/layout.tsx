@@ -14,9 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LaunchPad — AI Job Search Command Center",
+  title: "LaunchPad — AI-система управления поиском работы",
   description:
-    "Stop getting ghosted. AI-powered ATS scanner, application tracker, cover letter generator, and smart follow-ups.",
+    "Проходите роботов ATS, автоматизируйте отклики, создавайте сопроводительные письма и получайте в 3 раза больше приглашений на интервью.",
 };
 
 export default function RootLayout({
@@ -26,7 +26,7 @@ export default function RootLayout({
 }) {
   return (
     <html
-      lang="en"
+      lang="ru"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">

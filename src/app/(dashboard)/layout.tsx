@@ -16,7 +16,6 @@ import {
   ExternalLink,
   ChevronRight,
   LogOut,
-  User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -37,12 +36,12 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { UpgradeModal } from "@/components/UpgradeModal";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/tracker", label: "Job Tracker", icon: Kanban, badge: "10" },
-  { href: "/scanner", label: "ATS Scanner", icon: ScanSearch, highlight: true },
-  { href: "/cover-letter", label: "Cover Letters", icon: PenTool },
-  { href: "/follow-ups", label: "Follow-Ups", icon: BellRing, badge: "3", badgeColor: "bg-amber-500/20 text-amber-400" },
-  { href: "/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/dashboard", label: "Обзор дашборда", icon: LayoutDashboard },
+  { href: "/tracker", label: "Канбан-трекер", icon: Kanban, badge: "10" },
+  { href: "/scanner", label: "ATS-сканер резюме", icon: ScanSearch, highlight: true },
+  { href: "/cover-letter", label: "Генератор писем", icon: PenTool },
+  { href: "/follow-ups", label: "Напоминания", icon: BellRing, badge: "3", badgeColor: "bg-amber-500/20 text-amber-400" },
+  { href: "/analytics", label: "Аналитика воронки", icon: BarChart3 },
 ];
 
 export default function DashboardLayout({
@@ -62,17 +61,17 @@ export default function DashboardLayout({
   const [newStage, setNewStage] = useState("wishlist");
 
   const getPageTitle = () => {
-    if (pathname.includes("/tracker")) return "Application Tracker";
-    if (pathname.includes("/scanner")) return "AI ATS Resume Scanner";
-    if (pathname.includes("/cover-letter")) return "Cover Letter Studio";
-    if (pathname.includes("/follow-ups")) return "Follow-Up Center";
-    if (pathname.includes("/analytics")) return "Performance Analytics";
-    return "Command Center Overview";
+    if (pathname.includes("/tracker")) return "Канбан-трекер вакансий";
+    if (pathname.includes("/scanner")) return "AI ATS-сканер резюме";
+    if (pathname.includes("/cover-letter")) return "Генератор сопроводительных писем";
+    if (pathname.includes("/follow-ups")) return "Центр напоминаний (Follow-Up)";
+    if (pathname.includes("/analytics")) return "Аналитика конверсий и воронки";
+    return "Командный центр поиска работы";
   };
 
   const handleCreateJob = (e: React.FormEvent) => {
     e.preventDefault();
-    alert(`Application for ${newCompany} (${newRole}) added successfully!`);
+    alert(`Отклик в ${newCompany} (${newRole}) успешно добавлен в пайплайн!`);
     setAddJobOpen(false);
     setNewCompany("");
     setNewRole("");
@@ -92,14 +91,14 @@ export default function DashboardLayout({
             <span className="font-bold text-base tracking-tight text-foreground">LaunchPad</span>
           </Link>
           <Badge variant="outline" className="text-[10px] font-semibold text-primary border-primary/30 bg-primary/10">
-            DEMO
+            PRO AI
           </Badge>
         </div>
 
         {/* Navigation list */}
         <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
           <div className="px-3 pb-2 text-[10px] uppercase font-bold tracking-wider text-muted-foreground/70">
-            Workspace
+            Рабочая область
           </div>
 
           {navItems.map((item) => {
@@ -138,7 +137,7 @@ export default function DashboardLayout({
           })}
 
           <div className="pt-6 px-3 pb-2 text-[10px] uppercase font-bold tracking-wider text-muted-foreground/70">
-            External Links
+            Переходы
           </div>
           <Link
             href="/"
@@ -146,7 +145,7 @@ export default function DashboardLayout({
           >
             <div className="flex items-center gap-3">
               <ExternalLink className="w-4 h-4" />
-              <span>Landing Page</span>
+              <span>Главная страница</span>
             </div>
             <ChevronRight className="w-3.5 h-3.5 opacity-50" />
           </Link>
@@ -157,7 +156,7 @@ export default function DashboardLayout({
           <div className="p-3 rounded-xl border border-primary/30 bg-gradient-to-br from-primary/15 to-card space-y-2">
             <div className="flex items-center justify-between text-xs font-bold text-foreground">
               <span className="flex items-center gap-1.5 text-primary">
-                <Sparkles className="w-3.5 h-3.5" /> LaunchPad Pro
+                <Sparkles className="w-3.5 h-3.5" /> Тариф Pro
               </span>
               <span className="text-[10px] text-muted-foreground">ЮKassa</span>
             </div>
@@ -180,15 +179,15 @@ export default function DashboardLayout({
             <div className="flex items-center gap-2.5">
               <Avatar className="w-8 h-8 rounded-full border border-primary/30">
                 <AvatarFallback className="bg-primary/20 text-primary font-bold text-xs">
-                  JD
+                  АМ
                 </AvatarFallback>
               </Avatar>
               <div className="text-left overflow-hidden">
-                <div className="text-xs font-semibold truncate text-foreground">Alex Developer</div>
-                <div className="text-[10px] text-muted-foreground truncate">alex@demo.app</div>
+                <div className="text-xs font-semibold truncate text-foreground">Алексей Морозов</div>
+                <div className="text-[10px] text-muted-foreground truncate">alex@launchpad.ru</div>
               </div>
             </div>
-            <Link href="/" title="Sign Out">
+            <Link href="/" title="Выйти">
               <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground">
                 <LogOut className="w-3.5 h-3.5" />
               </Button>
@@ -270,7 +269,7 @@ export default function DashboardLayout({
             <Link href="/scanner">
               <Button variant="outline" size="sm" className="hidden sm:flex text-xs font-medium border-border/80">
                 <ScanSearch className="w-3.5 h-3.5 mr-1.5 text-primary" />
-                Quick ATS Scan
+                Быстрый аудит
               </Button>
             </Link>
 
@@ -280,7 +279,7 @@ export default function DashboardLayout({
                 render={
                   <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold shadow-sm shadow-primary/20">
                     <Plus className="w-4 h-4 mr-1" />
-                    Add Application
+                    Добавить отклик
                   </Button>
                 }
               />
@@ -288,16 +287,16 @@ export default function DashboardLayout({
                 <form onSubmit={handleCreateJob}>
                   <DialogHeader>
                     <DialogTitle className="text-base font-bold flex items-center gap-2">
-                      <span>💼</span> New Job Application
+                      <span>💼</span> Новый отклик на вакансию
                     </DialogTitle>
                   </DialogHeader>
 
                   <div className="space-y-3 py-4 text-xs">
                     <div>
-                      <Label htmlFor="company" className="text-xs">Company Name *</Label>
+                      <Label htmlFor="company" className="text-xs">Компания *</Label>
                       <Input
                         id="company"
-                        placeholder="e.g. OpenAI, Apple, Netflix"
+                        placeholder="Например: Яндекс, Т-Банк, Ozon, Сбер"
                         value={newCompany}
                         onChange={(e) => setNewCompany(e.target.value)}
                         required
@@ -306,10 +305,10 @@ export default function DashboardLayout({
                     </div>
 
                     <div>
-                      <Label htmlFor="role" className="text-xs">Job Title / Position *</Label>
+                      <Label htmlFor="role" className="text-xs">Должность / Роль *</Label>
                       <Input
                         id="role"
-                        placeholder="e.g. Senior Frontend Engineer"
+                        placeholder="Например: Senior Frontend Developer"
                         value={newRole}
                         onChange={(e) => setNewRole(e.target.value)}
                         required
@@ -319,36 +318,36 @@ export default function DashboardLayout({
 
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <Label htmlFor="salary" className="text-xs">Target Compensation</Label>
+                        <Label htmlFor="salary" className="text-xs">Желаемый доход</Label>
                         <Input
                           id="salary"
-                          placeholder="e.g. $160,000 - $190,000"
+                          placeholder="250 000 — 350 000 ₽"
                           value={newSalary}
                           onChange={(e) => setNewSalary(e.target.value)}
                           className="mt-1 text-xs"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="stage" className="text-xs">Initial Stage</Label>
+                        <Label htmlFor="stage" className="text-xs">Начальный этап</Label>
                         <Select value={newStage} onValueChange={(val) => val && setNewStage(val)}>
                           <SelectTrigger className="mt-1 text-xs">
-                            <SelectValue placeholder="Select stage" />
+                            <SelectValue placeholder="Выберите этап" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="wishlist">📌 Wishlist</SelectItem>
-                            <SelectItem value="applied">📨 Applied</SelectItem>
-                            <SelectItem value="screening">🔍 Screening</SelectItem>
-                            <SelectItem value="interviewing">📞 Interview</SelectItem>
+                            <SelectItem value="wishlist">📌 Избранное</SelectItem>
+                            <SelectItem value="applied">📨 Отправлено</SelectItem>
+                            <SelectItem value="screening">🔍 Скрининг</SelectItem>
+                            <SelectItem value="interviewing">📞 Интервью</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                     </div>
 
                     <div>
-                      <Label htmlFor="notes" className="text-xs">Notes or Recruiter Contact</Label>
+                      <Label htmlFor="notes" className="text-xs">Заметки или контакты рекрутера</Label>
                       <Textarea
                         id="notes"
-                        placeholder="Applied via LinkedIn referral, hiring manager is Sarah..."
+                        placeholder="Отклик через Хабр Карьеру, рекрутер Анна в Telegram..."
                         rows={2}
                         className="mt-1 text-xs"
                       />
@@ -357,10 +356,10 @@ export default function DashboardLayout({
 
                   <DialogFooter>
                     <Button type="button" variant="outline" size="sm" onClick={() => setAddJobOpen(false)} className="text-xs">
-                      Cancel
+                      Отмена
                     </Button>
                     <Button type="submit" size="sm" className="bg-primary text-primary-foreground text-xs font-semibold">
-                      Save to Pipeline
+                      Сохранить в пайплайн
                     </Button>
                   </DialogFooter>
                 </form>

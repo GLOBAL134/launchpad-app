@@ -20,26 +20,24 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 
-const SAMPLE_GENERATED_LETTER = `Dear Google Hiring Team,
+const SAMPLE_GENERATED_LETTER = `Здравствуйте, команда найма Яндекс!
 
-I am writing to express my strong enthusiasm for the Senior Product Manager, Cloud Infrastructure & AI position. Having followed Google Cloud's advancements in generative developer tools, I am eager to contribute my background in scaling distributed developer platforms and accelerating enterprise release velocity.
+Пишу, чтобы выразить искреннюю заинтересованность в позиции Senior Product Manager в направлении Cloud AI. Внимательно слежу за развитием инфраструктурных сервисов Яндекса и хочу применить свой практический опыт масштабирования технологических B2B-продуктов в вашей команде.
 
-Over the past five years at CloudScale Solutions and FinTech Global, I have led cross-functional product teams of 12+ engineers and designers to launch enterprise SaaS products that scaled from 0 to over 40,000 daily active users. Most recently, I championed an AI-assisted analytics pipeline that cut query latency by 45% and reduced time-to-value for enterprise customers from three weeks to under 48 hours. I thrive at the intersection of technical architecture, data-driven A/B experimentation, and close stakeholder alignment.
+За последние 6 лет в CloudScale Solutions и FinTech Инновациях я руководил продуктовыми командами разработки до 12 инженеров. Моим ключевым достижением стал запуск аналитического AI-модуля, который сократил время получения ценности клиентами с трёх недель до 4 часов, а внедрение регулярного A/B-тестирования подняло конверсию в повторные заказы на 24%. Я глубоко понимаю баланс между технической архитектурой, продуктовыми метриками и ожиданиями стейкхолдеров.
 
-Google's commitment to building open, reliable infrastructure for the world's most critical workloads deeply resonates with my professional ethos. I welcome the opportunity to discuss how my hands-on experience with Agile CI/CD workflows and developer-first product management can help Google Cloud empower millions of builders globally.
+Культура инженерного превосходства и масштабы задач Яндекса полностью соответствуют моим профессиональным ценностям. Буду рад встретиться на онлайн-интервью и подробнее обсудить, как мои навыки помогут вашей команде достигать ключевых целей в этом квартале.
 
-Thank you for your time and consideration.
-
-Warm regards,
-Alex Morgan
-alex.morgan@email.com | (555) 234-5678`;
+С уважением,
+Алексей Морозов
+alex.morozov@email.ru | +7 (999) 123-45-67`;
 
 export default function CoverLetterPage() {
-  const [company, setCompany] = useState("Google");
+  const [company, setCompany] = useState("Яндекс");
   const [role, setRole] = useState("Senior Product Manager");
   const [tone, setTone] = useState("professional");
   const [keyAchievement, setKeyAchievement] = useState(
-    "Led cross-functional team scaling enterprise SaaS from 0 to 40k DAU, cut latency by 45% with AI analytics."
+    "Руководил командой из 12 инженеров, поднял конверсию на 24% за счёт A/B-тестирования, ускорил онбординг клиентов с 3 недель до 4 часов."
   );
   const [letterContent, setLetterContent] = useState(SAMPLE_GENERATED_LETTER);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -50,7 +48,7 @@ export default function CoverLetterPage() {
     setTimeout(() => {
       setIsGenerating(false);
       setLetterContent(
-        `Dear ${company} Hiring Team,\n\nI am writing to express my strong interest in the ${role} position. With my background in leading product initiatives and scaling impactful platforms, I am eager to bring my expertise to the team at ${company}.\n\nSpecifically, ${keyAchievement} My approach combines rigorous data-driven experimentation with empathetic user research to ensure that engineering output directly translates into customer value.\n\nI admire ${company}'s standard of excellence and would value the opportunity to discuss how my skill set can support your upcoming roadmap.\n\nThank you for your review and consideration.\n\nSincerely,\nAlex Morgan`
+        `Здравствуйте, команда ${company}!\n\nМеня очень заинтересовала вакансия ${role} в вашей компании. Обладая 6-летним опытом руководства продуктовыми командами и сильным бэкграундом в IT, я уверен, что смогу усилить ваши процессы с первых дней.\n\nВ частности, ${keyAchievement} Мой подход строится на строгой data-driven аналитике, глубоких качественных исследованиях пользователей и слаженном взаимодействии с инженерной командой.\n\nБуду рад обсудить подробности на техническом интервью.\n\nС уважением,\nАлексей Морозов\n+7 (999) 123-45-67`
       );
     }, 1000);
   };
@@ -63,9 +61,9 @@ export default function CoverLetterPage() {
 
   const handleDownload = () => {
     const element = document.createElement("a");
-    const file = new Blob([letterContent], { type: "text/plain" });
+    const file = new Blob([letterContent], { type: "text/plain;charset=utf-8" });
     element.href = URL.createObjectURL(file);
-    element.download = `${company}_Cover_Letter_${role.replace(/\s+/g, "_")}.txt`;
+    element.download = `${company}_Сопроводительное_письмо_${role.replace(/\s+/g, "_")}.txt`;
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
@@ -77,10 +75,10 @@ export default function CoverLetterPage() {
       <div>
         <h1 className="text-2xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
           <PenTool className="w-6 h-6 text-primary" />
-          <span>Smart Cover Letter Studio</span>
+          <span>Генератор сопроводительных писем (Cover Letter AI)</span>
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Generate human-sounding, role-specific letters in seconds. Tailored to the company mission, tone, and your key wins.
+          Создавайте персонализированные, живые сопроводительные письма за 10 секунд. С учётом культуры компании, тональности и ваших сильных сторон.
         </p>
       </div>
 
@@ -91,60 +89,60 @@ export default function CoverLetterPage() {
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-bold flex items-center gap-2">
                 <Sliders className="w-4 h-4 text-primary" />
-                <span>Job & Letter Parameters</span>
+                <span>Параметры вакансии</span>
               </CardTitle>
               <CardDescription className="text-xs">
-                Provide details for the AI drafting engine
+                Укажите данные для генерации письма с помощью нейросети
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3.5 text-xs">
               <div>
-                <Label htmlFor="company-name" className="text-xs">Company Name</Label>
+                <Label htmlFor="company-name" className="text-xs">Название компании</Label>
                 <Input
                   id="company-name"
                   value={company}
                   onChange={(e) => setCompany(e.target.value)}
-                  placeholder="e.g. Stripe, Linear, Notion"
+                  placeholder="Например: Яндекс, Т-Банк, Авито, Ozon"
                   className="mt-1 text-xs"
                 />
               </div>
 
               <div>
-                <Label htmlFor="role-name" className="text-xs">Target Position</Label>
+                <Label htmlFor="role-name" className="text-xs">Целевая должность</Label>
                 <Input
                   id="role-name"
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
-                  placeholder="e.g. Senior Product Manager"
+                  placeholder="Например: Senior Product Manager"
                   className="mt-1 text-xs"
                 />
               </div>
 
               <div>
-                <Label htmlFor="tone-select" className="text-xs">Tone of Voice</Label>
+                <Label htmlFor="tone-select" className="text-xs">Тональность письма</Label>
                 <Select value={tone} onValueChange={(val) => val && setTone(val)}>
                   <SelectTrigger id="tone-select" className="mt-1 text-xs">
-                    <SelectValue placeholder="Select tone" />
+                    <SelectValue placeholder="Выберите стиль" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="professional">👔 Professional & Balanced</SelectItem>
-                    <SelectItem value="bold">🚀 Confident & High-Impact</SelectItem>
-                    <SelectItem value="concise">⚡ Concise & Direct (3 Paragraphs)</SelectItem>
-                    <SelectItem value="startup">💡 Passionate & Startup-Driven</SelectItem>
+                    <SelectItem value="professional">👔 Профессиональный и сбалансированный</SelectItem>
+                    <SelectItem value="bold">🚀 Уверенный и результативный</SelectItem>
+                    <SelectItem value="concise">⚡ Краткий и ёмкий (3 абзаца)</SelectItem>
+                    <SelectItem value="startup">💡 Энергичный для стартапа</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
                 <Label htmlFor="achievement" className="text-xs">
-                  Key Achievement or Experience to Highlight
+                  Ключевое достижение, которое важно подчеркнуть
                 </Label>
                 <Textarea
                   id="achievement"
                   rows={4}
                   value={keyAchievement}
                   onChange={(e) => setKeyAchievement(e.target.value)}
-                  placeholder="e.g. Led redesign increasing user retention by 22%..."
+                  placeholder="Например: Увеличил конверсию на 25%, управлял распределенной командой разработки..."
                   className="mt-1 text-xs resize-y"
                 />
               </div>
@@ -157,12 +155,12 @@ export default function CoverLetterPage() {
                 {isGenerating ? (
                   <>
                     <Sparkles className="w-4 h-4 mr-2 animate-spin" />
-                    Crafting Letter...
+                    Нейросеть составляет письмо...
                   </>
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4 mr-2" />
-                    Generate Tailored Letter
+                    Сгенерировать письмо
                   </>
                 )}
               </Button>
@@ -177,10 +175,10 @@ export default function CoverLetterPage() {
               <div>
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
                   <FileText className="w-4 h-4 text-primary" />
-                  <span>Generated Cover Letter</span>
+                  <span>Сгенерированное письмо</span>
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  Editable preview • {letterContent.split(/\s+/).filter(Boolean).length} words • ~1 min read
+                  Доступно для редактирования • {letterContent.split(/\s+/).filter(Boolean).length} слов • ~1 мин чтения
                 </CardDescription>
               </div>
 
@@ -194,12 +192,12 @@ export default function CoverLetterPage() {
                   {copied ? (
                     <>
                       <Check className="w-3.5 h-3.5 mr-1 text-emerald-400" />
-                      Copied
+                      Скопировано
                     </>
                   ) : (
                     <>
                       <Copy className="w-3.5 h-3.5 mr-1" />
-                      Copy
+                      Копировать
                     </>
                   )}
                 </Button>
@@ -211,7 +209,7 @@ export default function CoverLetterPage() {
                   className="h-8 text-xs font-medium"
                 >
                   <Download className="w-3.5 h-3.5 mr-1" />
-                  Export .TXT
+                  Скачать .TXT
                 </Button>
               </div>
             </CardHeader>
@@ -227,9 +225,9 @@ export default function CoverLetterPage() {
               <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground border-t border-border/40 pt-3">
                 <span className="flex items-center gap-1.5">
                   <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-400 border-emerald-500/30">
-                    Ready to send
+                    Готово к отправке
                   </Badge>
-                  <span>Format: Single column plain text ATS compliant</span>
+                  <span>Формат: чистый текст без таблиц для 100% совместимости с ATS</span>
                 </span>
                 <Button
                   variant="ghost"
@@ -237,7 +235,7 @@ export default function CoverLetterPage() {
                   onClick={() => setLetterContent(SAMPLE_GENERATED_LETTER)}
                   className="h-7 text-[11px] text-muted-foreground hover:text-foreground"
                 >
-                  <RotateCcw className="w-3 h-3 mr-1" /> Reset
+                  <RotateCcw className="w-3 h-3 mr-1" /> Сбросить
                 </Button>
               </div>
             </CardContent>
