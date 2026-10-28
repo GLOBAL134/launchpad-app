@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Слайд 3 — Студия сопроводительных писем</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body class="bg-[#0b0f19] text-white flex flex-col justify-between p-8 m-0 overflow-hidden relative" style="width: 720px; height: 1280px;">
+  
+  <!-- Ambient Glow Effects -->
+  <div class="absolute -top-24 -left-24 w-96 h-96 bg-purple-600/25 rounded-full blur-[100px] pointer-events-none"></div>
+  <div class="absolute top-1/2 -right-24 w-96 h-96 bg-indigo-600/20 rounded-full blur-[110px] pointer-events-none"></div>
+
+  <!-- Header -->
+  <div class="relative z-10">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-2.5">
+        <div class="w-10 h-10 rounded-xl bg-purple-600 flex items-center justify-center text-xl shadow-lg shadow-purple-500/30">✍️</div>
+        <span class="font-extrabold text-xl tracking-tight">LaunchPad <span class="text-purple-400">AI</span></span>
+      </div>
+      <span class="px-3 py-1 rounded-full bg-purple-500/15 border border-purple-400/30 text-purple-300 text-xs font-bold uppercase tracking-wider">
+        AI Cover Letter Studio
+      </span>
+    </div>
+
+    <h1 class="text-3xl font-black leading-tight tracking-tight mt-3">
+      Письма рекрутерам<br>
+      <span class="bg-gradient-to-r from-purple-400 via-pink-300 to-indigo-400 bg-clip-text text-transparent">
+        за 10 секунд без «воды»
+      </span>
+    </h1>
+    <p class="text-sm text-slate-300 mt-2 leading-relaxed">
+      Генерация живых, персонализированных сопроводительных писем под требования компании и умные напоминания (Follow-Up).
+    </p>
+  </div>
+
+  <!-- Main Content Card (Cover Letter Mockup) -->
+  <div class="relative z-10 bg-slate-900/90 border border-purple-500/30 rounded-3xl p-6 shadow-2xl backdrop-blur-xl space-y-4">
+    
+    <!-- Tone Selector Bar -->
+    <div class="space-y-1.5">
+      <div class="flex items-center justify-between text-xs text-slate-400 font-medium">
+        <span>Тональность письма:</span>
+        <span class="text-purple-300 font-bold">Выбран: Профессиональный</span>
+      </div>
+      <div class="grid grid-cols-3 gap-2">
+        <div class="py-1.5 px-2 rounded-xl bg-purple-600 text-white text-xs font-bold text-center border border-purple-400/50 shadow-md">
+          ✓ Профессиональный
+        </div>
+        <div class="py-1.5 px-2 rounded-xl bg-white/5 text-slate-300 text-xs font-medium text-center border border-white/10">
+          Уверенный
+        </div>
+        <div class="py-1.5 px-2 rounded-xl bg-white/5 text-slate-300 text-xs font-medium text-center border border-white/10">
+          Творческий
+        </div>
+      </div>
+    </div>
+
+    <!-- Letter Body Preview -->
+    <div class="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-2.5">
+      <div class="flex items-center justify-between pb-2 border-b border-white/10">
+        <span class="text-xs font-bold text-white flex items-center gap-1.5">
+          <span>📄</span> Кому: HR-команда Яндекса
+        </span>
+        <span class="text-[10px] text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded">
+          Сгенерировано AI за 8 сек
+        </span>
+      </div>
+
+      <div class="text-xs text-slate-300 space-y-2 leading-relaxed font-sans">
+        <p>«Здравствуйте, команда Яндекса!</p>
+        <p>Меня зовут Алексей. Мой 6-летний опыт в создании AI/SaaS-продуктов и управлении кросс-функциональной командой из 12 инженеров напрямую соотносится с задачами вашей облачной платформы.</p>
+        <p>В CloudScale я увеличил DAU с 5 000 до 45 000, сократил time-to-market на 30% и внедрил сквозной CI/CD пайплайн. Буду рад обсудить синергию на интервью!»</p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="pt-2 flex items-center justify-between">
+        <span class="text-[11px] text-purple-300 font-semibold">Готово к отправке на hh.ru / в Telegram</span>
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-1 rounded-lg bg-white/10 text-white text-[11px] font-bold border border-white/15">
+            📋 Скопировать
+          </span>
+          <span class="px-2.5 py-1 rounded-lg bg-purple-600/30 text-purple-300 text-[11px] font-bold border border-purple-500/40">
+            📥 Экспорт в PDF
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Smart Follow-Up Section -->
+    <div class="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-1.5">
+      <div class="flex items-center justify-between">
+        <h4 class="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+          <span>⏰</span> Умный контроль тишины (Follow-Up)
+        </h4>
+        <span class="text-[10px] text-amber-400 font-bold uppercase">+34% к ответу</span>
+      </div>
+      <p class="text-[11px] text-slate-300 leading-relaxed">
+        Рекрутер не ответил за 7 дней? Система рассчитает таймер и подготовит вежливое письмо-напоминание, чтобы отклик не затерялся в почте.
+      </p>
+    </div>
+
+  </div>
+
+  <!-- Bottom CTA Footer -->
+  <div class="relative z-10 bg-slate-900/90 border border-white/10 rounded-2xl p-4 flex items-center justify-between">
+    <div>
+      <span class="text-xs font-bold text-white block">Генерируйте письма бесплатно:</span>
+      <span class="text-xs text-purple-400 font-mono font-semibold">launchpad-app-ashy.vercel.app</span>
+    </div>
+    <div class="text-right">
+      <span class="px-2.5 py-1 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-bold">
+        START30 (-30%)
+      </span>
+    </div>
+  </div>
+
+</body>
+</html>

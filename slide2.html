@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Слайд 2 — Канбан-пайплайн откликов</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body class="bg-[#0b0f19] text-white flex flex-col justify-between p-8 m-0 overflow-hidden relative" style="width: 720px; height: 1280px;">
+  
+  <!-- Ambient Glow Effects -->
+  <div class="absolute -top-24 -left-24 w-96 h-96 bg-emerald-600/25 rounded-full blur-[100px] pointer-events-none"></div>
+  <div class="absolute top-1/2 -right-24 w-96 h-96 bg-blue-600/20 rounded-full blur-[110px] pointer-events-none"></div>
+
+  <!-- Header -->
+  <div class="relative z-10">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-2.5">
+        <div class="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-xl shadow-lg shadow-emerald-500/30">📊</div>
+        <span class="font-extrabold text-xl tracking-tight">LaunchPad <span class="text-emerald-400">AI</span></span>
+      </div>
+      <span class="px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-xs font-bold uppercase tracking-wider">
+        Канбан-трекер вакансий
+      </span>
+    </div>
+
+    <h1 class="text-3xl font-black leading-tight tracking-tight mt-3">
+      Никакого хаоса<br>
+      <span class="bg-gradient-to-r from-emerald-400 via-teal-300 to-blue-400 bg-clip-text text-transparent">
+        в таблицах Excel
+      </span>
+    </h1>
+    <p class="text-sm text-slate-300 mt-2 leading-relaxed">
+      Наглядная воронка от сохранения в вишлист до заветного оффера с зарплатными вилками, этапами и контактами HR.
+    </p>
+  </div>
+
+  <!-- Main Pipeline Cards Container -->
+  <div class="relative z-10 space-y-3.5">
+    
+    <!-- Card 1: Offer Stage -->
+    <div class="p-4 rounded-2xl bg-slate-900/90 border border-emerald-500/50 shadow-xl backdrop-blur-xl relative overflow-hidden">
+      <div class="absolute top-0 left-0 bottom-0 w-1.5 bg-emerald-400"></div>
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-lg">🎉</span>
+          <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Этап: Оффер получен!</span>
+        </div>
+        <span class="text-[10px] text-slate-400">Решение до 3 ноября</span>
+      </div>
+      <div class="mt-2 flex items-center justify-between">
+        <div>
+          <h4 class="text-base font-bold text-white">VK</h4>
+          <p class="text-xs text-slate-300">Principal ML Engineer</p>
+        </div>
+        <div class="text-right">
+          <span class="text-base font-extrabold text-emerald-400 font-mono">420 000 ₽</span>
+          <span class="text-[10px] text-slate-400 block">+ Опционы и ДМС</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: Interview Stage -->
+    <div class="p-4 rounded-2xl bg-slate-900/90 border border-amber-500/40 shadow-xl backdrop-blur-xl relative overflow-hidden">
+      <div class="absolute top-0 left-0 bottom-0 w-1.5 bg-amber-400"></div>
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-lg">📞</span>
+          <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">Этап: Техническое интервью</span>
+        </div>
+        <span class="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">94% ATS</span>
+      </div>
+      <div class="mt-2 flex items-center justify-between">
+        <div>
+          <h4 class="text-base font-bold text-white">Яндекс</h4>
+          <p class="text-xs text-slate-300">Senior Product Manager (Поиск)</p>
+          <p class="text-[11px] text-amber-300 mt-1 font-medium">Секция с техлидом: Завтра в 14:00 (Зум)</p>
+        </div>
+        <div class="text-right">
+          <span class="text-base font-extrabold text-white font-mono">350 000 ₽</span>
+          <span class="text-[10px] text-slate-400 block">Москва / Удаленно</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: Applied & Follow-Up Trigger -->
+    <div class="p-4 rounded-2xl bg-slate-900/90 border border-blue-500/40 shadow-xl backdrop-blur-xl relative overflow-hidden">
+      <div class="absolute top-0 left-0 bottom-0 w-1.5 bg-blue-400"></div>
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-lg">📨</span>
+          <span class="text-xs font-bold text-blue-400 uppercase tracking-wider">Этап: Отправлено (7 дн. назад)</span>
+        </div>
+        <span class="text-[10px] text-rose-400 bg-rose-500/15 px-2 py-0.5 rounded font-bold animate-pulse">
+          Фоллоу-ап: Сегодня!
+        </span>
+      </div>
+      <div class="mt-2 flex items-center justify-between">
+        <div>
+          <h4 class="text-base font-bold text-white">Ozon</h4>
+          <p class="text-xs text-slate-300">Senior Frontend Engineer (React)</p>
+          <p class="text-[11px] text-slate-400 mt-1">HR: Екатерина (в Telegram)</p>
+        </div>
+        <div class="text-right">
+          <span class="text-base font-extrabold text-white font-mono">290 000 ₽</span>
+          <span class="text-[10px] text-slate-400 block">Хабр Карьера</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 4: Wishlist Stage -->
+    <div class="p-4 rounded-2xl bg-slate-900/90 border border-purple-500/40 shadow-xl backdrop-blur-xl relative overflow-hidden">
+      <div class="absolute top-0 left-0 bottom-0 w-1.5 bg-purple-400"></div>
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-lg">📌</span>
+          <span class="text-xs font-bold text-purple-400 uppercase tracking-wider">Этап: В избранном</span>
+        </div>
+        <span class="text-[10px] text-slate-400">Целевая роль</span>
+      </div>
+      <div class="mt-2 flex items-center justify-between">
+        <div>
+          <h4 class="text-base font-bold text-white">Т-Банк</h4>
+          <p class="text-xs text-slate-300">Senior Product Designer (FinTech)</p>
+        </div>
+        <div class="text-right">
+          <span class="text-base font-extrabold text-white font-mono">320 000 ₽</span>
+          <span class="text-[10px] text-slate-400 block">Москва</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Feature Summary Banner -->
+    <div class="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between text-xs text-slate-300">
+      <span class="flex items-center gap-1.5 font-medium"><span>⚡</span> Быстрое сохранение с hh.ru и Хабра</span>
+      <span class="font-bold text-emerald-400">+35% к скорости найма</span>
+    </div>
+
+  </div>
+
+  <!-- Bottom CTA Footer -->
+  <div class="relative z-10 bg-slate-900/90 border border-white/10 rounded-2xl p-4 flex items-center justify-between">
+    <div>
+      <span class="text-xs font-bold text-white block">Откройте интерактивную доску:</span>
+      <span class="text-xs text-emerald-400 font-mono font-semibold">launchpad-app-ashy.vercel.app</span>
+    </div>
+    <div class="text-right">
+      <span class="px-2.5 py-1 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-bold">
+        START30 (-30%)
+      </span>
+    </div>
+  </div>
+
+</body>
+</html>
