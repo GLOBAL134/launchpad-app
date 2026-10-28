@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
@@ -13,33 +13,29 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-};
-
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://launchpad-app-ashy.vercel.app"),
-  title: "LaunchPad AI PRO — Job Aggregator, ATS Resume Scanner & Cover Letter Generator",
+  title: "LaunchPad — AI-система управления поиском работы и ATS-сканер",
   description:
-    "LaunchPad AI PRO — Job Aggregator, ATS Resume Scanner & Cover Letter Generator. Проходите фильтры роботов ATS, получайте на 300% больше приглашений на интервью, генерируйте сопроводительные письма и управляйте откликами в едином командном центре.",
+    "Проходите фильтры роботов ATS, получайте на 300% больше приглашений на интервью, генерируйте сопроводительные письма и управляйте откликами в едином командном центре.",
   keywords: [
-    "LaunchPad AI PRO",
     "поиск работы",
     "ATS сканер",
-    "Job Aggregator",
     "резюме онлайн",
     "сопроводительное письмо AI",
     "канбан трекер вакансий",
+    "Яндекс вакансии",
+    "Т-Банк вакансии",
+    "подготовка к интервью",
     "проверка резюме",
   ],
-  authors: [{ name: "LaunchPad AI PRO" }],
+  authors: [{ name: "LaunchPad AI" }],
   openGraph: {
-    title: "LaunchPad AI PRO — Job Aggregator, ATS Resume Scanner & Cover Letter Generator",
+    title: "LaunchPad — AI-система поиска работы и прохождения фильтров ATS",
     description:
       "Узнайте, почему роботы ATS отклоняют 75% резюме. Проверьте своё резюме онлайн бесплатно и получайте в 3 раза больше интервью!",
     url: "https://launchpad-app-ashy.vercel.app",
-    siteName: "LaunchPad AI PRO",
+    siteName: "LaunchPad AI",
     locale: "ru_RU",
     type: "website",
     images: [
@@ -47,13 +43,13 @@ export const metadata: Metadata = {
         url: "/price-list.png",
         width: 1200,
         height: 630,
-        alt: "LaunchPad AI PRO Job Aggregator & ATS Resume Scanner",
+        alt: "LaunchPad AI Job Search Command Center",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "LaunchPad AI PRO — Job Aggregator, ATS Resume Scanner & Cover Letter Generator",
+    title: "LaunchPad — AI Командный центр поиска работы",
     description:
       "Проверьте резюме через AI ATS-сканер бесплатно и перестаньте терять вакансии в черных дырах алгоритмов.",
     images: ["/price-list.png"],
