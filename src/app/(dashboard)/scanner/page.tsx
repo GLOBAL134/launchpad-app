@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
+/* eslint-disable react-hooks/set-state-in-effect */
+import { useState, useRef, useEffect } from "react";
 import {
   ScanSearch,
   CheckCircle2,
@@ -26,7 +27,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { DEMO_ATS_RESULT } from "@/lib/demo-data";
 import { ATSScanResult } from "@/types";
-import { UpgradeModal } from "@/components/UpgradeModal";
+import UpgradeProModal from "@/components/UpgradeProModal";
+import {
+  isUserPro,
+  getRemainingFreeScans,
+  incrementScanUsage,
+  cleanAIMarkdownArtifacts,
+} from "@/lib/monetization";
 
 const DEFAULT_RESUME = `Алексей Морозов
 Senior Product Manager | alex.morozov@email.ru | +7 (999) 123-45-67 | Москва / Удаленно
@@ -58,10 +65,11 @@ const DEFAULT_JOB_DESC = `Senior Product Manager (AI & Cloud Services)
 
 Требования:
 • 5+ лет в управлении продуктом в технологических компаниях.
-• Понимание инженерных практик: Agile/Scrum методологии, CI/CD пайплайны и микросервисная архитектура.
-• Умение управлять стейкхолдерами и защищать стратегию перед C-level руководством.
-• Опыт проведения A/B-тестирования и data-driven подход к развитию продукта.
-• Опыт написания качественных PRD и работы с распределенными командами.`;
+• Опыт работы с облачными платформами, AI/ML-сервисами или высоконагруженными B2B SaaS.
+• Глубокое понимание метрик: Retention, LTV, Unit Economics, A/B-тестирование.
+• Опыт фасилитации процессов разработки (Agile/Scrum), написания подробных PRD и технических спецификаций.
+• Умение говорить на одном языке с инженерами: понимание CI/CD, архитектуры микросервисов и API.
+• Высокие коммуникативные навыки для управления ожиданиями топ-стейкхолдеров.`;
 
 export default function ATSScannerPage() {
   const [resumeText, setResumeText] = useState(DEFAULT_RESUME);
@@ -77,7 +85,15 @@ export default function ATSScannerPage() {
   const [scanResult, setScanResult] = useState<ATSScanResult>(DEMO_ATS_RESULT);
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+  const [upgradeReason, setUpgradeReason] = useState<string | undefined>(undefined);
+  const [isPro, setIsPro] = useState(false);
+  const [remainingScans, setRemainingScans] = useState(2);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setIsPro(isUserPro());
+    setRemainingScans(getRemainingFreeScans());
+  }, []);
 
   // Handle PDF/DOCX file selection
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -104,6 +120,12 @@ export default function ATSScannerPage() {
 
   // Run real ATS scan via API route
   const handleScan = async () => {
+    if (!isUserPro() && getRemainingFreeScans() <= 0) {
+      setUpgradeReason("Вы использовали 2 из 2 бесплатных ATS-проверок. Активируйте LaunchPad AI PRO для безлимитного анализа резюме и генерации писем!");
+      setUpgradeModalOpen(true);
+      return;
+    }
+
     setIsScanning(true);
     try {
       const response = await fetch("/api/ats-scan", {
@@ -122,16 +144,28 @@ export default function ATSScannerPage() {
       }
 
       const data: ATSScanResult = await response.json();
-      setScanResult(data);
-    } catch (err: any) {
-      alert(err.message || "Ошибка при анализе резюме");
+      const cleanedData: ATSScanResult = {
+        ...data,
+        suggestions: (data.suggestions || []).map(cleanAIMarkdownArtifacts),
+        format_issues: (data.format_issues || []).map(cleanAIMarkdownArtifacts),
+        optimized_sections: {
+          summary: cleanAIMarkdownArtifacts(data.optimized_sections?.summary || ''),
+          skills: cleanAIMarkdownArtifacts(data.optimized_sections?.skills || ''),
+        },
+      };
+      setScanResult(cleanedData);
+      incrementScanUsage();
+      setRemainingScans(getRemainingFreeScans());
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : "Ошибка при анализе резюме";
+      alert(errorMsg);
     } finally {
       setIsScanning(false);
     }
   };
 
   const copyToClipboard = (text: string, id: string) => {
-    navigator.clipboard.writeText(text);
+    navigator.clipboard.writeText(cleanAIMarkdownArtifacts(text));
     setCopiedSection(id);
     setTimeout(() => setCopiedSection(null), 2000);
   };
@@ -156,20 +190,28 @@ export default function ATSScannerPage() {
         </div>
 
         <div className="flex items-center gap-2.5">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setUpgradeModalOpen(true)}
-            className="text-xs border-amber-500/40 text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 font-semibold"
-          >
-            <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-            Тариф Pro (ЮKassa)
-          </Button>
+          {isPro ? (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold shadow-sm">
+              <Sparkles className="w-3.5 h-3.5" />
+              ✨ PRO Активен
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                setUpgradeReason(undefined);
+                setUpgradeModalOpen(true);
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-indigo-500/40 bg-indigo-500/10 text-indigo-300 hover:text-white hover:bg-indigo-500/20 text-xs font-semibold shadow-sm transition cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+              💎 Upgrade to PRO (Бесплатно: {remainingScans}/2)
+            </button>
+          )}
 
           <Button
             onClick={handleScan}
             disabled={isScanning}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold shadow-md shadow-primary/25"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold shadow-md shadow-primary/25 cursor-pointer"
           >
             {isScanning ? (
               <>
@@ -186,56 +228,72 @@ export default function ATSScannerPage() {
         </div>
       </div>
 
-      {/* Main Two-Panel Layout */}
+      {/* Main Grid: Inputs vs Report */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Inputs (5 Cols) */}
+        {/* Left Column: Inputs (5 Cols) */}
         <div className="lg:col-span-5 space-y-4">
-          {/* Resume Upload / Text Card */}
+          {/* Resume Source Card */}
           <Card className="bg-card/70 border-border">
-            <CardHeader className="pb-3 flex flex-row items-center justify-between">
-              <CardTitle className="text-sm font-bold">1. Резюме кандидата</CardTitle>
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileUpload}
-                accept=".pdf,.docx,.doc,.txt"
-                className="hidden"
-                id="resume-file-input"
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => fileInputRef.current?.click()}
-                className="h-7 text-xs border-dashed border-primary/50 text-primary hover:bg-primary/10"
-              >
-                <Upload className="w-3 h-3 mr-1" /> Загрузить PDF / DOCX
-              </Button>
+            <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
+              <div>
+                <CardTitle className="text-sm font-bold flex items-center gap-2">
+                  <span>1. Резюме кандидата</span>
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  PDF, DOCX или скопированный текст
+                </CardDescription>
+              </div>
+
+              {/* Upload trigger */}
+              <div>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileUpload}
+                  accept=".pdf,.docx,.txt"
+                  className="hidden"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="text-xs h-8 border-dashed"
+                >
+                  <Upload className="w-3.5 h-3.5 mr-1.5" />
+                  Загрузить PDF / DOCX
+                </Button>
+              </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-3">
               {uploadedFile ? (
-                <div className="p-4 rounded-xl border border-primary/40 bg-primary/5 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-primary/20 text-primary flex items-center justify-center font-bold">
-                      <FileCheck className="w-5 h-5" />
+                <div className="p-3.5 rounded-xl border border-primary/30 bg-primary/5 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
+                      <FileCheck className="w-4 h-4" />
                     </div>
                     <div>
-                      <span className="font-semibold text-xs text-foreground block truncate max-w-[200px]">
+                      <p className="text-xs font-semibold text-foreground truncate max-w-[220px]">
                         {uploadedFile.name}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground">{uploadedFile.size} • Готов к анализу</span>
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">{uploadedFile.size}</p>
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={removeFile} className="h-7 w-7 text-muted-foreground hover:text-foreground">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={removeFile}
+                    className="h-7 w-7 text-muted-foreground hover:text-rose-400"
+                  >
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
               ) : (
                 <Textarea
-                  rows={10}
                   value={resumeText}
                   onChange={(e) => setResumeText(e.target.value)}
-                  placeholder="Вставьте текст резюме или нажмите «Загрузить PDF» выше..."
-                  className="font-mono text-xs leading-relaxed resize-y bg-background/50 border-border"
+                  placeholder="Вставьте текст вашего резюме..."
+                  rows={8}
+                  className="font-mono text-xs resize-none bg-background/50 border-border"
                 />
               )}
             </CardContent>
@@ -244,230 +302,236 @@ export default function ATSScannerPage() {
           {/* Job Description Card */}
           <Card className="bg-card/70 border-border">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-bold flex items-center justify-between">
+              <CardTitle className="text-sm font-bold flex items-center gap-2">
                 <span>2. Описание целевой вакансии</span>
-                <span className="text-[11px] font-normal text-muted-foreground">Текст вакансии</span>
               </CardTitle>
+              <CardDescription className="text-xs">
+                Скопируйте текст вакансии с hh.ru, Habr или сайта компании
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <Textarea
-                rows={9}
                 value={jobDesc}
                 onChange={(e) => setJobDesc(e.target.value)}
-                placeholder="Вставьте требования из описания вакансии (LinkedIn, hh.ru, Indeed)..."
-                className="font-mono text-xs leading-relaxed resize-y bg-background/50 border-border"
+                placeholder="Вставьте текст требований и обязанностей вакансии..."
+                rows={8}
+                className="font-mono text-xs resize-none bg-background/50 border-border"
               />
             </CardContent>
           </Card>
         </div>
 
-        {/* Right Audit Results (7 Cols) */}
-        <div className="lg:col-span-7 space-y-5">
-          {/* Score Card */}
-          <Card className="bg-card/70 border-border overflow-hidden">
-            <div className="p-5 flex flex-col sm:flex-row items-center justify-between gap-6 bg-gradient-to-r from-primary/10 via-card to-card border-b border-border/70">
-              <div className="text-center sm:text-left">
-                <span className="text-xs font-semibold text-primary uppercase tracking-wider">
-                  Индекс соответствия (ATS Match Score)
-                </span>
-                <h3 className="text-3xl font-black mt-1 text-foreground">
-                  {scanResult.match_score}% / 100%
-                </h3>
-                <p className="text-xs text-muted-foreground mt-1 max-w-sm">
-                  {scanResult.match_score >= 80
-                    ? "Отличный результат! Резюме с высокой вероятностью пройдёт автоматический отбор."
-                    : "Средний балл. Добавьте выделенные ключевые слова, чтобы роботы ATS не отсеяли резюме."}
-                </p>
+        {/* Right Column: ATS Report & Score (7 Cols) */}
+        <div className="lg:col-span-7 space-y-4">
+          {/* Primary Score & Match Highlights */}
+          <Card className="bg-card border-border overflow-hidden">
+            <div className="p-5 sm:p-6 bg-gradient-to-r from-card via-card to-primary/10 border-b border-border/80">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <div className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1">
+                    Индекс соответствия (ATS Match Score)
+                  </div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl sm:text-5xl font-black tracking-tight text-foreground">
+                      {scanResult.match_score}%
+                    </span>
+                    <span className="text-muted-foreground text-sm font-medium">/ 100%</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1 max-w-md">
+                    {scanResult.match_score >= 80
+                      ? "Отличный результат! Ваше резюме проходит автоматические фильтры большинства ATS."
+                      : scanResult.match_score >= 65
+                      ? "Средний балл. Добавьте выделенные ключевые слова, чтобы роботы ATS не отсеяли резюме."
+                      : "Высокий риск отсева. Резюме не содержит более 50% обязательных ключевых навыков."}
+                  </p>
+                </div>
 
-                {/* Social Share & Upgrade Trigger */}
-                <div className="flex flex-wrap items-center gap-2 mt-3">
-                  <a
-                    href={`https://t.me/share/url?url=${encodeURIComponent("https://launchpad-app-ashy.vercel.app/scanner")}&text=${encodeURIComponent(`🎯 Моё резюме прошло проверку ATS-роботов на ${scanResult.match_score}%! Проверь своё резюме бесплатно на LaunchPad:`)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#229ED9]/15 text-[#229ED9] hover:bg-[#229ED9]/25 text-xs font-semibold transition-colors border border-[#229ED9]/30"
-                  >
-                    <Send className="w-3.5 h-3.5" />
-                    <span>Поделиться в Telegram</span>
-                  </a>
+                {/* Circular indicator representation */}
+                <div className="relative w-24 h-24 rounded-full border-4 border-muted flex items-center justify-center shrink-0">
+                  <div
+                    className="absolute inset-0 rounded-full border-4 border-primary transition-all duration-700"
+                    style={{
+                      clipPath: `polygon(50% 50%, 50% 0%, ${scanResult.match_score >= 25 ? "100% 0%," : ""}${scanResult.match_score >= 50 ? "100% 100%," : ""}${scanResult.match_score >= 75 ? "0% 100%," : ""}0% 0%)`
+                    }}
+                  />
+                  <div className="text-center">
+                    <span className="text-base font-black">{scanResult.match_score}%</span>
+                    <span className="block text-[9px] uppercase tracking-wider text-muted-foreground">review</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Progress bar */}
+              <div className="mt-4">
+                <Progress value={scanResult.match_score} className="h-2 bg-muted/60" />
+              </div>
+
+              {/* Actions row under score */}
+              <div className="mt-4 pt-4 border-t border-border/60 flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2">
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setUpgradeModalOpen(true)}
-                    className="text-xs h-7 border-amber-500/40 text-amber-400 hover:bg-amber-500/10 font-semibold"
+                    onClick={() => {
+                      const shareText = `Моё резюме прошло ATS-аудит в LaunchPad на ${scanResult.match_score}% совпадения! Проверь своё: https://launchpad-app-ashy.vercel.app`;
+                      window.open(`https://t.me/share/url?url=${encodeURIComponent("https://launchpad-app-ashy.vercel.app")}&text=${encodeURIComponent(shareText)}`, "_blank");
+                    }}
+                    className="h-8 text-xs font-medium"
                   >
-                    <Sparkles className="w-3 h-3 mr-1" />
-                    Скидка 30% по коду START30
+                    <Send className="w-3.5 h-3.5 mr-1.5 text-sky-400" />
+                    Поделиться в Telegram
                   </Button>
                 </div>
-              </div>
 
-              <div className="relative w-28 h-28 flex items-center justify-center shrink-0">
-                <div
-                  className="w-full h-full rounded-full flex items-center justify-center shadow-inner"
-                  style={{
-                    background: `conic-gradient(#6366f1 ${scanResult.match_score * 3.6}deg, #27272a 0deg)`,
-                  }}
-                >
-                  <div className="w-20 h-20 rounded-full bg-card flex flex-col items-center justify-center text-center">
-                    <span className="text-xl font-black text-foreground">{scanResult.match_score}%</span>
-                    <span className={`text-[9px] uppercase font-bold ${scanResult.match_score >= 80 ? "text-emerald-400" : "text-amber-400"}`}>
-                      {scanResult.match_score >= 80 ? "Pass" : "Review"}
-                    </span>
-                  </div>
-                </div>
+                {!isPro && (
+                  <button
+                    onClick={() => setUpgradeModalOpen(true)}
+                    className="inline-flex items-center gap-1 text-xs text-amber-400 hover:text-amber-300 font-semibold cursor-pointer"
+                  >
+                    <Sparkles className="w-3 h-3" />
+                    <span>Безлимитный PRO-тариф через Tribute</span>
+                  </button>
+                )}
               </div>
             </div>
 
-            <CardContent className="p-5 space-y-5">
-              {/* Keywords Comparison */}
-              <div className="space-y-3">
-                <div>
-                  <div className="flex items-center justify-between text-xs mb-1.5 font-semibold text-red-400">
-                    <span className="flex items-center gap-1.5">
-                      <AlertCircle className="w-3.5 h-3.5" /> Отсутствующие ключевые навыки ({scanResult.missing_keywords.length})
-                    </span>
-                    <span className="text-[11px] text-muted-foreground font-normal">Критично для прохождения фильтра</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {scanResult.missing_keywords.map((kw) => (
-                      <Badge
-                        key={kw}
-                        variant="outline"
-                        className="text-xs bg-red-500/10 text-red-400 border-red-500/30 font-medium py-1"
-                      >
-                        +{kw}
-                      </Badge>
-                    ))}
-                  </div>
+            <CardContent className="p-5 sm:p-6 space-y-6">
+              {/* Missing Keywords Box */}
+              <div>
+                <div className="flex items-center justify-between mb-2.5">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    Отсутствующие ключевые навыки ({scanResult.missing_keywords.length})
+                  </h3>
+                  <span className="text-[10px] text-muted-foreground">Критично для прохождения фильтра</span>
                 </div>
-
-                <div>
-                  <div className="flex items-center justify-between text-xs mb-1.5 font-semibold text-emerald-400">
-                    <span className="flex items-center gap-1.5">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Успешно распознанные совпадения ({scanResult.present_keywords.length})
-                    </span>
-                    <span className="text-[11px] text-muted-foreground font-normal">Найдены роботом</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {scanResult.present_keywords.map((kw) => (
-                      <Badge
-                        key={kw}
-                        variant="outline"
-                        className="text-xs bg-emerald-500/10 text-emerald-400 border-emerald-500/30 font-medium py-1"
+                <div className="flex flex-wrap gap-1.5">
+                  {scanResult.missing_keywords.length === 0 ? (
+                    <span className="text-xs text-muted-foreground">Все обязательные навыки найдены в резюме!</span>
+                  ) : (
+                    scanResult.missing_keywords.map((kw, idx) => (
+                      <span
+                        key={idx}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-medium"
                       >
-                        ✓ {kw}
-                      </Badge>
-                    ))}
-                  </div>
+                        +{cleanAIMarkdownArtifacts(kw)}
+                      </span>
+                    ))
+                  )}
                 </div>
               </div>
 
-              {/* Formatting Risks */}
+              {/* Present Keywords Box */}
+              <div>
+                <div className="flex items-center justify-between mb-2.5">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    Успешно распознанные совпадения ({scanResult.present_keywords.length})
+                  </h3>
+                  <span className="text-[10px] text-muted-foreground">Найдены роботом</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {scanResult.present_keywords.map((kw, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-medium"
+                    >
+                      ✓ {cleanAIMarkdownArtifacts(kw)}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Format & ATS Risks */}
               {scanResult.format_issues && scanResult.format_issues.length > 0 && (
                 <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/5 space-y-2">
-                  <h4 className="text-xs font-bold text-amber-400 flex items-center gap-1.5">
-                    <AlertTriangle className="w-3.5 h-3.5" />
+                  <div className="flex items-center gap-2 text-xs font-bold text-amber-400">
+                    <AlertTriangle className="w-4 h-4" />
                     <span>Предупреждения по верстке для роботов ATS</span>
-                  </h4>
-                  <ul className="space-y-1 text-xs text-muted-foreground">
+                  </div>
+                  <ul className="text-xs text-muted-foreground space-y-1 pl-4 list-disc">
                     {scanResult.format_issues.map((issue, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <span className="text-amber-400 font-bold">•</span>
-                        <span>{issue}</span>
-                      </li>
+                      <li key={idx}>{cleanAIMarkdownArtifacts(issue)}</li>
                     ))}
                   </ul>
                 </div>
               )}
 
-              {/* Suggestions */}
-              {scanResult.suggestions && scanResult.suggestions.length > 0 && (
-                <div className="space-y-2">
-                  <h4 className="text-xs font-bold text-foreground">Конкретные шаги по улучшению:</h4>
-                  <ul className="space-y-1.5 text-xs text-muted-foreground">
-                    {scanResult.suggestions.map((sug, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <span className="text-primary font-bold">{idx + 1}.</span>
-                        <span>{sug}</span>
-                      </li>
-                    ))}
-                  </ul>
+              {/* Concrete Suggestions */}
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-foreground mb-3">
+                  Конкретные шаги по улучшению:
+                </h3>
+                <div className="space-y-2 text-xs">
+                  {scanResult.suggestions.map((sug, idx) => (
+                    <div key={idx} className="flex items-start gap-2.5 p-2.5 rounded-lg bg-muted/40 border border-border/60">
+                      <span className="font-bold text-primary shrink-0">{idx + 1}.</span>
+                      <p className="text-foreground leading-relaxed">{cleanAIMarkdownArtifacts(sug)}</p>
+                    </div>
+                  ))}
                 </div>
-              )}
+              </div>
 
-              {/* AI Rewritten Recommendations */}
+              {/* AI Optimized Sections Rewrite */}
               {scanResult.optimized_sections && (
-                <div className="space-y-3 pt-2">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-primary" />
-                    <span>AI-сгенерированные блоки для вставки в резюме</span>
-                  </h4>
+                <div className="space-y-3 pt-3 border-t border-border/80">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      AI-сгенерированные блоки для вставки в резюме
+                    </h3>
+                  </div>
 
-                  {/* Rewritten Summary */}
                   {scanResult.optimized_sections.summary && (
-                    <div className="rounded-xl border border-border p-3.5 bg-background/50 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-foreground">
-                          Оптимизированное саммари (ATS Score: 98%)
-                        </span>
+                    <div className="p-3.5 rounded-xl border border-border bg-background/60 space-y-2">
+                      <div className="flex items-center justify-between text-xs font-semibold">
+                        <span>Готовое введение (Executive Summary)</span>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() =>
-                            copyToClipboard(scanResult.optimized_sections.summary, "summary")
-                          }
-                          className="h-7 text-xs text-muted-foreground hover:text-foreground"
+                          onClick={() => copyToClipboard(scanResult.optimized_sections!.summary, "summary")}
+                          className="h-6 text-[10px]"
                         >
                           {copiedSection === "summary" ? (
                             <>
-                              <Check className="w-3.5 h-3.5 mr-1 text-emerald-400" />
-                              Скопировано!
+                              <Check className="w-3 h-3 mr-1 text-emerald-400" /> Скопировано
                             </>
                           ) : (
                             <>
-                              <Copy className="w-3.5 h-3.5 mr-1" />
-                              Копировать
+                              <Copy className="w-3 h-3 mr-1" /> Копировать
                             </>
                           )}
                         </Button>
                       </div>
-                      <p className="text-xs text-muted-foreground leading-relaxed italic bg-card/60 p-2.5 rounded-lg border border-border/50">
-                        "{scanResult.optimized_sections.summary}"
+                      <p className="text-xs font-mono text-muted-foreground leading-relaxed">
+                        {cleanAIMarkdownArtifacts(scanResult.optimized_sections.summary)}
                       </p>
                     </div>
                   )}
 
-                  {/* Rewritten Skills List */}
                   {scanResult.optimized_sections.skills && (
-                    <div className="rounded-xl border border-border p-3.5 bg-background/50 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-foreground">
-                          Оптимальный блок навыков (Comma-separated)
-                        </span>
+                    <div className="p-3.5 rounded-xl border border-border bg-background/60 space-y-2">
+                      <div className="flex items-center justify-between text-xs font-semibold">
+                        <span>Список ключевых навыков для раздела «Skills»</span>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() =>
-                            copyToClipboard(scanResult.optimized_sections.skills, "skills")
-                          }
-                          className="h-7 text-xs text-muted-foreground hover:text-foreground"
+                          onClick={() => copyToClipboard(scanResult.optimized_sections!.skills, "skills")}
+                          className="h-6 text-[10px]"
                         >
                           {copiedSection === "skills" ? (
                             <>
-                              <Check className="w-3.5 h-3.5 mr-1 text-emerald-400" />
-                              Скопировано!
+                              <Check className="w-3 h-3 mr-1 text-emerald-400" /> Скопировано
                             </>
                           ) : (
                             <>
-                              <Copy className="w-3.5 h-3.5 mr-1" />
-                              Копировать
+                              <Copy className="w-3 h-3 mr-1" /> Копировать
                             </>
                           )}
                         </Button>
                       </div>
-                      <p className="text-xs text-muted-foreground leading-relaxed font-mono bg-card/60 p-2.5 rounded-lg border border-border/50">
-                        {scanResult.optimized_sections.skills}
+                      <p className="text-xs font-mono text-muted-foreground leading-relaxed">
+                        {cleanAIMarkdownArtifacts(scanResult.optimized_sections.skills)}
                       </p>
                     </div>
                   )}
@@ -478,10 +542,15 @@ export default function ATSScannerPage() {
         </div>
       </div>
 
-      {/* Upgrade to Pro Modal (YooKassa) */}
-      <UpgradeModal
-        open={upgradeModalOpen}
-        onOpenChange={setUpgradeModalOpen}
+      {/* Upgrade to Pro Modal (Tribute) */}
+      <UpgradeProModal
+        isOpen={upgradeModalOpen}
+        onClose={() => setUpgradeModalOpen(false)}
+        onActivated={() => {
+          setIsPro(true);
+          setRemainingScans(Infinity);
+        }}
+        reasonMessage={upgradeReason}
       />
     </div>
   );

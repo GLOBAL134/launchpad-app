@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+/* eslint-disable react-hooks/set-state-in-effect */
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -33,7 +34,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { UpgradeModal } from "@/components/UpgradeModal";
+import UpgradeProModal from "@/components/UpgradeProModal";
+import {
+  isUserPro,
+  getRemainingFreeScans,
+  verifyAndActivateProKey,
+} from "@/lib/monetization";
 
 const navItems = [
   { href: "/dashboard", label: "Обзор дашборда", icon: LayoutDashboard },
@@ -53,6 +59,34 @@ export default function DashboardLayout({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [addJobOpen, setAddJobOpen] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
+
+  // Состояния PRO и квот
+  const [isPro, setIsPro] = useState(false);
+  const [remainingScans, setRemainingScans] = useState(2);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3200);
+  };
+
+  // Проверка URL-параметров при загрузке (?pro_key=...)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const proKey = params.get("pro_key");
+    if (proKey && verifyAndActivateProKey(proKey)) {
+      setIsPro(true);
+      setRemainingScans(Infinity);
+      showToast("🎉 Тариф LaunchPad AI PRO успешно активирован!");
+      const url = new URL(window.location.href);
+      url.searchParams.delete("pro_key");
+      window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
+    } else {
+      setIsPro(isUserPro());
+      setRemainingScans(getRemainingFreeScans());
+    }
+  }, []);
 
   // Quick state for new job modal
   const [newCompany, setNewCompany] = useState("");
@@ -80,6 +114,13 @@ export default function DashboardLayout({
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed top-5 right-5 z-[9999] px-4 py-2.5 rounded-xl bg-emerald-600 text-white text-xs sm:text-sm font-semibold shadow-2xl animate-in fade-in slide-in-from-top-4 duration-300">
+          {toastMessage}
+        </div>
+      )}
+
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex w-64 flex-col border-r border-border bg-card/60 backdrop-blur-md">
         {/* Brand */}
@@ -153,24 +194,35 @@ export default function DashboardLayout({
 
         {/* Pro Banner Card */}
         <div className="px-3 pb-2">
-          <div className="p-3 rounded-xl border border-primary/30 bg-gradient-to-br from-primary/15 to-card space-y-2">
-            <div className="flex items-center justify-between text-xs font-bold text-foreground">
-              <span className="flex items-center gap-1.5 text-primary">
-                <Sparkles className="w-3.5 h-3.5" /> Тариф Pro
-              </span>
-              <span className="text-[10px] text-muted-foreground">ЮKassa</span>
+          {isPro ? (
+            <div className="p-3 rounded-xl border border-emerald-500/40 bg-gradient-to-br from-emerald-500/15 to-card space-y-1.5">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-400">
+                <Sparkles className="w-3.5 h-3.5" /> ✨ PRO Активен
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-tight">
+                Безлимитный AI ATS-сканер, генерация писем и полный доступ к сервису.
+              </p>
             </div>
-            <p className="text-[11px] text-muted-foreground leading-tight">
-              Безлимитный AI ATS-сканер и генерация сопроводительных писем.
-            </p>
-            <Button
-              size="sm"
-              onClick={() => setUpgradeOpen(true)}
-              className="w-full h-7 text-xs bg-primary text-primary-foreground hover:bg-primary/90 font-semibold"
-            >
-              Перейти на Pro
-            </Button>
-          </div>
+          ) : (
+            <div className="p-3 rounded-xl border border-indigo-500/30 bg-gradient-to-br from-indigo-500/15 to-card space-y-2">
+              <div className="flex items-center justify-between text-xs font-bold text-foreground">
+                <span className="flex items-center gap-1.5 text-indigo-400">
+                  <Sparkles className="w-3.5 h-3.5" /> Тариф Pro
+                </span>
+                <span className="text-[10px] text-indigo-300/80 font-mono">Бесплатно: {remainingScans}/2</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-tight">
+                Безлимитный AI ATS-сканер и генерация сопроводительных писем.
+              </p>
+              <Button
+                size="sm"
+                onClick={() => setUpgradeOpen(true)}
+                className="w-full h-7 text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-semibold cursor-pointer"
+              >
+                💎 Перейти на Pro
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* User footer */}
@@ -256,15 +308,20 @@ export default function DashboardLayout({
           </div>
 
           <div className="flex items-center gap-2.5">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setUpgradeOpen(true)}
-              className="text-xs font-semibold border-amber-500/40 text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 shadow-sm"
-            >
-              <Sparkles className="w-3.5 h-3.5 mr-1" />
-              Pro (ЮKassa)
-            </Button>
+            {isPro ? (
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold shadow-sm">
+                <Sparkles className="w-3.5 h-3.5" />
+                ✨ PRO Активен
+              </div>
+            ) : (
+              <button
+                onClick={() => setUpgradeOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-indigo-500/40 bg-indigo-500/10 text-indigo-300 hover:text-white hover:bg-indigo-500/20 text-xs font-semibold shadow-sm transition cursor-pointer"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                💎 Upgrade to PRO (Бесплатно: {remainingScans}/2)
+              </button>
+            )}
 
             <Link href="/scanner">
               <Button variant="outline" size="sm" className="hidden sm:flex text-xs font-medium border-border/80">
@@ -371,32 +428,42 @@ export default function DashboardLayout({
         {/* Scrollable Page Body */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto space-y-4">
-            {/* Promo Announcement Banner */}
-            <div className="p-3 px-4 rounded-xl bg-gradient-to-r from-primary/15 via-primary/10 to-card border border-primary/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-sm">
-              <div className="flex items-center gap-2.5 text-center sm:text-left">
-                <span className="px-2 py-0.5 rounded bg-primary text-primary-foreground font-black text-[10px] tracking-wide uppercase shrink-0">
-                  Акция
-                </span>
-                <span className="text-foreground">
-                  Получите <strong>скидку 30%</strong> на полный доступ к ATS-сканеру и генератору писем по промокоду <code className="bg-background/80 px-1.5 py-0.5 rounded font-mono font-bold text-primary border border-primary/20">START30</code>
-                </span>
+            {/* Promo Announcement Banner (показывается только если не PRO) */}
+            {!isPro && (
+              <div className="p-3 px-4 rounded-xl bg-gradient-to-r from-primary/15 via-primary/10 to-card border border-primary/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-sm">
+                <div className="flex items-center gap-2.5 text-center sm:text-left">
+                  <span className="px-2 py-0.5 rounded bg-primary text-primary-foreground font-black text-[10px] tracking-wide uppercase shrink-0">
+                    Акция
+                  </span>
+                  <span className="text-foreground">
+                    Получите <strong>полный PRO-доступ</strong> к безлимитному ATS-сканеру и генератору писем через Tribute!
+                  </span>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => setUpgradeOpen(true)}
+                  className="h-7 text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shrink-0 cursor-pointer"
+                >
+                  Активировать PRO
+                </Button>
               </div>
-              <Button
-                size="sm"
-                onClick={() => setUpgradeOpen(true)}
-                className="h-7 text-xs bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shrink-0"
-              >
-                Активировать со скидкой
-              </Button>
-            </div>
+            )}
 
             {children}
           </div>
         </main>
       </div>
 
-      {/* Upgrade to Pro Modal (YooKassa) */}
-      <UpgradeModal open={upgradeOpen} onOpenChange={setUpgradeOpen} />
+      {/* Upgrade to Pro Modal (Tribute) */}
+      <UpgradeProModal
+        isOpen={upgradeOpen}
+        onClose={() => setUpgradeOpen(false)}
+        onActivated={() => {
+          setIsPro(true);
+          setRemainingScans(Infinity);
+          showToast("🎉 Тариф LaunchPad AI PRO успешно активирован!");
+        }}
+      />
     </div>
   );
 }

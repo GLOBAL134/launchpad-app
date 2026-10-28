@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ATSScanResult } from "@/types";
+import { cleanAIMarkdownArtifacts } from "@/lib/monetization";
 
 const SYSTEM_PROMPT = `You are an elite Applicant Tracking System (ATS) parsing engine and technical recruiter.
 Analyze the provided candidate resume against the target job description.
+
+Write plain human text only. NEVER use Markdown asterisks (**), hashtags (#), or backticks in the output.
 
 Evaluate:
 1. Keyword match density (essential hard skills, tools, methodologies).
@@ -13,15 +16,27 @@ Evaluate:
 You must respond ONLY with a raw valid JSON object (no markdown code fences, no extra text) with this exact schema:
 {
   "match_score": number (0 to 100),
-  "missing_keywords": string[] (up to 8 crucial hard/soft skills found in job description but missing in resume),
-  "present_keywords": string[] (up to 10 matching skills correctly identified),
-  "format_issues": string[] (2-4 ATS formatting or readability risks),
-  "suggestions": string[] (4-6 actionable bullet points to improve score),
+  "missing_keywords": string[],
+  "present_keywords": string[],
+  "format_issues": string[],
+  "suggestions": string[],
   "optimized_sections": {
-    "summary": string (a high-impact 3-sentence rewritten executive summary tailored to this role),
-    "skills": string (comma-separated list of prioritized skills matching the job description)
+    "summary": string,
+    "skills": string
   }
 }`;
+
+function sanitizeResult(res: ATSScanResult): ATSScanResult {
+  return {
+    ...res,
+    suggestions: (res.suggestions || []).map(cleanAIMarkdownArtifacts),
+    format_issues: (res.format_issues || []).map(cleanAIMarkdownArtifacts),
+    optimized_sections: {
+      summary: cleanAIMarkdownArtifacts(res.optimized_sections?.summary || ''),
+      skills: cleanAIMarkdownArtifacts(res.optimized_sections?.skills || ''),
+    },
+  };
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -74,7 +89,7 @@ export async function POST(req: NextRequest) {
         const result: ATSScanResult = JSON.parse(cleaned);
         result.scanned_at = new Date().toISOString();
 
-        return NextResponse.json(result);
+        return NextResponse.json(sanitizeResult(result));
       } catch (geminiError: any) {
         console.warn("[Gemini API Warning] Falling back to intelligent local parser:", geminiError.message || geminiError);
         // Fall through to local heuristic engine
@@ -83,7 +98,7 @@ export async function POST(req: NextRequest) {
 
     // Dynamic fallback algorithm (runs when Gemini key is missing, invalid or quota exceeded)
     const fallbackResult = generateDynamicAudit(resumeText || "", jobDescription);
-    return NextResponse.json(fallbackResult);
+    return NextResponse.json(sanitizeResult(fallbackResult));
   } catch (err: any) {
     console.error("ATS Scan Error:", err);
     return NextResponse.json(

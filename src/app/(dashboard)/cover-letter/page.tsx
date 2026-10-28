@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { cleanAIMarkdownArtifacts } from "@/lib/monetization";
 
 const SAMPLE_GENERATED_LETTER = `Здравствуйте, команда найма Яндекс!
 
@@ -39,7 +40,7 @@ export default function CoverLetterPage() {
   const [keyAchievement, setKeyAchievement] = useState(
     "Руководил командой из 12 инженеров, поднял конверсию на 24% за счёт A/B-тестирования, ускорил онбординг клиентов с 3 недель до 4 часов."
   );
-  const [letterContent, setLetterContent] = useState(SAMPLE_GENERATED_LETTER);
+  const [letterContent, setLetterContent] = useState(cleanAIMarkdownArtifacts(SAMPLE_GENERATED_LETTER));
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -47,21 +48,21 @@ export default function CoverLetterPage() {
     setIsGenerating(true);
     setTimeout(() => {
       setIsGenerating(false);
-      setLetterContent(
-        `Здравствуйте, команда ${company}!\n\nМеня очень заинтересовала вакансия ${role} в вашей компании. Обладая 6-летним опытом руководства продуктовыми командами и сильным бэкграундом в IT, я уверен, что смогу усилить ваши процессы с первых дней.\n\nВ частности, ${keyAchievement} Мой подход строится на строгой data-driven аналитике, глубоких качественных исследованиях пользователей и слаженном взаимодействии с инженерной командой.\n\nБуду рад обсудить подробности на техническом интервью.\n\nС уважением,\nАлексей Морозов\n+7 (999) 123-45-67`
-      );
+      const rawGenerated = `Здравствуйте, команда ${company}!\n\nМеня очень заинтересовала вакансия ${role} в вашей компании. Обладая 6-летним опытом руководства продуктовыми командами и сильным бэкграундом в IT, я уверен, что смогу усилить ваши процессы с первых дней.\n\nВ частности, ${keyAchievement} Мой подход строится на строгой data-driven аналитике, глубоких качественных исследованиях пользователей и слаженном взаимодействии с инженерной командой.\n\nБуду рад обсудить подробности на техническом интервью.\n\nС уважением,\nАлексей Морозов\n+7 (999) 123-45-67`;
+      setLetterContent(cleanAIMarkdownArtifacts(rawGenerated));
     }, 1000);
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(letterContent);
+    navigator.clipboard.writeText(cleanAIMarkdownArtifacts(letterContent));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const handleDownload = () => {
+    const cleanedText = cleanAIMarkdownArtifacts(letterContent);
     const element = document.createElement("a");
-    const file = new Blob([letterContent], { type: "text/plain;charset=utf-8" });
+    const file = new Blob([cleanedText], { type: "text/plain;charset=utf-8" });
     element.href = URL.createObjectURL(file);
     element.download = `${company}_Сопроводительное_письмо_${role.replace(/\s+/g, "_")}.txt`;
     document.body.appendChild(element);
@@ -150,7 +151,7 @@ export default function CoverLetterPage() {
               <Button
                 onClick={handleGenerate}
                 disabled={isGenerating}
-                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold shadow-md shadow-primary/20 h-10"
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold shadow-md shadow-primary/20 h-10 cursor-pointer"
               >
                 {isGenerating ? (
                   <>
@@ -187,7 +188,7 @@ export default function CoverLetterPage() {
                   variant="outline"
                   size="sm"
                   onClick={handleCopy}
-                  className="h-8 text-xs font-medium"
+                  className="h-8 text-xs font-medium cursor-pointer"
                 >
                   {copied ? (
                     <>
@@ -206,7 +207,7 @@ export default function CoverLetterPage() {
                   variant="secondary"
                   size="sm"
                   onClick={handleDownload}
-                  className="h-8 text-xs font-medium"
+                  className="h-8 text-xs font-medium cursor-pointer"
                 >
                   <Download className="w-3.5 h-3.5 mr-1" />
                   Скачать .TXT
@@ -218,7 +219,7 @@ export default function CoverLetterPage() {
               <Textarea
                 rows={16}
                 value={letterContent}
-                onChange={(e) => setLetterContent(e.target.value)}
+                onChange={(e) => setLetterContent(cleanAIMarkdownArtifacts(e.target.value))}
                 className="font-mono text-xs leading-relaxed bg-background/50 border-border p-4 rounded-xl resize-y"
               />
 
@@ -232,8 +233,8 @@ export default function CoverLetterPage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setLetterContent(SAMPLE_GENERATED_LETTER)}
-                  className="h-7 text-[11px] text-muted-foreground hover:text-foreground"
+                  onClick={() => setLetterContent(cleanAIMarkdownArtifacts(SAMPLE_GENERATED_LETTER))}
+                  className="h-7 text-[11px] text-muted-foreground hover:text-foreground cursor-pointer"
                 >
                   <RotateCcw className="w-3 h-3 mr-1" /> Сбросить
                 </Button>
