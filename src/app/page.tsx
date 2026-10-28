@@ -3,6 +3,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ScanSearch,
   Kanban,
@@ -25,11 +26,14 @@ import {
   Briefcase,
   Layers,
   Award,
+  LogOut,
+  User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import UpgradeProModal from "@/components/UpgradeProModal";
+import { useApp } from "@/context/AppContext";
 import {
   isUserPro,
   getRemainingFreeScans,
@@ -37,6 +41,14 @@ import {
 } from "@/lib/monetization";
 
 export default function LandingPage() {
+  const router = useRouter();
+  const {
+    authSession,
+    openAuthModal,
+    logout,
+    userProfile,
+  } = useApp();
+
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [isPro, setIsPro] = useState(false);
@@ -155,12 +167,40 @@ export default function LandingPage() {
               </button>
             )}
 
-            <Link href="/dashboard">
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20 font-medium text-xs sm:text-sm cursor-pointer">
-                Открыть кабинет
-                <ArrowRight className="w-4 h-4 ml-1.5" />
-              </Button>
-            </Link>
+            {authSession ? (
+              <div className="flex items-center gap-2">
+                <Link href="/dashboard">
+                  <Button className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20 font-medium text-xs sm:text-sm cursor-pointer">
+                    Открыть кабинет ({userProfile.name.trim().split(/\s+/)[0]})
+                    <ArrowRight className="w-4 h-4 ml-1.5" />
+                  </Button>
+                </Link>
+                <button
+                  onClick={logout}
+                  title="Выйти из аккаунта (Logout)"
+                  className="text-muted-foreground hover:text-rose-400 p-2 rounded-lg hover:bg-muted/70 transition cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  onClick={() => openAuthModal("login")}
+                  className="text-xs text-muted-foreground hover:text-foreground cursor-pointer font-semibold"
+                >
+                  Войти
+                </Button>
+                <Button
+                  onClick={() => openAuthModal("register")}
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20 font-medium text-xs sm:text-sm cursor-pointer"
+                >
+                  Запустить командный центр
+                  <ArrowRight className="w-4 h-4 ml-1.5" />
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -189,12 +229,20 @@ export default function LandingPage() {
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/dashboard">
-              <Button size="lg" className="w-full sm:w-auto h-12 px-8 text-base bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl shadow-primary/25 font-bold cursor-pointer">
-                Запустить ATS-аудит резюме
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
+            <Button
+              size="lg"
+              onClick={() => {
+                if (authSession) {
+                  router.push("/scanner");
+                } else {
+                  openAuthModal("register");
+                }
+              }}
+              className="w-full sm:w-auto h-12 px-8 text-base bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl shadow-primary/25 font-bold cursor-pointer"
+            >
+              Запустить ATS-аудит резюме
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
             <a href="#how-it-works">
               <Button size="lg" variant="outline" className="w-full sm:w-auto h-12 px-8 text-base border-border/80 hover:bg-muted/50 cursor-pointer">
                 Как это работает

@@ -36,7 +36,7 @@ import { stringToColor } from "@/lib/utils";
 import { useApp, FollowUpItem } from "@/context/AppContext";
 
 export default function DashboardOverviewPage() {
-  const { userProfile, applications, followUps, markFollowUpSent, showToast } = useApp();
+  const { userProfile, authSession, applications, followUps, markFollowUpSent, showToast } = useApp();
 
   const [selectedFollowUp, setSelectedFollowUp] = useState<FollowUpItem | null>(null);
   const [templateText, setTemplateText] = useState("");
@@ -95,11 +95,21 @@ export default function DashboardOverviewPage() {
               <span>Активный поиск • Неделя 4</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-              С возвращением, {userProfile.name.split(" ")[0]}! 👋
+              {authSession?.isFirstTime
+                ? `Добро пожаловать, ${userProfile.name.trim().split(/\s+/)[0]}! 👋`
+                : `С возвращением, ${userProfile.name.trim().split(/\s+/)[0]}! 👋`}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              У вас <span className="text-foreground font-semibold">{interviewCount} назначенных интервью</span> и{" "}
-              <span className="text-amber-400 font-semibold">{pendingFollowUps.length} напоминания</span> требуют отправки письма рекрутерам.
+              {totalApps > 0 ? (
+                <>
+                  У вас <span className="text-foreground font-semibold">{interviewCount} назначенных интервью</span> и{" "}
+                  <span className="text-amber-400 font-semibold">{pendingFollowUps.length} напоминания</span> требуют отправки письма рекрутерам.
+                </>
+              ) : (
+                <>
+                  Ваш персональный пайплайн готов. Добавьте первый отклик кнопкой «+ Добавить отклик» или проверьте резюме в ATS-сканере.
+                </>
+              )}
             </p>
           </div>
 

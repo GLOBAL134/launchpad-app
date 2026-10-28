@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { AppProvider } from "@/context/AppContext";
 import UserProfileModal from "@/components/UserProfileModal";
 import AddJobModal from "@/components/AddJobModal";
+import AuthGateModal from "@/components/AuthGateModal";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -79,6 +80,7 @@ export default function RootLayout({
           <TooltipProvider>{children}</TooltipProvider>
           <UserProfileModal />
           <AddJobModal />
+          <AuthGateModal />
         </AppProvider>
         <Analytics />
       </body>

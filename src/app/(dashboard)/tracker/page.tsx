@@ -51,6 +51,7 @@ export default function TrackerPage() {
     setScannerTargetJob,
     setCoverLetterTargetJob,
     showToast,
+    authSession,
   } = useApp();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -102,11 +103,25 @@ export default function TrackerPage() {
             Всего в пайплайне: <span className="font-bold ml-1 text-foreground">{applications.length}</span>
           </Badge>
 
+          {/* Quick Clear Demo Button */}
+          {applications.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={clearAllApplications}
+              className="text-xs border-border/80 text-muted-foreground hover:text-rose-400 hover:border-rose-500/30 cursor-pointer"
+              title="Очистить демо-вакансии и начать с чистого листа"
+            >
+              <Trash2 className="w-3.5 h-3.5 mr-1 text-rose-400" />
+              Очистить демо / С чистого листа
+            </Button>
+          )}
+
           {/* Database management dropdown (Сбросить демо / Очистить базу) */}
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
-                <Button variant="outline" size="sm" className="text-xs border-border/80">
+                <Button variant="outline" size="sm" className="text-xs border-border/80 cursor-pointer">
                   <RotateCcw className="w-3.5 h-3.5 mr-1 text-muted-foreground" />
                   База данных
                 </Button>
@@ -126,7 +141,7 @@ export default function TrackerPage() {
           <Button
             size="sm"
             onClick={() => setIsAddJobModalOpen(true)}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold cursor-pointer"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold cursor-pointer shadow-sm shadow-primary/20"
           >
             <Plus className="w-4 h-4 mr-1" />
             Быстрое добавление

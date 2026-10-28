@@ -17,6 +17,16 @@ export interface UserProfile {
   title: string;
 }
 
+export interface AuthSession {
+  name: string;
+  email: string;
+  title: string;
+  phone?: string;
+  isDemo: boolean;
+  isFirstTime?: boolean;
+  createdAt: string;
+}
+
 export interface FollowUpItem {
   id: string;
   appId: string;
@@ -32,6 +42,24 @@ export interface FollowUpItem {
 }
 
 interface AppContextType {
+  // Auth Session & Gate
+  authSession: AuthSession | null;
+  isAuthLoaded: boolean;
+  isAuthModalOpen: boolean;
+  setIsAuthModalOpen: (open: boolean) => void;
+  authModalDefaultTab: "register" | "login";
+  openAuthModal: (tab?: "register" | "login") => void;
+  login: (userData: {
+    name: string;
+    email: string;
+    title?: string;
+    phone?: string;
+    seedDemoJobs?: boolean;
+    isFirstTime?: boolean;
+  }) => void;
+  loginDemo: () => void;
+  logout: () => void;
+
   // User profile
   userProfile: UserProfile;
   updateUserProfile: (profile: Partial<UserProfile>) => void;
@@ -83,6 +111,8 @@ interface AppContextType {
   toastMessage: string | null;
   showToast: (msg: string) => void;
 }
+
+const AUTH_SESSION_KEY = "launchpad_auth_session_v1";
 
 const STORAGE_KEYS = {
   USER_PROFILE: "lp_user_profile_v2",
@@ -156,9 +186,16 @@ const INITIAL_FOLLOW_UPS: FollowUpItem[] = [
 const AppContext = createContext<AppContextType | null>(null);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
+  // Auth state
+  const [authSession, setAuthSession] = useState<AuthSession | null>(null);
+  const [isAuthLoaded, setIsAuthLoaded] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalDefaultTab, setAuthModalDefaultTab] = useState<"register" | "login">("register");
+
+  // User & Workspace state
   const [userProfile, setUserProfileState] = useState<UserProfile>(DEFAULT_PROFILE);
-  const [applications, setApplicationsState] = useState<JobApplication[]>(DEMO_APPLICATIONS);
-  const [followUps, setFollowUpsState] = useState<FollowUpItem[]>(INITIAL_FOLLOW_UPS);
+  const [applications, setApplicationsState] = useState<JobApplication[]>([]);
+  const [followUps, setFollowUpsState] = useState<FollowUpItem[]>([]);
 
   const [isPro, setIsPro] = useState(false);
   const [remainingScans, setRemainingScans] = useState(2);
@@ -177,9 +214,39 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setTimeout(() => setToastMessage(null), 3200);
   }, []);
 
+  const openAuthModal = useCallback((tab?: "register" | "login") => {
+    setAuthModalDefaultTab(tab || "register");
+    setIsAuthModalOpen(true);
+  }, []);
+
   // Hydrate from localStorage and URL
   useEffect(() => {
     if (typeof window === "undefined") return;
+
+    let sessionFound = false;
+
+    // 0. Auth Session verification
+    try {
+      const savedSession = localStorage.getItem(AUTH_SESSION_KEY);
+      if (savedSession) {
+        const parsed: AuthSession = JSON.parse(savedSession);
+        setAuthSession(parsed);
+        sessionFound = true;
+        setUserProfileState((prev) => ({
+          ...prev,
+          name: parsed.name || prev.name,
+          email: parsed.email || prev.email,
+          title: parsed.title || prev.title,
+          phone: parsed.phone || prev.phone,
+        }));
+      } else {
+        setAuthSession(null);
+      }
+    } catch {
+      setAuthSession(null);
+    } finally {
+      setIsAuthLoaded(true);
+    }
 
     // 1. User profile
     try {
@@ -191,11 +258,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       // fallback
     }
 
-    // 2. Applications
+    // 2. Applications (load only if session exists or was saved)
     try {
       const savedApps = localStorage.getItem(STORAGE_KEYS.APPLICATIONS);
       if (savedApps) {
         setApplicationsState(JSON.parse(savedApps));
+      } else if (sessionFound) {
+        setApplicationsState(DEMO_APPLICATIONS);
+      } else {
+        setApplicationsState([]);
       }
     } catch {
       // fallback
@@ -206,6 +277,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const savedFollowUps = localStorage.getItem(STORAGE_KEYS.FOLLOW_UPS);
       if (savedFollowUps) {
         setFollowUpsState(JSON.parse(savedFollowUps));
+      } else if (sessionFound) {
+        setFollowUpsState(INITIAL_FOLLOW_UPS);
+      } else {
+        setFollowUpsState([]);
       }
     } catch {
       // fallback
@@ -227,6 +302,116 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [showToast]);
 
+  const login = useCallback(
+    (userData: {
+      name: string;
+      email: string;
+      title?: string;
+      phone?: string;
+      seedDemoJobs?: boolean;
+      isFirstTime?: boolean;
+    }) => {
+      const session: AuthSession = {
+        name: userData.name,
+        email: userData.email,
+        title: userData.title || "Product Manager / IT-специалист",
+        phone: userData.phone || "+7 (999) 000-00-00",
+        isDemo: false,
+        isFirstTime: userData.isFirstTime ?? true,
+        createdAt: new Date().toISOString(),
+      };
+
+      setAuthSession(session);
+      try {
+        localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(session));
+      } catch (err) {
+        console.error(err);
+      }
+
+      const newProfile: UserProfile = {
+        name: userData.name,
+        email: userData.email,
+        phone: userData.phone || "+7 (999) 000-00-00",
+        title: userData.title || "Product Manager / IT-специалист",
+      };
+      setUserProfileState(newProfile);
+      try {
+        localStorage.setItem(STORAGE_KEYS.USER_PROFILE, JSON.stringify(newProfile));
+      } catch (err) {
+        console.error(err);
+      }
+
+      if (userData.seedDemoJobs === false) {
+        setApplicationsState([]);
+        setFollowUpsState([]);
+        try {
+          localStorage.setItem(STORAGE_KEYS.APPLICATIONS, JSON.stringify([]));
+          localStorage.setItem(STORAGE_KEYS.FOLLOW_UPS, JSON.stringify([]));
+        } catch (err) {
+          console.error(err);
+        }
+      } else {
+        setApplicationsState(DEMO_APPLICATIONS);
+        setFollowUpsState(INITIAL_FOLLOW_UPS);
+        try {
+          localStorage.setItem(STORAGE_KEYS.APPLICATIONS, JSON.stringify(DEMO_APPLICATIONS));
+          localStorage.setItem(STORAGE_KEYS.FOLLOW_UPS, JSON.stringify(INITIAL_FOLLOW_UPS));
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      setIsAuthModalOpen(false);
+      showToast(`Добро пожаловать в командный центр, ${userData.name.split(" ")[0]}! 👋`);
+    },
+    [showToast]
+  );
+
+  const loginDemo = useCallback(() => {
+    const demoSession: AuthSession = {
+      name: "Алексей Морозов",
+      email: "alex.morozov@email.ru",
+      title: "Senior Product Manager",
+      phone: "+7 (999) 123-45-67",
+      isDemo: true,
+      isFirstTime: false,
+      createdAt: new Date().toISOString(),
+    };
+
+    setAuthSession(demoSession);
+    try {
+      localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(demoSession));
+    } catch (err) {
+      console.error(err);
+    }
+
+    setUserProfileState(DEFAULT_PROFILE);
+    setApplicationsState(DEMO_APPLICATIONS);
+    setFollowUpsState(INITIAL_FOLLOW_UPS);
+    try {
+      localStorage.setItem(STORAGE_KEYS.USER_PROFILE, JSON.stringify(DEFAULT_PROFILE));
+      localStorage.setItem(STORAGE_KEYS.APPLICATIONS, JSON.stringify(DEMO_APPLICATIONS));
+      localStorage.setItem(STORAGE_KEYS.FOLLOW_UPS, JSON.stringify(INITIAL_FOLLOW_UPS));
+    } catch (err) {
+      console.error(err);
+    }
+
+    setIsAuthModalOpen(false);
+    showToast("👀 Запущен демонстрационный режим кабинета");
+  }, [showToast]);
+
+  const logout = useCallback(() => {
+    try {
+      localStorage.removeItem(AUTH_SESSION_KEY);
+    } catch (err) {
+      console.error(err);
+    }
+    setAuthSession(null);
+    setApplicationsState([]);
+    setFollowUpsState([]);
+    showToast("Вы вышли из аккаунта");
+  }, [showToast]);
+
   const updateUserProfile = useCallback((profile: Partial<UserProfile>) => {
     setUserProfileState((prev) => {
       const updated = { ...prev, ...profile };
@@ -237,6 +422,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
       return updated;
     });
+
+    // Also sync to authSession if present
+    setAuthSession((prev) => {
+      if (!prev) return null;
+      const updatedSession: AuthSession = {
+        ...prev,
+        name: profile.name || prev.name,
+        email: profile.email || prev.email,
+        title: profile.title || prev.title,
+        phone: profile.phone || prev.phone,
+      };
+      try {
+        localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(updatedSession));
+      } catch (err) {
+        console.error(err);
+      }
+      return updatedSession;
+    });
+
     showToast("Профиль соискателя успешно обновлён");
   }, [showToast]);
 
@@ -337,7 +541,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } catch (err) {
       console.error(err);
     }
-    showToast("Демо-данные успешно восстановлены!");
+    showToast("Демо-данные успешно загружены!");
   }, [showToast]);
 
   const clearAllApplications = useCallback(() => {
@@ -349,7 +553,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } catch (err) {
       console.error(err);
     }
-    showToast("База вакансий полностью очищена для ваших личных откликов");
+    showToast("Канбан-трекер очищен: вы можете вести свои реальные отклики");
   }, [showToast]);
 
   const markFollowUpSent = useCallback((id: string) => {
@@ -385,6 +589,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   return (
     <AppContext.Provider
       value={{
+        authSession,
+        isAuthLoaded,
+        isAuthModalOpen,
+        setIsAuthModalOpen,
+        authModalDefaultTab,
+        openAuthModal,
+        login,
+        loginDemo,
+        logout,
         userProfile,
         updateUserProfile,
         isProfileModalOpen,
