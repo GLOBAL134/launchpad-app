@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { STAGE_COLUMNS, JobApplication, ApplicationStage } from "@/types";
 import { stringToColor, relativeTime } from "@/lib/utils";
+import { generateIcsCalendarFile } from "@/lib/follow-up-templates";
 import { useApp } from "@/context/AppContext";
 
 export default function TrackerPage() {
@@ -82,6 +83,22 @@ export default function TrackerPage() {
       position: app.position,
     });
     router.push("/cover-letter");
+  };
+
+  const handleDownloadIcs = (app: JobApplication) => {
+    const icsContent = generateIcsCalendarFile({
+      company: app.company,
+      position: app.position,
+      applied_at: app.applied_at || app.created_at,
+    });
+    const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `FollowUp_${app.company.replace(/\s+/g, "_")}.ics`;
+    link.click();
+    URL.revokeObjectURL(url);
+    showToast(`✓ Напоминание в календарь (.ics на +6 дней) для «${app.company}» скачано!`);
   };
 
   return (
@@ -229,6 +246,10 @@ export default function TrackerPage() {
                                   <PenTool className="w-3.5 h-3.5 mr-2 text-indigo-400" />
                                   Создать сопроводительное письмо
                                 </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleDownloadIcs(app)} className="cursor-pointer">
+                                  <Calendar className="w-3.5 h-3.5 mr-2 text-amber-400" />
+                                  Напоминание в календарь (.ics)
+                                </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={() => moveStage(app.id, "wishlist")} className="cursor-pointer">
                                   📌 В Избранное
@@ -341,6 +362,17 @@ export default function TrackerPage() {
                 >
                   <PenTool className="w-3.5 h-3.5 mr-1.5 text-indigo-400" />
                   Написать письмо
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    handleDownloadIcs(selectedJob);
+                  }}
+                  className="text-xs justify-center cursor-pointer col-span-2 border-border/80 text-amber-300 hover:bg-amber-500/10"
+                >
+                  <Calendar className="w-3.5 h-3.5 mr-1.5 text-amber-400" />
+                  Добавить напоминание в календарь (.ics на +6 дней)
                 </Button>
               </div>
 
