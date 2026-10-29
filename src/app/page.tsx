@@ -132,6 +132,9 @@ export default function LandingPage() {
           </div>
 
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
+            <Link href="/examples" className="text-primary hover:text-primary/80 font-semibold transition-colors flex items-center gap-1">
+              <span>Примеры резюме (95%)</span>
+            </Link>
             <a href="#features" className="hover:text-foreground transition-colors">
               Возможности
             </a>
@@ -491,6 +494,7 @@ export default function LandingPage() {
             <span>LaunchPad © 2026. Все права защищены. Интеллектуальный помощник для поиска работы.</span>
           </div>
           <div className="flex items-center gap-6">
+            <Link href="/examples" className="text-primary hover:underline font-semibold">Примеры 95% ATS</Link>
             <Link href="/dashboard" className="hover:text-foreground transition-colors">Дашборд</Link>
             <Link href="/tracker" className="hover:text-foreground transition-colors">Канбан-трекер</Link>
             <Link href="/scanner" className="hover:text-foreground transition-colors">ATS-сканер</Link>

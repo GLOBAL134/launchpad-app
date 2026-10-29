@@ -110,6 +110,10 @@ interface AppContextType {
   // Global Toast
   toastMessage: string | null;
   showToast: (msg: string) => void;
+
+  // Language & Localization
+  lang: "ru" | "en";
+  setLang: (lang: "ru" | "en") => void;
 }
 
 const AUTH_SESSION_KEY = "launchpad_auth_session_v1";
@@ -208,6 +212,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [scannerTargetJob, setScannerTargetJob] = useState<{ company: string; position: string; description?: string } | null>(null);
   const [coverLetterTargetJob, setCoverLetterTargetJob] = useState<{ company: string; position: string } | null>(null);
   const [triggerQuickAudit, setTriggerQuickAudit] = useState(false);
+  const [lang, setLangState] = useState<"ru" | "en">("ru");
+
+  const setLang = useCallback((newLang: "ru" | "en") => {
+    setLangState(newLang);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("lp_user_lang", newLang);
+    }
+  }, []);
 
   const showToast = useCallback((msg: string) => {
     setToastMessage(msg);
@@ -299,6 +311,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } else {
       setIsPro(isUserPro());
       setRemainingScans(getRemainingFreeScans());
+    }
+
+    // 5. Automatic language detection from browser or saved preference
+    try {
+      const savedLang = localStorage.getItem("lp_user_lang");
+      if (savedLang === "ru" || savedLang === "en") {
+        setLangState(savedLang);
+      } else {
+        const browserLang = (navigator.language || (navigator as any).userLanguage || "").toLowerCase();
+        const isRu =
+          browserLang.startsWith("ru") ||
+          browserLang.startsWith("be") ||
+          browserLang.startsWith("uk") ||
+          browserLang.startsWith("kk");
+        setLangState(isRu ? "ru" : "en");
+      }
+    } catch {
+      // fallback
     }
   }, [showToast]);
 
@@ -629,6 +659,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setTriggerQuickAudit,
         toastMessage,
         showToast,
+        lang,
+        setLang,
       }}
     >
       {children}

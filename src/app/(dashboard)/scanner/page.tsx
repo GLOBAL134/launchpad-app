@@ -116,6 +116,22 @@ export default function ATSScannerPage() {
 
   // Pre-fill target job from Kanban navigation
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedResume = localStorage.getItem("launchpad_scanner_resume");
+      const savedJob = localStorage.getItem("launchpad_scanner_job");
+      if (savedResume) {
+        setResumeText(savedResume);
+        localStorage.removeItem("launchpad_scanner_resume");
+      }
+      if (savedJob) {
+        setJobDesc(savedJob);
+        localStorage.removeItem("launchpad_scanner_job");
+      }
+      if (savedResume || savedJob) {
+        showToast("Загружен эталонный образец из библиотеки резюме!");
+      }
+    }
+
     if (scannerTargetJob) {
       setJobDesc(
         `${scannerTargetJob.position} в компании ${scannerTargetJob.company}\n\n${

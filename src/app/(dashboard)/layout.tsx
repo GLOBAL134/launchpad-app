@@ -69,6 +69,7 @@ export default function DashboardLayout({
       badgeColor: activeFollowUpsCount > 0 ? "bg-amber-500/20 text-amber-400" : "bg-muted text-muted-foreground",
     },
     { href: "/analytics", label: "Аналитика воронки", icon: BarChart3 },
+    { href: "/examples", label: "Примеры резюме (95%)", icon: Sparkles },
   ];
 
   const getPageTitle = () => {
