@@ -380,7 +380,7 @@ export default function TrackerPage() {
       {/* Detailed Modal for viewing and changing an application */}
       {selectedJob && (
         <Dialog open={!!selectedJob} onOpenChange={() => setSelectedJob(null)}>
-          <DialogContent className="max-w-lg bg-card border-border text-foreground">
+          <DialogContent className="w-[calc(100vw-20px)] sm:max-w-lg max-h-[92vh] overflow-y-auto p-4 sm:p-6 bg-card border-border text-foreground">
             <DialogHeader>
               <div className="flex items-center gap-3">
                 <div
@@ -430,10 +430,10 @@ export default function TrackerPage() {
                   onClick={() => {
                     handleOpenInterviewPrep(selectedJob);
                   }}
-                  className="text-xs justify-center cursor-pointer col-span-2 border-purple-500/40 text-purple-300 hover:bg-purple-500/10 font-semibold"
+                  className="text-xs justify-center cursor-pointer col-span-2 border-purple-500/40 text-purple-300 hover:bg-purple-500/10 font-semibold h-auto py-2 whitespace-normal text-center"
                 >
-                  <Target className="w-3.5 h-3.5 mr-1.5 text-purple-400" />
-                  🎯 Подготовиться к собеседованию с ИИ под эту компанию
+                  <Target className="w-3.5 h-3.5 mr-1.5 text-purple-400 shrink-0" />
+                  <span>🎯 Подготовиться к собеседованию с ИИ под эту компанию</span>
                 </Button>
 
                 <Button
@@ -443,10 +443,10 @@ export default function TrackerPage() {
                     setSalaryNegotiatorJob(selectedJob);
                     setSalaryNegotiatorOpen(true);
                   }}
-                  className="text-xs justify-center cursor-pointer col-span-2 border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 font-semibold"
+                  className="text-xs justify-center cursor-pointer col-span-2 border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 font-semibold h-auto py-2 whitespace-normal text-center"
                 >
-                  <DollarSign className="w-3.5 h-3.5 mr-1.5 text-emerald-400" />
-                  💰 Торг по зарплате (+15–25% к офферу с ИИ)
+                  <DollarSign className="w-3.5 h-3.5 mr-1.5 text-emerald-400 shrink-0" />
+                  <span>💰 Торг по зарплате (+15–25% к офферу с ИИ)</span>
                 </Button>
 
                 <div className="grid grid-cols-2 gap-2 col-span-2">

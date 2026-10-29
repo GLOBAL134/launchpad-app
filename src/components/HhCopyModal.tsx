@@ -34,18 +34,18 @@ export function HhCopyModal({ open, onOpenChange, resumeText }: HhCopyModalProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl bg-card border-border text-foreground max-h-[90vh] flex flex-col p-6">
+      <DialogContent className="w-[calc(100vw-20px)] sm:max-w-2xl bg-card border-border text-foreground max-h-[92vh] flex flex-col p-4 sm:p-6">
         <DialogHeader>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-red-500/20 border border-red-500/40 flex items-center justify-center text-red-400 font-bold text-xs">
+            <div className="w-8 h-8 rounded-lg bg-red-500/20 border border-red-500/40 flex items-center justify-center text-red-400 font-bold text-xs shrink-0">
               hh
             </div>
             <div>
-              <DialogTitle className="text-lg font-bold text-foreground">
-                Умное копирование для личного кабинета HeadHunter
+              <DialogTitle className="text-base sm:text-lg font-bold text-foreground">
+                Умное копирование для HeadHunter (hh.ru)
               </DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground">
-                Резюме разбито на 3 ключевых блока в точном соответствии с полями формы на hh.ru
+              <DialogDescription className="text-[11px] sm:text-xs text-muted-foreground">
+                Резюме разбито на 3 блока в точном соответствии с полями формы на hh.ru
               </DialogDescription>
             </div>
           </div>

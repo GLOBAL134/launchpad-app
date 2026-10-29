@@ -122,7 +122,7 @@ export function UpgradeModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg bg-card border-border p-6">
+      <DialogContent className="w-[calc(100vw-20px)] sm:max-w-lg max-h-[92vh] overflow-y-auto bg-card border-border p-4 sm:p-6">
         <DialogHeader className="text-left space-y-1.5">
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/20 text-primary border border-primary/30 w-fit">
             <Sparkles className="w-3.5 h-3.5" />

@@ -212,14 +212,14 @@ export default function FollowUpsPage() {
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
-            <BellRing className="w-6 h-6 text-amber-400" />
-            <span>Центр напоминаний (Follow-Up Center & Calendar)</span>
+          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
+            <BellRing className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400 shrink-0" />
+            <span>Центр напоминаний (Follow-Up)</span>
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Рекрутеры получают сотни откликов в день. Вежливые напоминания на 5-7 день повышают конверсию в интервью на ~34%.
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+            Вежливые напоминания рекрутерам на 5–7 день повышают конверсию в интервью на ~34%.
           </p>
         </div>
 
@@ -228,14 +228,14 @@ export default function FollowUpsPage() {
             size="sm"
             onClick={() => handleGenerateAiFollowUp()}
             disabled={isGeneratingAi}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-bold shadow-md shadow-primary/20 cursor-pointer flex items-center gap-1.5"
+            className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-bold shadow-md shadow-primary/20 cursor-pointer flex items-center justify-center gap-1.5 h-8 sm:h-9"
           >
             {isGeneratingAi ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 text-amber-300" />}
             <span>✨ Написать Follow-Up с ИИ</span>
           </Button>
 
           <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-400 border-amber-500/30 font-semibold py-1">
-            {activeFollowUpsCount} {activeFollowUpsCount === 1 ? "напоминание ждёт" : "напоминания ждут"} отправки
+            {activeFollowUpsCount} {activeFollowUpsCount === 1 ? "напоминание ждёт" : "напоминания ждут"}
           </Badge>
         </div>
       </div>
@@ -533,7 +533,7 @@ export default function FollowUpsPage() {
           }
         }}
       >
-        <DialogContent className="sm:max-w-xl bg-card border-border text-foreground">
+        <DialogContent className="w-[calc(100vw-20px)] sm:max-w-xl max-h-[92vh] overflow-y-auto p-4 sm:p-6 bg-card border-border text-foreground">
           <DialogHeader>
             <DialogTitle className="text-base font-bold flex items-center gap-2">
               <Mail className="w-4 h-4 text-primary" />

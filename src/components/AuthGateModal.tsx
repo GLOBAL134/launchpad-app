@@ -129,13 +129,14 @@ export default function AuthGateModal({
   return (
     <Dialog open={effectiveOpen} onOpenChange={(open) => !open && handleDismiss()}>
       <DialogContent
-        className="sm:max-w-md p-0 overflow-hidden bg-card/95 border border-border/80 shadow-2xl backdrop-blur-2xl text-foreground"
+        showCloseButton={false}
+        className="w-[calc(100vw-24px)] max-w-md mx-auto p-0 overflow-hidden bg-card/95 border border-border/80 shadow-2xl backdrop-blur-2xl text-foreground"
       >
         {/* Header Ambient Glow & Brand */}
-        <div className="relative p-6 pb-4 bg-gradient-to-b from-primary/15 via-primary/5 to-transparent border-b border-border/50">
+        <div className="relative p-4 sm:p-6 pb-3 sm:pb-4 bg-gradient-to-b from-primary/15 via-primary/5 to-transparent border-b border-border/50">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl overflow-hidden shadow-lg shadow-primary/30 shrink-0 border border-white/10">
+            <div className="flex items-center gap-2 sm:gap-2.5">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl overflow-hidden shadow-lg shadow-primary/30 shrink-0 border border-white/10">
                 <Image
                   src="/logo.png"
                   alt="LaunchPad AI PRO"
@@ -146,14 +147,14 @@ export default function AuthGateModal({
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-base tracking-tight text-foreground">
+                  <span className="font-bold text-sm sm:text-base tracking-tight text-foreground">
                     LaunchPad
                   </span>
-                  <span className="text-[10px] uppercase font-semibold text-primary px-1.5 py-0.5 rounded bg-primary/10 border border-primary/20">
+                  <span className="text-[9px] sm:text-[10px] uppercase font-semibold text-primary px-1.5 py-0.5 rounded bg-primary/10 border border-primary/20">
                     AI PRO
                   </span>
                 </div>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-[10px] sm:text-[11px] text-muted-foreground">
                   Персональный командный центр соискателя
                 </p>
               </div>
@@ -169,7 +170,7 @@ export default function AuthGateModal({
           </div>
 
           {/* Tab Switcher */}
-          <div className="mt-5 grid grid-cols-2 p-1 rounded-xl bg-background/80 border border-border/60">
+          <div className="mt-4 sm:mt-5 grid grid-cols-2 p-1 rounded-xl bg-background/80 border border-border/60">
             <button
               type="button"
               onClick={() => handleTabChange("register")}
@@ -198,7 +199,7 @@ export default function AuthGateModal({
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 pt-4 space-y-4">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 pt-3 sm:pt-4 space-y-3.5 sm:space-y-4">
           {errorMessage && (
             <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2 animate-in fade-in">
               <span className="shrink-0 text-sm">⚠️</span>
@@ -291,19 +292,19 @@ export default function AuthGateModal({
 
           {/* Seed Demo Checkbox (Register only) */}
           {activeTab === "register" && (
-            <div className="p-3 rounded-xl border border-border/70 bg-background/50 space-y-1.5">
+            <div className="p-2.5 sm:p-3 rounded-xl border border-border/70 bg-background/50 space-y-1.5">
               <label className="flex items-start gap-2.5 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={seedDemoJobs}
                   onChange={(e) => setSeedDemoJobs(e.target.checked)}
-                  className="mt-0.5 rounded border-border text-primary focus:ring-primary w-4 h-4 cursor-pointer"
+                  className="mt-0.5 rounded border-border text-primary focus:ring-primary w-4 h-4 cursor-pointer shrink-0"
                 />
                 <div className="text-xs">
-                  <span className="font-semibold text-foreground block">
+                  <span className="font-semibold text-foreground block text-[11px] sm:text-xs">
                     Загрузить примеры тестовых вакансий для знакомства с интерфейсом
                   </span>
-                  <span className="text-[11px] text-muted-foreground block mt-0.5">
+                  <span className="text-[10px] sm:text-[11px] text-muted-foreground block mt-0.5">
                     {seedDemoJobs
                       ? "В Канбан будут добавлены 10 готовых карточек (Яндекс, Т-Банк, Авито, Ozon и др.)."
                       : "Вы начнёте с полностью чистого собственного Канбан-трекера (0 карточек)."}
@@ -319,11 +320,11 @@ export default function AuthGateModal({
             className="w-full h-10 bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-xs shadow-lg shadow-primary/25 cursor-pointer flex items-center justify-center gap-2"
           >
             <span>{activeTab === "register" ? "Создать личный кабинет" : "Войти в командный центр"}</span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-4 h-4 shrink-0" />
           </Button>
 
           {/* Divider */}
-          <div className="relative my-3 text-center">
+          <div className="relative my-2 sm:my-3 text-center">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-border/60" />
             </div>
@@ -337,15 +338,15 @@ export default function AuthGateModal({
             type="button"
             variant="outline"
             onClick={handleDemoMode}
-            className="w-full h-9 border-border/80 hover:bg-muted/60 text-xs font-semibold cursor-pointer flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground"
+            className="w-full h-auto py-2 px-3 border-border/80 hover:bg-muted/60 text-xs font-semibold cursor-pointer flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground text-center whitespace-normal"
           >
-            <Eye className="w-3.5 h-3.5 text-amber-400" />
-            <span>👀 Открыть демо-режим без регистрации (пример кабинета)</span>
+            <Eye className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            <span>👀 Демо-режим без регистрации (пример кабинета)</span>
           </Button>
         </form>
 
         {/* Footer Guarantee */}
-        <div className="px-6 py-3 bg-muted/20 border-t border-border/40 text-[10px] text-muted-foreground text-center">
+        <div className="px-4 sm:px-6 py-2.5 sm:py-3 bg-muted/20 border-t border-border/40 text-[9px] sm:text-[10px] text-muted-foreground text-center">
           Данные хранятся локально в вашем браузере • Безопасный изолированный контекст
         </div>
       </DialogContent>

@@ -174,20 +174,19 @@ export default function LandingPage() {
           </nav>
 
           {/* Right Action Area */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             {isPro ? (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold shadow-sm whitespace-nowrap shrink-0">
+              <div className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold shadow-sm whitespace-nowrap shrink-0">
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>✨ PRO</span>
               </div>
             ) : (
               <button
                 onClick={handleOpenUpgrade}
-                className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border border-indigo-500/40 bg-indigo-500/10 text-indigo-300 hover:text-white hover:bg-indigo-500/20 text-xs font-semibold shadow-sm transition cursor-pointer whitespace-nowrap shrink-0"
+                className="hidden sm:inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border border-indigo-500/40 bg-indigo-500/10 text-indigo-300 hover:text-white hover:bg-indigo-500/20 text-xs font-semibold shadow-sm transition cursor-pointer whitespace-nowrap shrink-0"
               >
                 <Sparkles className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-                <span className="hidden sm:inline">💎 Upgrade to PRO</span>
-                <span className="sm:hidden">💎 PRO</span>
+                <span>💎 Upgrade to PRO</span>
                 <span className="text-[10px] text-indigo-400/80 hidden xl:inline">({remainingScans}/2)</span>
               </button>
             )}
@@ -195,38 +194,38 @@ export default function LandingPage() {
             {authSession ? (
               <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                 <Link href="/dashboard" className="shrink-0">
-                  <Button className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20 font-medium text-xs sm:text-sm cursor-pointer whitespace-nowrap h-9 px-3 sm:px-4">
+                  <Button className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20 font-medium text-xs sm:text-sm cursor-pointer whitespace-nowrap h-8 sm:h-9 px-2.5 sm:px-4">
                     <span>Кабинет</span>
                     <span className="max-w-[70px] sm:max-w-[110px] truncate hidden md:inline ml-1 opacity-80">
                       ({userProfile.name.trim().split(/\s+/)[0]})
                     </span>
-                    <ArrowRight className="w-3.5 h-3.5 ml-1.5 shrink-0" />
+                    <ArrowRight className="w-3.5 h-3.5 ml-1 sm:ml-1.5 shrink-0" />
                   </Button>
                 </Link>
                 <button
                   onClick={logout}
                   title="Выйти из аккаунта (Logout)"
-                  className="text-muted-foreground hover:text-rose-400 p-2 rounded-lg hover:bg-muted/70 transition cursor-pointer shrink-0"
+                  className="text-muted-foreground hover:text-rose-400 p-1.5 sm:p-2 rounded-lg hover:bg-muted/70 transition cursor-pointer shrink-0"
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                 <Button
                   variant="ghost"
                   onClick={() => openAuthModal("login")}
-                  className="text-xs text-muted-foreground hover:text-foreground cursor-pointer font-semibold whitespace-nowrap h-9 px-3"
+                  className="text-xs text-muted-foreground hover:text-foreground cursor-pointer font-semibold whitespace-nowrap h-8 sm:h-9 px-2.5 sm:px-3"
                 >
                   Войти
                 </Button>
                 <Button
                   onClick={() => openAuthModal("register")}
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20 font-medium text-xs sm:text-sm cursor-pointer whitespace-nowrap h-9 px-3 sm:px-4"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20 font-medium text-xs sm:text-sm cursor-pointer whitespace-nowrap h-8 sm:h-9 px-2.5 sm:px-4"
                 >
                   <span className="hidden sm:inline">Запустить командный центр</span>
                   <span className="sm:hidden">Начать</span>
-                  <ArrowRight className="w-3.5 h-3.5 ml-1.5 shrink-0" />
+                  <ArrowRight className="w-3.5 h-3.5 ml-1 sm:ml-1.5 shrink-0" />
                 </Button>
               </div>
             )}

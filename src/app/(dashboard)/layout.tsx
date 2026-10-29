@@ -358,26 +358,28 @@ export default function DashboardLayout({
               </SheetContent>
             </Sheet>
 
-            <div>
-              <h1 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
+            <div className="min-w-0">
+              <h1 className="text-sm sm:text-lg font-bold text-foreground tracking-tight truncate max-w-[130px] sm:max-w-none">
                 {getPageTitle()}
               </h1>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             {isPro ? (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold shadow-sm">
+              <div className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[11px] sm:text-xs font-semibold shadow-sm shrink-0">
                 <Sparkles className="w-3.5 h-3.5" />
-                ✨ PRO Активен
+                <span className="hidden sm:inline">✨ PRO Активен</span>
+                <span className="sm:hidden">PRO</span>
               </div>
             ) : (
               <button
                 onClick={() => setIsUpgradeModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-indigo-500/40 bg-indigo-500/10 text-indigo-300 hover:text-white hover:bg-indigo-500/20 text-xs font-semibold shadow-sm transition cursor-pointer"
+                className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-indigo-500/40 bg-indigo-500/10 text-indigo-300 hover:text-white hover:bg-indigo-500/20 text-[11px] sm:text-xs font-semibold shadow-sm transition cursor-pointer whitespace-nowrap shrink-0"
               >
-                <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-                💎 Upgrade to PRO (Бесплатно: {remainingScans}/2)
+                <Sparkles className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                <span className="hidden sm:inline">💎 Upgrade to PRO (Бесплатно: {remainingScans}/2)</span>
+                <span className="sm:hidden">💎 PRO ({remainingScans}/2)</span>
               </button>
             )}
 
@@ -408,10 +410,11 @@ export default function DashboardLayout({
             <Button
               size="sm"
               onClick={() => setIsAddJobModalOpen(true)}
-              className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold shadow-sm shadow-primary/20 cursor-pointer"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold shadow-sm shadow-primary/20 cursor-pointer h-8 sm:h-9 px-2 sm:px-3 shrink-0"
             >
-              <Plus className="w-4 h-4 mr-1" />
-              Добавить отклик
+              <Plus className="w-3.5 h-3.5 sm:mr-1" />
+              <span className="hidden sm:inline">Добавить отклик</span>
+              <span className="sm:hidden">Отклик</span>
             </Button>
           </div>
         </header>
@@ -451,19 +454,19 @@ export default function DashboardLayout({
 
             {/* Promo Announcement Banner */}
             {!isPro && (
-              <div className="p-3 px-4 rounded-xl bg-gradient-to-r from-primary/15 via-primary/10 to-card border border-primary/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-sm">
-                <div className="flex items-center gap-2.5 text-center sm:text-left">
-                  <span className="px-2 py-0.5 rounded bg-primary text-primary-foreground font-black text-[10px] tracking-wide uppercase shrink-0">
+              <div className="p-3 sm:px-4 rounded-xl bg-gradient-to-r from-primary/15 via-primary/10 to-card border border-primary/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 text-xs shadow-sm">
+                <div className="flex items-center gap-2 text-left">
+                  <span className="px-1.5 py-0.5 rounded bg-primary text-primary-foreground font-black text-[10px] tracking-wide uppercase shrink-0">
                     Акция
                   </span>
-                  <span className="text-foreground">
-                    Получите <strong>скидку 30%</strong> на полный доступ к ATS-сканеру и генератору писем по промокоду <code className="bg-background/80 px-1.5 py-0.5 rounded font-mono font-bold text-primary border border-primary/20">START30</code>
+                  <span className="text-foreground text-[11px] sm:text-xs">
+                    Скидка <strong>30%</strong> на полный доступ к PRO по промокоду <code className="bg-background/80 px-1.5 py-0.5 rounded font-mono font-bold text-primary border border-primary/20">START30</code>
                   </span>
                 </div>
                 <Button
                   size="sm"
                   onClick={() => setIsUpgradeModalOpen(true)}
-                  className="h-7 text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shrink-0 cursor-pointer"
+                  className="w-full sm:w-auto h-7 text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shrink-0 cursor-pointer"
                 >
                   Активировать со скидкой
                 </Button>

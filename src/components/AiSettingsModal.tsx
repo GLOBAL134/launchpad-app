@@ -99,28 +99,28 @@ export function AiSettingsModal({ isOpen, onClose }: AiSettingsModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-lg bg-card border-border shadow-2xl">
+      <DialogContent className="w-[calc(100vw-20px)] sm:max-w-lg max-h-[92vh] overflow-y-auto bg-card border-border shadow-2xl p-4 sm:p-6">
         <DialogHeader>
           <div className="flex items-center gap-2 mb-1">
-            <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center text-primary">
-              <Zap className="w-5 h-5" />
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center text-primary shrink-0">
+              <Zap className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <DialogTitle className="text-lg font-bold flex items-center gap-2">
-                Настройки нейросети (LLM)
+              <DialogTitle className="text-base sm:text-lg font-bold flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                <span>Настройки нейросети (LLM)</span>
                 <Badge
                   variant="outline"
                   className={
                     hasCustomKey
-                      ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 text-[10px]"
-                      : "bg-blue-500/10 text-blue-400 border-blue-500/30 text-[10px]"
+                      ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 text-[9px] sm:text-[10px]"
+                      : "bg-blue-500/10 text-blue-400 border-blue-500/30 text-[9px] sm:text-[10px]"
                   }
                 >
-                  {hasCustomKey ? "Пользовательский API" : "Встроенный бесплатный ИИ"}
+                  {hasCustomKey ? "Пользовательский API" : "Встроенный ИИ"}
                 </Badge>
               </DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground">
-                Подключите собственный бесплатный ключ или используйте встроенный ИИ без ключей
+              <DialogDescription className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
+                Подключите персональный ключ или используйте встроенный ИИ без ключей
               </DialogDescription>
             </div>
           </div>

@@ -131,25 +131,25 @@ ${formattedData.content}`;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl p-0 overflow-hidden bg-card/95 border-border shadow-2xl backdrop-blur-2xl text-foreground max-h-[90vh] flex flex-col">
+      <DialogContent className="w-[calc(100vw-20px)] sm:max-w-4xl p-0 overflow-hidden bg-card/95 border-border shadow-2xl backdrop-blur-2xl text-foreground max-h-[92vh] flex flex-col">
         {/* Header Bar */}
-        <DialogHeader className="p-5 pb-3 border-b border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+        <DialogHeader className="p-4 sm:p-5 pb-3 border-b border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 shrink-0">
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-emerald-400" />
+            <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />
             <div>
-              <DialogTitle className="text-base font-bold flex items-center gap-2">
-                <span>Эталонное одноколоночное ATS-резюме</span>
-                <Badge variant="outline" className="text-[10px] text-emerald-400 border-emerald-500/30 bg-emerald-500/10">
-                  Harvard / BigTech Standard
+              <DialogTitle className="text-sm sm:text-base font-bold flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                <span>Эталонное ATS-резюме</span>
+                <Badge variant="outline" className="text-[9px] sm:text-[10px] text-emerald-400 border-emerald-500/30 bg-emerald-500/10">
+                  Harvard Standard
                 </Badge>
               </DialogTitle>
-              <p className="text-[11px] text-muted-foreground">
-                100% совместимость с Workday, Taleo, Greenhouse, E-Staff и Поток без склейки колонок
+              <p className="text-[10px] sm:text-[11px] text-muted-foreground">
+                100% совместимость с Workday, Taleo, Greenhouse, E-Staff и Поток
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5">
             <Button
               variant="outline"
               size="sm"

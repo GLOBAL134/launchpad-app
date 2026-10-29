@@ -115,18 +115,18 @@ ${resumeText.slice(0, 1500)}
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl bg-card border-border text-foreground max-h-[90vh] flex flex-col p-6">
+      <DialogContent className="w-[calc(100vw-20px)] sm:max-w-2xl bg-card border-border text-foreground max-h-[92vh] flex flex-col p-4 sm:p-6">
         <DialogHeader>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold shrink-0">
               💰
             </div>
             <div>
-              <DialogTitle className="text-lg font-bold text-foreground">
-                Генератор торга по зарплате (+15–25% к офферу)
+              <DialogTitle className="text-base sm:text-lg font-bold text-foreground">
+                Генератор торга по зарплате (+15–25%)
               </DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground">
-                Как дипломатично и уверенно обосновать повышение оклада через ценность для {companyName}
+              <DialogDescription className="text-[11px] sm:text-xs text-muted-foreground">
+                Дипломатичное обоснование повышения оклада через ценность для {companyName}
               </DialogDescription>
             </div>
           </div>

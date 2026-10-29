@@ -71,7 +71,7 @@ export function ViralBonusModal({ isOpen, onClose }: ViralBonusModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md bg-card border-border">
+      <DialogContent className="w-[calc(100vw-20px)] sm:max-w-md max-h-[92vh] overflow-y-auto p-4 sm:p-6 bg-card border-border">
         <DialogHeader>
           <div className="flex items-center gap-2 mb-1">
             <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">

@@ -33,8 +33,8 @@ export default function UpgradeProModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
-      <div className="relative w-full max-w-lg rounded-2xl bg-slate-900 border border-indigo-500/40 p-6 sm:p-8 shadow-2xl text-slate-100">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-3 sm:p-4">
+      <div className="relative w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-2xl bg-slate-900 border border-indigo-500/40 p-4 sm:p-8 shadow-2xl text-slate-100">
         <button
           onClick={onClose}
           aria-label="Закрыть"

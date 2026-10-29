@@ -85,20 +85,20 @@ ${resumeText.slice(0, 700)}
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-xl bg-card border-border shadow-2xl text-foreground">
+      <DialogContent className="w-[calc(100vw-20px)] sm:max-w-xl max-h-[92vh] overflow-y-auto p-4 sm:p-6 bg-card border-border shadow-2xl text-foreground">
         <DialogHeader>
           <div className="flex items-center gap-2 mb-1">
-            <div className="w-8 h-8 rounded-lg bg-primary/20 text-primary flex items-center justify-center font-bold">
+            <div className="w-8 h-8 rounded-lg bg-primary/20 text-primary flex items-center justify-center font-bold shrink-0">
               <Sparkles className="w-4 h-4" />
             </div>
             <div>
-              <DialogTitle className="text-base font-bold flex items-center gap-2">
-                <span>ИИ-встраивание навыка в опыт работы</span>
+              <DialogTitle className="text-sm sm:text-base font-bold flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                <span>ИИ-встраивание навыка в опыт</span>
                 <Badge variant="outline" className="text-[10px] bg-rose-500/10 text-rose-300 border-rose-500/30">
                   {skillName}
                 </Badge>
               </DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground">
+              <DialogDescription className="text-[11px] sm:text-xs text-muted-foreground">
                 По формуле 55/15/15/15 навык даёт баллы, только если подтвержден реальным результатом в опыте.
               </DialogDescription>
             </div>

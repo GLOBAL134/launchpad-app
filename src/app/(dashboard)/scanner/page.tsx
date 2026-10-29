@@ -623,23 +623,23 @@ export default function ATSScannerPage() {
       {/* Top Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
-            <ScanSearch className="w-6 h-6 text-primary" />
+          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
+            <ScanSearch className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0" />
             <span>AI ATS-сканер резюме для ВСЕХ профессий</span>
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Универсальный аудит по формуле 55/15/15/15 (Workday, Taleo, Greenhouse, E-Staff, Поток) для любой сферы: Продажи, Бухгалтерия, Маркетинг, Юристы, HR, IT.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
           {/* STEP 4: Rewrite Resume Button */}
           <Button
             size="sm"
             onClick={() => setRewriteModalOpen(true)}
-            className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-500/20 cursor-pointer flex items-center gap-1.5"
+            className="col-span-2 sm:col-span-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-500/20 cursor-pointer flex items-center justify-center gap-1.5 h-9"
           >
-            <Sparkles className="w-3.5 h-3.5" />
+            <Sparkles className="w-3.5 h-3.5 shrink-0" />
             <span>✨ Улучшить резюме с ИИ (до 90%+)</span>
           </Button>
 
@@ -647,10 +647,10 @@ export default function ATSScannerPage() {
           <Button
             size="sm"
             onClick={() => setSaveKanbanModalOpen(true)}
-            className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-md shadow-indigo-600/20 cursor-pointer flex items-center gap-1.5"
+            className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-md shadow-indigo-600/20 cursor-pointer flex items-center justify-center gap-1.5 h-8 sm:h-9"
           >
-            <Kanban className="w-3.5 h-3.5" />
-            <span>🚀 В Канбан (+ резюме и письмо)</span>
+            <Kanban className="w-3.5 h-3.5 shrink-0" />
+            <span>🚀 В Канбан</span>
           </Button>
 
           {/* Module 2: Score Card Button */}
@@ -658,9 +658,9 @@ export default function ATSScannerPage() {
             size="sm"
             variant="outline"
             onClick={() => setIsScoreCardOpen(true)}
-            className="text-xs border-border/80 hover:bg-muted/80 flex items-center gap-1.5 cursor-pointer"
+            className="text-xs border-border/80 hover:bg-muted/80 flex items-center justify-center gap-1.5 cursor-pointer h-8 sm:h-9"
           >
-            <Award className="w-3.5 h-3.5 text-emerald-400" />
+            <Award className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
             <span>Сертификат</span>
           </Button>
 
@@ -669,10 +669,10 @@ export default function ATSScannerPage() {
             size="sm"
             variant="outline"
             onClick={() => setIsCleanResumeOpen(true)}
-            className="text-xs border-border/80 hover:bg-muted/80 flex items-center gap-1.5 cursor-pointer"
+            className="text-xs border-border/80 hover:bg-muted/80 flex items-center justify-center gap-1.5 cursor-pointer h-8 sm:h-9"
           >
-            <FileText className="w-3.5 h-3.5 text-primary" />
-            <span>Собрать Harvard ATS</span>
+            <FileText className="w-3.5 h-3.5 text-primary shrink-0" />
+            <span>Harvard ATS</span>
           </Button>
 
           {/* Viral Referral Bonus Button */}
@@ -680,9 +680,9 @@ export default function ATSScannerPage() {
             size="sm"
             variant="outline"
             onClick={() => setViralBonusOpen(true)}
-            className="text-xs border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 flex items-center gap-1.5 cursor-pointer"
+            className="text-xs border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 flex items-center justify-center gap-1.5 cursor-pointer h-8 sm:h-9"
           >
-            <Gift className="w-3.5 h-3.5 text-amber-400" />
+            <Gift className="w-3.5 h-3.5 text-amber-400 shrink-0" />
             <span>🎁 +3 проверки</span>
           </Button>
 
@@ -691,27 +691,27 @@ export default function ATSScannerPage() {
             size="sm"
             variant="outline"
             onClick={() => setAiSettingsOpen(true)}
-            className="text-xs border-cyan-500/40 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20 flex items-center gap-1.5 cursor-pointer"
+            className="col-span-2 sm:col-span-1 text-xs border-cyan-500/40 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20 flex items-center justify-center gap-1.5 cursor-pointer h-8 sm:h-9"
             title="Подключить бесплатные ключи Groq (Llama 3.3) или Google Gemini Flash"
           >
-            <KeyRound className="w-3.5 h-3.5 text-cyan-400" />
-            <span>⚡ Ключи ИИ</span>
+            <KeyRound className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+            <span>⚡ Ключи ИИ (Groq / Gemini)</span>
           </Button>
         </div>
       </div>
 
       {/* Quick 1-Click Diverse Profession Presets Bar */}
-      <div className="p-3.5 rounded-2xl bg-card/60 border border-border/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
-        <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground whitespace-nowrap">
+      <div className="p-3 sm:p-3.5 rounded-2xl bg-card/60 border border-border/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-2.5">
+        <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground whitespace-nowrap shrink-0">
           <Sparkles className="w-3.5 h-3.5 text-primary" />
           <span>Быстрый выбор сферы:</span>
         </div>
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className="w-full sm:w-auto flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 sm:flex-wrap no-scrollbar">
           {DIVERSE_PRESETS.map((p) => (
             <button
               key={p.id}
               onClick={() => handleLoadPreset(p.id)}
-              className="px-2.5 py-1 rounded-lg text-xs font-medium bg-background/80 hover:bg-primary/10 border border-border/70 hover:border-primary/40 text-foreground transition cursor-pointer"
+              className="px-2.5 py-1 rounded-lg text-xs font-medium bg-background/80 hover:bg-primary/10 border border-border/70 hover:border-primary/40 text-foreground transition cursor-pointer whitespace-nowrap shrink-0"
             >
               {p.label}
             </button>
@@ -1240,10 +1240,10 @@ export default function ATSScannerPage() {
             </div>
 
             {/* Tab Switcher for 3 Modes */}
-            <div className="px-5 pt-3 pb-2 border-b border-border/70 flex gap-2 overflow-x-auto">
+            <div className="px-3 sm:px-5 pt-3 pb-2 border-b border-border/70 flex gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar">
               <button
                 onClick={() => setActiveResultsTab("overview")}
-                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer flex items-center gap-1.5 ${
+                className={`px-2.5 sm:px-3 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
                   activeResultsTab === "overview"
                     ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -1255,7 +1255,7 @@ export default function ATSScannerPage() {
 
               <button
                 onClick={() => setActiveResultsTab("raw_ats")}
-                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer flex items-center gap-1.5 ${
+                className={`px-2.5 sm:px-3 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
                   activeResultsTab === "raw_ats"
                     ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -1270,7 +1270,7 @@ export default function ATSScannerPage() {
 
               <button
                 onClick={() => setActiveResultsTab("xyz_diff")}
-                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer flex items-center gap-1.5 ${
+                className={`px-2.5 sm:px-3 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
                   activeResultsTab === "xyz_diff"
                     ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -1282,7 +1282,7 @@ export default function ATSScannerPage() {
 
               <button
                 onClick={() => setActiveResultsTab("red_flags")}
-                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer flex items-center gap-1.5 ${
+                className={`px-2.5 sm:px-3 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
                   activeResultsTab === "red_flags"
                     ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/50"

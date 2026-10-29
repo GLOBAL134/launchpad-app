@@ -126,28 +126,28 @@ ${jobDescription.slice(0, 600)}
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-2xl bg-card border-border shadow-2xl text-foreground p-0 overflow-hidden">
+      <DialogContent className="w-[calc(100vw-20px)] sm:max-w-2xl max-h-[92vh] flex flex-col bg-card border-border shadow-2xl text-foreground p-0 overflow-hidden">
         {/* Header */}
-        <div className="p-5 sm:p-6 bg-gradient-to-r from-card via-card to-indigo-500/10 border-b border-border">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold shadow-lg shadow-indigo-600/25 shrink-0">
-              <Kanban className="w-5 h-5" />
+        <div className="p-4 sm:p-6 bg-gradient-to-r from-card via-card to-indigo-500/10 border-b border-border">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold shadow-lg shadow-indigo-600/25 shrink-0">
+              <Kanban className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <DialogTitle className="text-base font-bold flex items-center gap-2">
-                <span>Сохранение отклика в Канбан-пайплайн</span>
+              <DialogTitle className="text-sm sm:text-base font-bold flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                <span>Сохранение в Канбан</span>
                 <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-400 border-emerald-500/30">
-                  {atsScore}% ATS Match
+                  {atsScore}% ATS
                 </Badge>
               </DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                Автоматически прикрепляет готовое резюме, генерирует Cover Letter и планирует напоминание в Follow-Up центре.
+              <DialogDescription className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
+                Прикрепляет резюме, генерирует письмо и планирует Follow-Up.
               </DialogDescription>
             </div>
           </div>
         </div>
 
-        <div className="p-5 sm:p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+        <div className="p-4 sm:p-6 space-y-4 flex-1 overflow-y-auto">
           {/* Target Role Inputs */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">

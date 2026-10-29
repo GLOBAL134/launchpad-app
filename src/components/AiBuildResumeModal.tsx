@@ -116,18 +116,18 @@ ${educationCity.trim()}`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl bg-card border-border text-foreground max-h-[90vh] flex flex-col p-6">
+      <DialogContent className="w-[calc(100vw-20px)] sm:max-w-2xl bg-card border-border text-foreground max-h-[92vh] flex flex-col p-4 sm:p-6">
         <DialogHeader>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary/20 border border-primary/40 flex items-center justify-center text-primary">
+            <div className="w-8 h-8 rounded-lg bg-primary/20 border border-primary/40 flex items-center justify-center text-primary shrink-0">
               <Wand2 className="w-4 h-4" />
             </div>
             <div>
-              <DialogTitle className="text-lg font-bold text-foreground">
-                Создать идеальное ATS-резюме с нуля за 1 минуту
+              <DialogTitle className="text-base sm:text-lg font-bold text-foreground">
+                Создать идеальное ATS-резюме с нуля
               </DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground">
-                Ответьте на 4 простых вопроса своими словами — нейросеть оформит их в профессиональное резюме по стандарту Harvard с оцифрованными достижениями
+              <DialogDescription className="text-[11px] sm:text-xs text-muted-foreground">
+                Ответьте на 4 вопроса — нейросеть оформит их в эталонное резюме Harvard Standard
               </DialogDescription>
             </div>
           </div>

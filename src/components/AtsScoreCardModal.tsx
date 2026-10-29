@@ -370,8 +370,8 @@ ${topSkills}
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl p-0 overflow-hidden bg-card/95 border-border shadow-2xl backdrop-blur-2xl text-foreground">
-        <DialogHeader className="p-5 pb-3 border-b border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <DialogContent className="w-[calc(100vw-20px)] sm:max-w-4xl max-h-[92vh] overflow-y-auto p-0 overflow-x-hidden bg-card/95 border-border shadow-2xl backdrop-blur-2xl text-foreground">
+        <DialogHeader className="p-4 sm:p-5 pb-3 border-b border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Award className="w-5 h-5 text-emerald-400" />
             <DialogTitle className="text-base font-bold">
@@ -390,8 +390,9 @@ ${topSkills}
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Monitor className="w-3.5 h-3.5" />
-                <span>1200×630 (Пост)</span>
+                <Monitor className="w-3.5 h-3.5 shrink-0" />
+                <span className="hidden sm:inline">1200×630 </span>
+                <span>(Пост)</span>
               </button>
               <button
                 onClick={() => setAspectFormat("vertical")}
@@ -401,8 +402,9 @@ ${topSkills}
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Smartphone className="w-3.5 h-3.5" />
-                <span>1080×1920 (Stories)</span>
+                <Smartphone className="w-3.5 h-3.5 shrink-0" />
+                <span className="hidden sm:inline">1080×1920 </span>
+                <span>(Stories)</span>
               </button>
             </div>
           </div>
@@ -452,9 +454,8 @@ ${topSkills}
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>
-                  {language === "en"
-                    ? `Download PNG (${aspectFormat === "horizontal" ? "1200×630" : "1080×1920"})`
-                    : `Скачать PNG (${aspectFormat === "horizontal" ? "1200×630" : "1080×1920"})`}
+                  {language === "en" ? "Download PNG" : "Скачать PNG"}
+                  <span className="hidden sm:inline"> ({aspectFormat === "horizontal" ? "1200×630" : "1080×1920"})</span>
                 </span>
               </Button>
             </div>

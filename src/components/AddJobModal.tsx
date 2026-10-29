@@ -47,7 +47,7 @@ export default function AddJobModal() {
 
   return (
     <Dialog open={isAddJobModalOpen} onOpenChange={setIsAddJobModalOpen}>
-      <DialogContent className="sm:max-w-lg bg-card border-border text-foreground">
+      <DialogContent className="w-[calc(100vw-20px)] sm:max-w-lg max-h-[92vh] overflow-y-auto p-4 sm:p-6 bg-card border-border text-foreground">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle className="text-base font-bold flex items-center gap-2">
