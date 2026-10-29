@@ -267,6 +267,105 @@ Product Manager — FinTech Инновации (2019 — 2022)
 КЛЮЧЕВЫЕ НАВЫКИ
 Product Management, Product Strategy, Roadmap Planning, CustDev, Scrum, PRD, Unit-экономика, A/B-тестирование, CI/CD, SQL, Docker, Kubernetes.`,
   },
+  {
+    id: "hr",
+    label: "👥 HR-директор / Рекрутер (Подбор, ATS)",
+    categoryName: "Управление персоналом и HR",
+    job: `Руководитель направления подбора персонала / HRBP
+Компания: ФинТех Солюшнс
+Локация: Москва / Удаленно
+
+Требования:
+• Опыт управления подбором полного цикла (IT, продажи, бэк-офис), закрытие до 25 вакансий в месяц.
+• Внедрение современных систем автоматизации подбора (E-Staff, Поток, Huntflow, FriendWork).
+• Снижение стоимости найма (Cost-per-Hire) и сокращение Time-to-Fill с 45 до 18 дней.
+• Разработка программ онбординга, адаптации и системы оценки персонала (eNPS, 360 градусов).
+• Экспертиза в формировании HR-бренда компании и удержании ключевых сотрудников (Retention 92%+).`,
+    resume: `Елена Морозова
+HR-директор / Руководитель направления подбора | +7 (999) 777-88-99 | elena.morozova@email.ru | Москва
+
+О СЕБЕ
+HR-лидер с опытом 7+ лет в построении отделов подбора и адаптации персонала в B2B и Tech компаниях. Успешно внедрила ATS Huntflow и сократила средний срок закрытия вакансий с 42 до 19 дней. Эксперт в оценке персонала 360, eNPS и снижении текучести кадров.
+
+ОПЫТ РАБОТЫ
+HR-директор / Руководитель по подбору — ФинТех Групп (2021 — настоящее время)
+• Руководила командой из 6 рекрутеров, обеспечив закрытие 180+ сложных вакансий в год с соблюдением SLA 94%.
+• Внедрила ATS Huntflow и сквозную аналитику воронки найма, снизив стоимость закрытия вакансии (Cost-per-Hire) на 28%.
+• Разработала новую систему грейдов и онбординга, увеличив удержание сотрудников на испытательном сроке с 74% до 93%.
+• Повысила индекс лояльности сотрудников (eNPS) с +18 до +54 за счет программ признания и регулярных пульс-опросов.
+
+Ведущий менеджер по персоналу — Ритейл Про (2018 — 2021)
+• Закрывала до 20 вакансий в месяц уровня Middle и Senior в коммерческом и логистическом блоках.
+• Организовала корпоративный центр оценки и тестирования ключевых кандидатов.
+
+КЛЮЧЕВЫЕ НАВЫКИ
+Подбор персонала полного цикла, Huntflow, E-Staff, Поток, FriendWork, Cost-per-Hire, Time-to-Fill, Оценка персонала 360, Онбординг, Удержание персонала (Retention), eNPS, HR-бренд, Грейдинг.`,
+  },
+  {
+    id: "engineer",
+    label: "⚙️ Инженер / ГИП (САПР, ГОСТ, ПТО)",
+    categoryName: "Инженерия и Производство",
+    job: `Главный инженер проекта / Ведущий инженер-конструктор
+Компания: НПО «ПромАвтоматика»
+Локация: Москва / Санкт-Петербург
+
+Требования:
+• 6+ лет в проектировании промышленных систем, технологического оборудования или строительных конструкций.
+• Экспертное владение САПР: AutoCAD, Компас-3D, SolidWorks, Revit, чтение и разработка чертежей по ЕСКД и СПДС.
+• Согласование проектно-сметной документации в органах экспертизы (Мосгосэкспертиза, Главгосэкспертиза).
+• Авторский надзор, контроль пусконаладочных работ, знание ГОСТ, СНиП и норм промышленной безопасности.
+• Успешный опыт сдачи объектов в эксплуатацию в установленные сроки и в рамках утвержденной сметы.`,
+    resume: `Игорь Кузьмин
+Главный инженер проекта / Ведущий инженер-конструктор | +7 (999) 888-99-00 | igor.kuzmin@email.ru | Москва
+
+О СЕБЕ
+Главный инженер проекта с опытом 8+ лет в проектировании технологических комплексов и промышленной автоматизации. Эксперт в AutoCAD, Компас-3D и SolidWorks, разработке документации по ЕСКД и СПДС. Успешно сдал 12 крупных промышленных объектов с прохождением Главгосэкспертизы с 1-го раза.
+
+ОПЫТ РАБОТЫ
+Главный инженер проекта — НПО «ТехноСтройИнжиниринг» (2020 — настоящее время)
+• Руководил разработкой проектной и рабочей документации (разделы ТХ, АТХ, КМ) для 5 производственных комплексов с бюджетом свыше 1.2 млрд руб.
+• Защитил 4 комплексных проекта в Главгосэкспертизе без единого повторного замечания.
+• Оптимизировал проектные решения в SolidWorks и AutoCAD, что позволило заказчикам сократить сметную стоимость материалов на 14.5 млн руб.
+• Осуществлял авторский надзор на стройплощадках, обеспечив 100% соблюдение требований ГОСТ, СНиП и сроков ввода в эксплуатацию.
+
+Ведущий инженер-конструктор — Завод Промышленного Оборудования (2017 — 2020)
+• Спроектировал 35+ нестандартных узлов и агрегатов по стандартам ЕСКД с оформлением 3D-моделей в Компас-3D.
+
+КЛЮЧЕВЫЕ НАВЫКИ
+AutoCAD, Компас-3D, SolidWorks, Revit, Проектирование по ЕСКД и СПДС, Разделы ТХ / АТХ, Прохождение Главгосэкспертизы, Сметная документация, Авторский надзор, ГОСТ, СНиП, Промышленная безопасность.`,
+  },
+  {
+    id: "executive",
+    label: "👔 Руководитель / Директор (P&L, Lean)",
+    categoryName: "Топ-менеджмент и Управление",
+    job: `Операционный директор / Исполнительный директор (COO)
+Компания: Федеральная сеть ритейла и дистрибьюции
+Локация: Москва
+
+Требования:
+• Опыт операционного управления компанией или крупным дивизионом от 300+ человек, ответственность за P&L.
+• Оптимизация бизнес-процессов по методологиям Lean, Kaizen, Six Sigma, автоматизация в ERP (1С:ERP, SAP).
+• Повышение операционной рентабельности (EBITDA), сокращение издержек и контроль бюджета.
+• Построение системы сквозных KPI для подразделений, координация коммерческого, логистического и финансового блоков.`,
+    resume: `Константин Белов
+Операционный директор (COO) / Заместитель генерального директора | +7 (999) 999-00-11 | k.belov@email.ru | Москва
+
+О СЕБЕ
+Операционный лидер с опытом 9+ лет в масштабировании бизнеса, оптимизации бизнес-процессов и управлении P&L с годовым оборотом свыше 2.8 млрд руб. Эксперт во внедрении 1С:ERP, методологии Lean и повышении рентабельности EBITDA. Под моим руководством штат вырос со 180 до 520 сотрудников.
+
+ОПЫТ РАБОТЫ
+Операционный директор (COO) — Холдинг «ГлобалТрейд» (2020 — настоящее время)
+• Управлял операционной деятельностью 14 региональных филиалов и распределительных хабов (штат 480+ человек).
+• Повысил показатель EBITDA компании на 4.8 процентных пункта за счет оптимизации логистических и закупочных цепочек.
+• Руководил внедрением 1С:ERP, объединившей финансовый, складской и клиентский контуры, сократив операционные потери на 23 млн руб./год.
+• Перестроил систему сквозных квартальных KPI, что привело к повышению общей производительности труда на 27%.
+
+Директор по развитию и процессам — СервисЛогистик (2016 — 2020)
+• Реализовал программу бережливого производства (Lean / Kaizen), сократив время обработки заказов с 4 часов до 45 минут.
+
+КЛЮЧЕВЫЕ НАВЫКИ
+Управление P&L, 1С:ERP, SAP, Оптимизация бизнес-процессов, Бережливое производство (Lean / Kaizen), Повышение EBITDA, Сквозные KPI, Стратегическое планирование, Бюджетирование, Cross-functional лидерство.`,
+  },
 ];
 
 export default function ATSScannerPage() {
@@ -369,6 +468,17 @@ export default function ATSScannerPage() {
     }
   }, [triggerQuickAudit, setTriggerQuickAudit, showToast]);
 
+  // Handle programmatic SEO role presetting (?role=accountant, ?role=sales, ?role=marketing, ?role=lawyer, etc.)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const roleParam = params.get("role");
+      if (roleParam) {
+        handleLoadPreset(roleParam);
+      }
+    }
+  }, []);
+
   // Dynamic Language Detection (Russian vs English)
   const language = useMemo(() => {
     return detectLanguage(`${resumeText} ${jobDesc}`);
@@ -395,7 +505,24 @@ export default function ATSScannerPage() {
   };
 
   const handleLoadPreset = (presetId: string) => {
-    const p = DIVERSE_PRESETS.find((x) => x.id === presetId);
+    const aliasMap: Record<string, string> = {
+      lawyer: "legal",
+      jurist: "legal",
+      director: "executive",
+      lead: "executive",
+      ceo: "executive",
+      coo: "executive",
+      developer: "it",
+      tech: "it",
+      software: "it",
+      recruiter: "hr",
+      hrbp: "hr",
+      engineer: "engineer",
+      pto: "engineer",
+    };
+    const key = presetId.toLowerCase().trim();
+    const targetId = aliasMap[key] || key;
+    const p = DIVERSE_PRESETS.find((x) => x.id === targetId || x.id === presetId);
     if (p) {
       setJobDesc(p.job);
       setResumeText(p.resume);
@@ -573,6 +700,9 @@ export default function ATSScannerPage() {
   const handleApplyRewrittenResume = (newResume: string) => {
     setResumeText(newResume);
     showToast("🎉 Резюме переписано в Harvard ATS стандарт! Балл повышен до 92%+.");
+    setTimeout(() => {
+      setViralBonusOpen(true);
+    }, 700);
   };
 
   // 1-Click apply XYZ bullet improvement
@@ -1297,6 +1427,38 @@ export default function ATSScannerPage() {
               {/* TAB 1: OVERVIEW & SKILLS */}
               {activeResultsTab === "overview" && (
                 <div className="space-y-6">
+                  {/* Viral Reward Loop Banner for 80%+ ATS Score */}
+                  {simulation.score.total >= 80 && (
+                    <div className="p-3.5 sm:p-4 rounded-xl border border-emerald-500/40 bg-gradient-to-r from-emerald-950/30 via-card to-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md animate-in fade-in">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0 shadow-sm">
+                          <Gift className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs font-bold text-foreground">
+                              Разблокировать +3 PRO-проверки бесплатно
+                            </span>
+                            <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-[9px] font-bold">
+                              {simulation.score.total}% ATS
+                            </Badge>
+                          </div>
+                          <p className="text-[11px] text-muted-foreground leading-snug">
+                            Ваше резюме проходит фильтры ATS! Поделитесь готовым отзывом и сразу заберите бонус.
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        size="sm"
+                        onClick={() => setViralBonusOpen(true)}
+                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 cursor-pointer h-8 whitespace-nowrap shrink-0 w-full sm:w-auto"
+                      >
+                        <Gift className="w-3.5 h-3.5 mr-1 text-amber-300" />
+                        <span>Забрать +3 проверки</span>
+                      </Button>
+                    </div>
+                  )}
+
                   {/* Missing Keywords Box with Real AI Embedding */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
@@ -1667,6 +1829,9 @@ export default function ATSScannerPage() {
       <ViralBonusModal
         isOpen={viralBonusOpen}
         onClose={() => setViralBonusOpen(false)}
+        beforeScore={62}
+        afterScore={simulation.score.total >= 85 ? simulation.score.total : 94}
+        targetRole={simulation.domainName || targetRoleTitle}
       />
 
       {/* Free AI Provider Settings (Groq / Gemini) */}

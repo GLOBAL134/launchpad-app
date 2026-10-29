@@ -292,6 +292,44 @@ export default function LandingPage() {
               <span>Без «нейрозвёздочек» и шаблонной воды</span>
             </div>
           </div>
+
+          {/* Programmatic SEO Role Demo Switcher */}
+          <div className="mt-10 max-w-4xl mx-auto text-left">
+            <div className="p-4 sm:p-5 rounded-2xl bg-card/60 border border-border/80 backdrop-blur-md space-y-3 shadow-lg">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1.5">
+                <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-primary" />
+                  <span>Проверьте демо ATS-сканера для вашей сферы (1 клик):</span>
+                </span>
+                <span className="text-[11px] text-muted-foreground">
+                  Без регистрации • Мгновенный скоринг 55/15/15/15
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:flex-wrap no-scrollbar">
+                {[
+                  { role: "accountant", label: "💼 Бухгалтер" },
+                  { role: "sales", label: "📈 Продажи / РОП" },
+                  { role: "marketing", label: "🎯 Маркетинг" },
+                  { role: "lawyer", label: "⚖️ Юрист" },
+                  { role: "hr", label: "👥 HR / Рекрутер" },
+                  { role: "engineer", label: "⚙️ Инженер / ГИП" },
+                  { role: "logistics", label: "🚛 Логист / ВЭД" },
+                  { role: "executive", label: "👔 Руководитель" },
+                  { role: "it", label: "💻 IT-специалист" },
+                ].map((item) => (
+                  <Link
+                    key={item.role}
+                    href={`/scanner?role=${item.role}`}
+                    className="px-3 py-1.5 rounded-xl text-xs font-medium bg-background/80 hover:bg-primary/10 border border-border/80 hover:border-primary/50 text-foreground transition cursor-pointer whitespace-nowrap shrink-0 flex items-center gap-1"
+                  >
+                    <span>{item.label}</span>
+                    <ArrowRight className="w-3 h-3 opacity-60 ml-0.5" />
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -527,6 +565,7 @@ export default function LandingPage() {
           </div>
           <div className="flex items-center gap-6">
             <Link href="/examples" className="text-primary hover:underline font-semibold">Примеры 95% ATS</Link>
+            <Link href="/pr-studio" className="text-purple-400 hover:text-purple-300 font-semibold transition-colors">PR-Студия (?admin=pr)</Link>
             <Link href="/dashboard" className="hover:text-foreground transition-colors">Дашборд</Link>
             <Link href="/tracker" className="hover:text-foreground transition-colors">Канбан-трекер</Link>
             <Link href="/scanner" className="hover:text-foreground transition-colors">ATS-сканер</Link>

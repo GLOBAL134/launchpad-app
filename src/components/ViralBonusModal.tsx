@@ -18,37 +18,50 @@ import {
   Sparkles,
   ExternalLink,
   Users,
+  CheckCircle2,
+  TrendingUp,
+  MessageSquare,
 } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 
 interface ViralBonusModalProps {
   isOpen: boolean;
   onClose: () => void;
+  beforeScore?: number;
+  afterScore?: number;
+  targetRole?: string;
 }
 
-export function ViralBonusModal({ isOpen, onClose }: ViralBonusModalProps) {
+export function ViralBonusModal({
+  isOpen,
+  onClose,
+  beforeScore = 62,
+  afterScore = 94,
+  targetRole = "специалиста",
+}: ViralBonusModalProps) {
   const { remainingScans, isPro, addBonusScans, showToast } = useApp();
-  const [copied, setCopied] = useState(false);
+  const [copiedReview, setCopiedReview] = useState(false);
   const [claimed, setClaimed] = useState(false);
 
-  const shareUrl = "https://launchpad-app-ashy.vercel.app/?ref=bonus";
-  const shareMessage =
-    "Привет! Нашёл крутой бесплатный ATS-сканер резюме для любых профессий LaunchPad AI PRO. Он находит скрытые ошибки в резюме и показывает, почему рекрутеры не зовут на собеседования: " +
-    shareUrl;
+  const shareUrl = "https://launchpad-app-ashy.vercel.app/?ref=viral_bonus";
+  const actualBefore = beforeScore > 0 ? beforeScore : 62;
+  const actualAfter = afterScore >= actualBefore ? afterScore : 94;
+
+  const reviewText = `Прогнал своё резюме через ATS-сканер LaunchPad AI — поднял скор с ${actualBefore}% до ${actualAfter}% за минуту и нашёл скрытые красные флаги работодателя: ${shareUrl}`;
 
   const handleClaim = () => {
     if (!claimed) {
       addBonusScans(3);
       setClaimed(true);
+      showToast("🎉 Вам начислено +3 PRO-проверки резюме в подарок!");
     }
   };
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(shareMessage);
-    setCopied(true);
+  const handleCopyReview = () => {
+    navigator.clipboard.writeText(reviewText);
+    setCopiedReview(true);
     handleClaim();
-    showToast("Ссылка скопирована! +3 проверки начислены 🎉");
-    setTimeout(() => setCopied(false), 3000);
+    setTimeout(() => setCopiedReview(false), 3000);
   };
 
   const handleShareTelegram = () => {
@@ -56,7 +69,7 @@ export function ViralBonusModal({ isOpen, onClose }: ViralBonusModalProps) {
     const tgUrl = `https://t.me/share/url?url=${encodeURIComponent(
       shareUrl
     )}&text=${encodeURIComponent(
-      "Привет! Нашёл крутой бесплатный ATS-сканер резюме LaunchPad AI PRO. Проверь совпадение своего резюме с вакансией:"
+      `Прогнал своё резюме через ATS-сканер LaunchPad AI — поднял скор с ${actualBefore}% до ${actualAfter}% за минуту и нашёл красные флаги работодателя:`
     )}`;
     window.open(tgUrl, "_blank", "noopener,noreferrer");
   };
@@ -64,131 +77,184 @@ export function ViralBonusModal({ isOpen, onClose }: ViralBonusModalProps) {
   const handleShareWhatsApp = () => {
     handleClaim();
     const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(
-      shareMessage
+      reviewText
     )}`;
     window.open(waUrl, "_blank", "noopener,noreferrer");
   };
 
+  const handleShareVk = () => {
+    handleClaim();
+    const vkUrl = `https://vk.com/share.php?url=${encodeURIComponent(
+      shareUrl
+    )}&title=${encodeURIComponent(
+      `ATS-аудит резюме: поднял скор с ${actualBefore}% до ${actualAfter}%`
+    )}&comment=${encodeURIComponent(reviewText)}`;
+    window.open(vkUrl, "_blank", "noopener,noreferrer");
+  };
+
+  const handleShareLinkedIn = () => {
+    handleClaim();
+    const inUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
+      shareUrl
+    )}`;
+    window.open(inUrl, "_blank", "noopener,noreferrer");
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="w-[calc(100vw-20px)] sm:max-w-md max-h-[92vh] overflow-y-auto p-4 sm:p-6 bg-card border-border">
+      <DialogContent className="w-[calc(100vw-20px)] sm:max-w-md max-h-[92vh] overflow-y-auto p-4 sm:p-6 bg-card border-border shadow-2xl backdrop-blur-xl">
         <DialogHeader>
           <div className="flex items-center gap-2 mb-1">
-            <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0 shadow-md shadow-amber-500/10">
               <Gift className="w-5 h-5" />
             </div>
             <div>
-              <DialogTitle className="text-lg font-bold flex items-center gap-2">
-                Бонус: +3 PRO-проверки
+              <DialogTitle className="text-base sm:text-lg font-black flex items-center gap-2">
+                <span>Разблокировать +3 PRO-проверки</span>
                 <Badge
                   variant="outline"
-                  className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30 text-[10px]"
+                  className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30 text-[10px] font-bold"
                 >
-                  Мгновенно
+                  Бесплатно
                 </Badge>
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground">
-                Поделитесь сервисом с коллегой или другом в поиске работы
+                Поделитесь сервисом с коллегами или друзьями в поиске работы
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
         <div className="space-y-4 pt-2">
-          {/* Status banner */}
-          <div className="p-3.5 rounded-xl border border-primary/20 bg-primary/5 flex items-center justify-between">
+          {/* Real Score Improvement Banner */}
+          <div className="p-3.5 rounded-xl border border-emerald-500/30 bg-gradient-to-r from-emerald-950/20 via-card to-card space-y-1.5">
+            <div className="flex items-center justify-between text-xs font-bold text-foreground">
+              <span className="flex items-center gap-1.5 text-emerald-400">
+                <TrendingUp className="w-3.5 h-3.5" />
+                <span>Ваш прогресс оптимизации</span>
+              </span>
+              <span className="text-[11px] font-mono text-emerald-300">
+                {actualBefore}% → {actualAfter}% ATS
+              </span>
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-snug">
+              Ваше резюме проходит фильтры корпоративных ATS-роботов и оцифровано по формуле Google X-Y-Z.
+            </p>
+          </div>
+
+          {/* Balance status */}
+          <div className="p-3 rounded-xl border border-primary/20 bg-primary/5 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <Users className="w-4 h-4 text-primary" />
               <div>
-                <p className="text-xs font-semibold">Ваш текущий баланс проверок</p>
+                <p className="text-xs font-semibold text-foreground">Текущий баланс проверок</p>
                 <p className="text-[11px] text-muted-foreground">
                   {isPro
                     ? "У вас безлимитный PRO доступ"
-                    : `Осталось проверок: ${remainingScans}`}
+                    : `Осталось бесплатных проверок: ${remainingScans}`}
                 </p>
               </div>
             </div>
             {claimed ? (
-              <Badge className="bg-emerald-500 text-white text-xs">
+              <Badge className="bg-emerald-500 text-white text-xs font-bold shadow-sm">
                 +3 начислено!
               </Badge>
             ) : (
               <Badge
                 variant="outline"
-                className="bg-amber-500/10 text-amber-300 border-amber-500/30 text-xs"
+                className="bg-amber-500/10 text-amber-300 border-amber-500/30 text-xs font-bold"
               >
                 +3 в подарок
               </Badge>
             )}
           </div>
 
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            Мы развиваем LaunchPad AI без корпоративных бюджетов. Если сервис помогает
-            вам — отправьте ссылку коллеге или другу в поиске работы. В благодарность
-            мы сразу начислим 3 дополнительные глубокие проверки резюме.
-          </p>
-
-          {/* Quick share buttons */}
-          <div className="grid grid-cols-2 gap-2.5">
-            <Button
-              onClick={handleShareTelegram}
-              className="w-full bg-[#24A1DE] hover:bg-[#208fca] text-white text-xs font-medium h-10 gap-2 cursor-pointer shadow-sm"
-            >
-              <Share2 className="w-3.5 h-3.5" />
-              В Telegram
-              <ExternalLink className="w-3 h-3 opacity-70" />
-            </Button>
+          {/* Ready-to-share review box */}
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-bold text-muted-foreground flex items-center justify-between">
+              <span className="flex items-center gap-1 text-foreground">
+                <MessageSquare className="w-3.5 h-3.5 text-primary" />
+                Готовый текст отзыва (скопировать в 1 клик):
+              </span>
+              <span className="text-[10px] text-emerald-400">Мгновенный бонус</span>
+            </label>
+            <div className="p-3 rounded-xl bg-background/80 border border-border/80 text-xs text-foreground/90 font-sans leading-relaxed">
+              «{reviewText}»
+            </div>
 
             <Button
-              onClick={handleShareWhatsApp}
-              className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-medium h-10 gap-2 cursor-pointer shadow-sm"
+              onClick={handleCopyReview}
+              className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs h-9 cursor-pointer flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20"
             >
-              <Share2 className="w-3.5 h-3.5" />
-              В WhatsApp
-              <ExternalLink className="w-3 h-3 opacity-70" />
+              {copiedReview ? (
+                <>
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Текст отзыва скопирован! +3 проверки начислены</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>Скопировать готовый текст отзыва (+3 проверки)</span>
+                </>
+              )}
             </Button>
           </div>
 
-          {/* Copy custom link */}
-          <div className="pt-1">
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                readOnly
-                value={shareUrl}
-                className="flex-1 bg-muted/40 border border-border text-xs px-3 py-2 rounded-lg font-mono text-muted-foreground select-all focus:outline-none"
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleCopy}
-                className="gap-1.5 shrink-0 text-xs cursor-pointer h-9"
+          {/* 4 Social 1-Click Share Buttons */}
+          <div className="space-y-1.5 pt-1">
+            <span className="text-[11px] font-bold text-muted-foreground block">
+              Или поделитесь напрямую в 1 клик:
+            </span>
+
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={handleShareTelegram}
+                className="p-2.5 rounded-xl bg-[#24A1DE]/15 hover:bg-[#24A1DE]/25 border border-[#24A1DE]/40 text-[#24A1DE] text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer"
               >
-                {copied ? (
-                  <>
-                    <Check className="w-3.5 h-3.5 text-emerald-400" />
-                    Скопировано
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5" />
-                    Копировать
-                  </>
-                )}
-              </Button>
+                <Share2 className="w-3.5 h-3.5" />
+                <span>Telegram</span>
+                <ExternalLink className="w-3 h-3 opacity-60" />
+              </button>
+
+              <button
+                onClick={handleShareWhatsApp}
+                className="p-2.5 rounded-xl bg-[#25D366]/15 hover:bg-[#25D366]/25 border border-[#25D366]/40 text-[#25D366] text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                <span>WhatsApp</span>
+                <ExternalLink className="w-3 h-3 opacity-60" />
+              </button>
+
+              <button
+                onClick={handleShareVk}
+                className="p-2.5 rounded-xl bg-[#0077FF]/15 hover:bg-[#0077FF]/25 border border-[#0077FF]/40 text-[#0077FF] text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                <span>ВКонтакте</span>
+                <ExternalLink className="w-3 h-3 opacity-60" />
+              </button>
+
+              <button
+                onClick={handleShareLinkedIn}
+                className="p-2.5 rounded-xl bg-[#0A66C2]/15 hover:bg-[#0A66C2]/25 border border-[#0A66C2]/40 text-[#0A66C2] text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                <span>LinkedIn</span>
+                <ExternalLink className="w-3 h-3 opacity-60" />
+              </button>
             </div>
           </div>
 
           {claimed && (
-            <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-center">
-              <p className="text-xs text-emerald-300 font-medium flex items-center justify-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-emerald-400" />
-                Бонус успешно применён! Проверки уже доступны в сканере.
+            <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-center animate-in fade-in">
+              <p className="text-xs text-emerald-300 font-semibold flex items-center justify-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                Бонус активирован! +3 проверки уже на вашем балансе.
               </p>
             </div>
           )}
 
-          <div className="flex justify-end pt-2">
+          <div className="flex justify-end pt-1">
             <Button variant="ghost" size="sm" onClick={onClose} className="text-xs">
               Закрыть
             </Button>

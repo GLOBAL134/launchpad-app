@@ -185,6 +185,18 @@ export default function DashboardLayout({
             Переходы
           </div>
           <Link
+            href="/pr-studio"
+            className="flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <Sparkles className="w-4 h-4 text-purple-400" />
+              <span>PR-Комбайн (?admin=pr)</span>
+            </div>
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300">
+              GROWTH
+            </span>
+          </Link>
+          <Link
             href="/"
             className="flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
           >
@@ -329,6 +341,22 @@ export default function DashboardLayout({
                         </Link>
                       );
                     })}
+
+                    <div className="pt-2 border-t border-border/60">
+                      <Link
+                        href="/pr-studio"
+                        onClick={() => setMobileOpen(false)}
+                        className="flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium text-purple-400 hover:bg-purple-500/10"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Sparkles className="w-4 h-4 text-purple-400" />
+                          <span>PR-Комбайн (?admin=pr)</span>
+                        </div>
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300">
+                          GROWTH
+                        </span>
+                      </Link>
+                    </div>
                   </nav>
                 </div>
 
