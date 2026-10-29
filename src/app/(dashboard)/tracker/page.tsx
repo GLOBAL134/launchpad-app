@@ -23,6 +23,7 @@ import {
   Copy,
   Check,
   FileText,
+  DollarSign,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,9 +43,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { STAGE_COLUMNS, JobApplication, ApplicationStage } from "@/types";
 import { stringToColor, relativeTime } from "@/lib/utils";
-import { generateIcsCalendarFile } from "@/lib/follow-up-templates";
+import { generateIcsCalendarFile, generateGoogleCalendarUrl } from "@/lib/follow-up-templates";
 import { useApp } from "@/context/AppContext";
 import { AiInterviewPrepModal } from "@/components/AiInterviewPrepModal";
+import { SalaryNegotiatorModal } from "@/components/SalaryNegotiatorModal";
 
 export default function TrackerPage() {
   const router = useRouter();
@@ -66,6 +68,8 @@ export default function TrackerPage() {
   const [selectedJob, setSelectedJob] = useState<JobApplication | null>(null);
   const [interviewPrepOpen, setInterviewPrepOpen] = useState(false);
   const [interviewPrepJob, setInterviewPrepJob] = useState<JobApplication | null>(null);
+  const [salaryNegotiatorOpen, setSalaryNegotiatorOpen] = useState(false);
+  const [salaryNegotiatorJob, setSalaryNegotiatorJob] = useState<JobApplication | null>(null);
 
   const handleOpenInterviewPrep = (app: JobApplication) => {
     setInterviewPrepJob(app);
@@ -436,13 +440,45 @@ export default function TrackerPage() {
                   size="sm"
                   variant="outline"
                   onClick={() => {
-                    handleDownloadIcs(selectedJob);
+                    setSalaryNegotiatorJob(selectedJob);
+                    setSalaryNegotiatorOpen(true);
                   }}
-                  className="text-xs justify-center cursor-pointer col-span-2 border-border/80 text-amber-300 hover:bg-amber-500/10"
+                  className="text-xs justify-center cursor-pointer col-span-2 border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 font-semibold"
                 >
-                  <Calendar className="w-3.5 h-3.5 mr-1.5 text-amber-400" />
-                  Добавить напоминание в календарь (.ics на +6 дней)
+                  <DollarSign className="w-3.5 h-3.5 mr-1.5 text-emerald-400" />
+                  💰 Торг по зарплате (+15–25% к офферу с ИИ)
                 </Button>
+
+                <div className="grid grid-cols-2 gap-2 col-span-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      const gCalUrl = generateGoogleCalendarUrl({
+                        company: selectedJob.company,
+                        position: selectedJob.position,
+                        applied_at: selectedJob.applied_at,
+                      });
+                      window.open(gCalUrl, "_blank", "noopener,noreferrer");
+                      showToast("✓ Напоминание открыто в Google Календаре (+5 дней)!");
+                    }}
+                    className="text-xs justify-center cursor-pointer border-primary/40 bg-primary/5 hover:bg-primary/10 text-primary"
+                  >
+                    <Calendar className="w-3.5 h-3.5 mr-1 text-primary" />
+                    Google Календарь
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      handleDownloadIcs(selectedJob);
+                    }}
+                    className="text-xs justify-center cursor-pointer border-border/80 text-amber-300 hover:bg-amber-500/10"
+                  >
+                    <Calendar className="w-3.5 h-3.5 mr-1 text-amber-400" />
+                    Скачать .ICS
+                  </Button>
+                </div>
               </div>
 
               {/* Quick Move Stage Selector */}
@@ -583,6 +619,23 @@ export default function TrackerPage() {
             interviewPrepJob.job_description ||
             `Вакансия: ${interviewPrepJob.position} в компании ${interviewPrepJob.company}. Релевантный опыт, компетенции, выполнение KPI.`
           }
+        />
+      )}
+
+      {/* Module: AI Salary Negotiator from Kanban Card */}
+      {salaryNegotiatorJob && (
+        <SalaryNegotiatorModal
+          open={salaryNegotiatorOpen}
+          onOpenChange={setSalaryNegotiatorOpen}
+          positionName={salaryNegotiatorJob.position}
+          companyName={salaryNegotiatorJob.company}
+          resumeText={salaryNegotiatorJob.resume_version || userProfile.title}
+          defaultOfferedSalary={
+            salaryNegotiatorJob.salary_max
+              ? `${salaryNegotiatorJob.salary_max.toLocaleString("ru-RU")} ₽`
+              : "180 000 ₽"
+          }
+          onToast={showToast}
         />
       )}
     </div>

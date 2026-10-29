@@ -25,6 +25,8 @@ import {
 } from "lucide-react";
 import { callAI } from "@/lib/ai-client";
 
+export type LifeSituation = "standard" | "switch" | "gap" | "junior";
+
 interface Props {
   isOpen: boolean;
   onClose: () => void;
@@ -32,6 +34,7 @@ interface Props {
   jobDescription: string;
   currentScore: number;
   missingSkills: string[];
+  initialLifeSituation?: LifeSituation;
   onApplyRewritten: (newResumeText: string) => void;
 }
 
@@ -42,19 +45,38 @@ export default function AiRewriteResumeModal({
   jobDescription,
   currentScore,
   missingSkills,
+  initialLifeSituation = "standard",
   onApplyRewritten,
 }: Props) {
   const [rewrittenText, setRewrittenText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [viewTab, setViewTab] = useState<"side_by_side" | "improved">("side_by_side");
+  const [lifeSituation, setLifeSituation] = useState<LifeSituation>(initialLifeSituation);
   const [copied, setCopied] = useState(false);
 
-  const handleRewrite = async () => {
+  useEffect(() => {
+    setLifeSituation(initialLifeSituation);
+  }, [initialLifeSituation, isOpen]);
+
+  const handleRewrite = async (situationOverride?: LifeSituation) => {
     setIsLoading(true);
+    const activeSituation = situationOverride || lifeSituation;
 
     try {
+      let situationInstruction = "";
+      if (activeSituation === "switch") {
+        situationInstruction = `\nСПЕЦИАЛЬНЫЙ РЕЖИМ: КАНДИДАТ МЕНЯЕТ ПРОФЕССИЮ / ПЕРЕХОДИТ В СМЕЖНУЮ СФЕРУ.
+Переведи весь предшествующий опыт кандидата на профессиональный язык целевой вакансии. Подчеркни универсальные переносимые навыки (transferable skills): управление процессами, цифры, регламенты, договоры, коммуникация, анализ данных, чтобы работодатель видел опытного зрелого специалиста, а не новичка.`;
+      } else if (activeSituation === "gap") {
+        situationInstruction = `\nСПЕЦИАЛЬНЫЙ РЕЖИМ: БЫЛ ПЕРЕРЫВ В СТАЖЕ (декрет, бизнес, фриланс, поиск себя).
+Упакуй период перерыва с максимальным профессиональным достоинством (проектная деятельность, непрерывное повышение квалификации, сохранение актуальности знаний), закрыв любые сомнения рекрутера.`;
+      } else if (activeSituation === "junior") {
+        situationInstruction = `\nСПЕЦИАЛЬНЫЙ РЕЖИМ: НАЧИНАЮЩИЙ СПЕЦИАЛИСТ / МАЛО ОПЫТА.
+Максимально структурируй учебные, стажерские или личные проекты по формуле X-Y-Z с фокусом на профильные hard skills.`;
+      }
+
       const systemPrompt = `You are a world-class executive resume architect and ATS optimization engine.
-Your task is to completely rewrite and enhance the candidate's resume for the target job description to achieve a 92%+ ATS match score.
+Your task is to completely rewrite and enhance the candidate's resume for the target job description to achieve a 92%+ ATS match score.${situationInstruction}
 
 STRICT RULES:
 1. Output plain human text only. NEVER use Markdown asterisks (**), hashtags (#), or code blocks.
@@ -148,8 +170,73 @@ ${currentResume}
             </div>
           </div>
 
+          {/* Module 3: Career Switch & Gap Fixer Chips */}
+          <div className="mt-3 pt-2.5 border-t border-border/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+            <span className="text-[11px] font-bold text-muted-foreground flex items-center gap-1">
+              <span>Режим адаптации:</span>
+            </span>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setLifeSituation("standard");
+                  handleRewrite("standard");
+                }}
+                className={`px-2 py-0.5 rounded-md text-[11px] font-medium transition cursor-pointer border ${
+                  lifeSituation === "standard"
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-muted/40 border-border text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Обычный поиск
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLifeSituation("switch");
+                  handleRewrite("switch");
+                }}
+                className={`px-2 py-0.5 rounded-md text-[11px] font-medium transition cursor-pointer border ${
+                  lifeSituation === "switch"
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-muted/40 border-border text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                🔄 Смена профессии
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLifeSituation("gap");
+                  handleRewrite("gap");
+                }}
+                className={`px-2 py-0.5 rounded-md text-[11px] font-medium transition cursor-pointer border ${
+                  lifeSituation === "gap"
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-muted/40 border-border text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                ⏸ Был перерыв (декрет/бизнес)
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLifeSituation("junior");
+                  handleRewrite("junior");
+                }}
+                className={`px-2 py-0.5 rounded-md text-[11px] font-medium transition cursor-pointer border ${
+                  lifeSituation === "junior"
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-muted/40 border-border text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                🎓 Мало опыта
+              </button>
+            </div>
+          </div>
+
           {/* Tab Switcher */}
-          <div className="flex items-center justify-between gap-2 mt-4 pt-3 border-t border-border/60">
+          <div className="flex items-center justify-between gap-2 mt-3 pt-2.5 border-t border-border/60">
             <div className="flex p-0.5 rounded-lg bg-background/60 border border-border text-xs">
               <button
                 onClick={() => setViewTab("side_by_side")}
@@ -174,7 +261,7 @@ ${currentResume}
             </div>
 
             <button
-              onClick={handleRewrite}
+              onClick={() => handleRewrite()}
               disabled={isLoading}
               className="text-xs text-primary hover:underline flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             >

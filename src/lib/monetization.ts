@@ -15,6 +15,7 @@ export const FREE_SCAN_LIMIT = 2;
 
 const STORAGE_PRO_FLAG = 'launchpad_pro_active_v1';
 const STORAGE_SCAN_COUNT = 'launchpad_free_scans_used_v1';
+const STORAGE_BONUS_SCANS = 'launchpad_bonus_scans_v1';
 
 export function isUserPro(): boolean {
   if (typeof window === 'undefined') return false;
@@ -26,9 +27,21 @@ export function getFreeScansUsed(): number {
   return Number(localStorage.getItem(STORAGE_SCAN_COUNT) || '0');
 }
 
+export function getBonusScans(): number {
+  if (typeof window === 'undefined') return 0;
+  return Number(localStorage.getItem(STORAGE_BONUS_SCANS) || '0');
+}
+
+export function addBonusScans(count: number): void {
+  if (typeof window === 'undefined') return;
+  const current = getBonusScans();
+  localStorage.setItem(STORAGE_BONUS_SCANS, String(current + count));
+}
+
 export function getRemainingFreeScans(): number {
   if (isUserPro()) return Infinity;
-  return Math.max(0, FREE_SCAN_LIMIT - getFreeScansUsed());
+  const bonus = getBonusScans();
+  return Math.max(0, (FREE_SCAN_LIMIT + bonus) - getFreeScansUsed());
 }
 
 export function incrementScanUsage(): void {

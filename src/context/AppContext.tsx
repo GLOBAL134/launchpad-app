@@ -8,6 +8,7 @@ import {
   getRemainingFreeScans,
   incrementScanUsage,
   verifyAndActivateProKey,
+  addBonusScans as libAddBonusScans,
 } from "@/lib/monetization";
 
 export interface UserProfile {
@@ -100,6 +101,7 @@ interface AppContextType {
   setUpgradeReason: (reason?: string) => void;
   activateWithKey: (key: string) => boolean;
   consumeScan: () => void;
+  addBonusScans: (count: number) => void;
 
   // Cross-page navigation helpers
   scannerTargetJob: { company: string; position: string; description?: string } | null;
@@ -650,6 +652,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setRemainingScans(getRemainingFreeScans());
   }, []);
 
+  const addBonusScans = useCallback((count: number) => {
+    libAddBonusScans(count);
+    setRemainingScans(getRemainingFreeScans());
+    showToast(`🎁 Вам начислено +${count} бесплатных проверок резюме!`);
+  }, [showToast]);
+
   const exportBackupData = useCallback(() => {
     if (typeof window === "undefined") return;
 
@@ -754,6 +762,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setUpgradeReason,
         activateWithKey,
         consumeScan,
+        addBonusScans,
         scannerTargetJob,
         setScannerTargetJob,
         coverLetterTargetJob,

@@ -39,6 +39,9 @@ import {
   HelpCircle,
   Loader2,
   FileDown,
+  Gift,
+  Flag,
+  DollarSign,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -56,6 +59,10 @@ import SaveToKanbanModal from "@/components/SaveToKanbanModal";
 import { AiBuildResumeModal } from "@/components/AiBuildResumeModal";
 import { HhCopyModal } from "@/components/HhCopyModal";
 import { AiInterviewPrepModal } from "@/components/AiInterviewPrepModal";
+import { JobRedFlagsCard } from "@/components/JobRedFlagsCard";
+import { SalaryNegotiatorModal } from "@/components/SalaryNegotiatorModal";
+import { BatchJobComparator } from "@/components/BatchJobComparator";
+import { ViralBonusModal } from "@/components/ViralBonusModal";
 import { exportResumeToDocx, exportResumeToPdf } from "@/lib/export-resume";
 import { cleanAIMarkdownArtifacts } from "@/lib/monetization";
 import { detectLanguage } from "@/lib/language";
@@ -287,8 +294,14 @@ export default function ATSScannerPage() {
 
   const [isScanning, setIsScanning] = useState(false);
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
-  const [activeResultsTab, setActiveResultsTab] = useState<"overview" | "raw_ats" | "xyz_diff">("overview");
+  const [activeResultsTab, setActiveResultsTab] = useState<"overview" | "raw_ats" | "xyz_diff" | "red_flags">("overview");
   const [rawViewMode, setRawViewMode] = useState<"text" | "json">("text");
+
+  // Killer Features States: Life Situation, Batch Mode, Salary & Viral Bonus
+  const [lifeSituation, setLifeSituation] = useState<"standard" | "switch" | "gap" | "junior">("standard");
+  const [jobInputMode, setJobInputMode] = useState<"single" | "batch">("single");
+  const [salaryModalOpen, setSalaryModalOpen] = useState(false);
+  const [viralBonusOpen, setViralBonusOpen] = useState(false);
 
   // Modals for Module 2 & Module 3
   const [isScoreCardOpen, setIsScoreCardOpen] = useState(false);
@@ -658,6 +671,17 @@ export default function ATSScannerPage() {
             <FileText className="w-3.5 h-3.5 text-primary" />
             <span>Собрать Harvard ATS</span>
           </Button>
+
+          {/* Viral Referral Bonus Button */}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setViralBonusOpen(true)}
+            className="text-xs border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 flex items-center gap-1.5 cursor-pointer"
+          >
+            <Gift className="w-3.5 h-3.5 text-amber-400" />
+            <span>🎁 +3 проверки</span>
+          </Button>
         </div>
       </div>
 
@@ -683,6 +707,41 @@ export default function ATSScannerPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Inputs (5 Cols) */}
         <div className="lg:col-span-5 space-y-4">
+          {/* Life Situation Chips for AI Context Adaptation */}
+          <div className="p-3 rounded-xl bg-card/60 border border-border/80 space-y-2">
+            <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+              <span className="flex items-center gap-1.5 text-foreground font-bold">
+                <Target className="w-3.5 h-3.5 text-primary" />
+                Жизненная ситуация:
+              </span>
+              <span className="text-[10px] text-primary">ИИ адаптирует буллеты</span>
+            </div>
+            <div className="grid grid-cols-2 gap-1.5">
+              {[
+                { id: "standard", label: "🎯 Стандартный поиск" },
+                { id: "switch", label: "🔄 Смена профессии" },
+                { id: "gap", label: "⏸ Перерыв в стаже" },
+                { id: "junior", label: "🎓 Джуниор / мало опыта" },
+              ].map((sit) => (
+                <button
+                  key={sit.id}
+                  type="button"
+                  onClick={() => {
+                    setLifeSituation(sit.id as "standard" | "switch" | "gap" | "junior");
+                    showToast(`Выбрано: ${sit.label}. ИИ учтёт это при оптимизации резюме.`);
+                  }}
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-medium border text-left transition cursor-pointer flex items-center gap-1.5 ${
+                    lifeSituation === sit.id
+                      ? "bg-primary/15 border-primary text-primary font-semibold shadow-xs"
+                      : "bg-background/50 border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                  }`}
+                >
+                  <span className="truncate">{sit.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Card 1: Resume Input */}
           <Card
             className="bg-card border-border transition-colors"
@@ -768,8 +827,50 @@ export default function ATSScannerPage() {
             </CardContent>
           </Card>
 
-          {/* Card 2: Job Description Input & Multi-Source Importer (Module 2) */}
-          <Card className="bg-card border-border">
+          {/* Vacancy Mode Switcher: Single vs Batch (Module 4) */}
+          <div className="flex items-center justify-between pb-0.5">
+            <div className="flex items-center gap-1.5 p-1 rounded-xl bg-card/80 border border-border/80 w-full">
+              <button
+                type="button"
+                onClick={() => setJobInputMode("single")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer flex-1 text-center ${
+                  jobInputMode === "single"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Одна вакансия
+              </button>
+              <button
+                type="button"
+                onClick={() => setJobInputMode("batch")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer flex-1 text-center flex items-center justify-center gap-1.5 ${
+                  jobInputMode === "batch"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <span>🔥 Сравнить до 5 вакансий</span>
+                <Badge variant="outline" className="text-[9px] px-1 py-0 border-amber-500/40 text-amber-300 bg-amber-500/10 hidden sm:inline">
+                  Пакетный
+                </Badge>
+              </button>
+            </div>
+          </div>
+
+          {jobInputMode === "batch" ? (
+            <BatchJobComparator
+              resumeText={resumeText}
+              onSelectJobForScanner={(jobTextToLoad) => {
+                setJobDesc(jobTextToLoad);
+                setJobInputMode("single");
+                showToast("✓ Вакансия победителя загружена в сканер!");
+              }}
+              onToast={showToast}
+            />
+          ) : (
+            /* Card 2: Job Description Input & Multi-Source Importer (Module 2) */
+            <Card className="bg-card border-border">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
@@ -929,6 +1030,7 @@ export default function ATSScannerPage() {
               </div>
             </CardContent>
           </Card>
+          )}
         </div>
 
         {/* Right Column: ATS Report & Score (7 Cols) */}
@@ -1048,6 +1150,16 @@ export default function ATSScannerPage() {
                       <Kanban className="w-3.5 h-3.5 text-indigo-400" />
                       <span>🚀 В Канбан + Письмо</span>
                     </Button>
+
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setSalaryModalOpen(true)}
+                      className="h-8 text-xs border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 font-semibold cursor-pointer flex items-center gap-1.5"
+                    >
+                      <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>💰 Торг по зарплате (+20%)</span>
+                    </Button>
                   </div>
                 </div>
 
@@ -1151,6 +1263,18 @@ export default function ATSScannerPage() {
               >
                 <Wand2 className="w-3.5 h-3.5 text-amber-400" />
                 <span>X-Y-Z Улучшатель ({simulation.xyzImprovements.length})</span>
+              </button>
+
+              <button
+                onClick={() => setActiveResultsTab("red_flags")}
+                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer flex items-center gap-1.5 ${
+                  activeResultsTab === "red_flags"
+                    ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                }`}
+              >
+                <Flag className="w-3.5 h-3.5 text-rose-400" />
+                <span>🚩 Рентген вакансии</span>
               </button>
             </div>
 
@@ -1406,6 +1530,18 @@ export default function ATSScannerPage() {
                   </div>
                 </div>
               )}
+
+              {/* TAB 4: JOB RED FLAGS & TOXICITY ANALYZER */}
+              {activeResultsTab === "red_flags" && (
+                <div className="space-y-4 animate-in fade-in">
+                  <JobRedFlagsCard
+                    jobText={jobDesc}
+                    companyName="Работодатель"
+                    positionName={simulation.domainName || targetRoleTitle}
+                    onToast={showToast}
+                  />
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -1429,6 +1565,7 @@ export default function ATSScannerPage() {
         jobDescription={jobDesc}
         currentScore={simulation.score.total}
         missingSkills={simulation.missingSkills}
+        initialLifeSituation={lifeSituation}
         onApplyRewritten={handleApplyRewrittenResume}
       />
 
@@ -1498,6 +1635,23 @@ export default function ATSScannerPage() {
         onActivated={() => {
           showToast("🎉 Тариф LaunchPad AI PRO успешно активирован!");
         }}
+      />
+
+      {/* Module 2: AI Salary Negotiator Modal */}
+      <SalaryNegotiatorModal
+        open={salaryModalOpen}
+        onOpenChange={setSalaryModalOpen}
+        positionName={simulation.domainName || targetRoleTitle}
+        companyName={scannerTargetJob?.company || "Работодатель"}
+        resumeText={resumeText}
+        defaultOfferedSalary="180 000 ₽"
+        onToast={showToast}
+      />
+
+      {/* Module 5: Viral Referral Bonus Modal */}
+      <ViralBonusModal
+        isOpen={viralBonusOpen}
+        onClose={() => setViralBonusOpen(false)}
       />
     </div>
   );

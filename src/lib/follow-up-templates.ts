@@ -249,7 +249,7 @@ export function generateIcsCalendarFile(job: {
   applied_at?: string | null;
 }): string {
   const baseDate = job.applied_at ? new Date(job.applied_at) : new Date();
-  const reminderDate = new Date(baseDate.getTime() + 6 * 24 * 60 * 60 * 1000);
+  const reminderDate = new Date(baseDate.getTime() + 5 * 24 * 60 * 60 * 1000);
   reminderDate.setHours(11, 0, 0, 0);
 
   const formatDate = (d: Date) => d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
@@ -278,4 +278,37 @@ DESCRIPTION:Напоминание: пора отправить Follow-Up в ${j
 END:VALARM
 END:VEVENT
 END:VCALENDAR`;
+}
+
+/**
+ * Generates direct Google Calendar web URL set for +5 days (Module 5)
+ */
+export function generateGoogleCalendarUrl(job: {
+  company: string;
+  position: string;
+  applied_at?: string | null;
+  messageText?: string;
+}): string {
+  const baseDate = job.applied_at ? new Date(job.applied_at) : new Date();
+  const reminderDate = new Date(baseDate.getTime() + 5 * 24 * 60 * 60 * 1000);
+  reminderDate.setHours(11, 0, 0, 0);
+
+  const formatDate = (d: Date) => d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+  const startStr = formatDate(reminderDate);
+  const endStr = formatDate(new Date(reminderDate.getTime() + 30 * 60 * 1000));
+
+  const title = `Отправить Follow-Up в ${job.company} (${job.position})`;
+  const details = job.messageText
+    ? `Текст напоминания:\n\n${job.messageText}\n\nLaunchPad AI: https://launchpad-app-ashy.vercel.app/follow-ups`
+    : `Пора вежливо напомнить о своем резюме на позицию ${job.position} в компании ${job.company}.\nШаблоны: https://launchpad-app-ashy.vercel.app/follow-ups`;
+
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: title,
+    dates: `${startStr}/${endStr}`,
+    details: details,
+    location: job.company,
+  });
+
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }

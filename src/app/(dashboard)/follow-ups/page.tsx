@@ -42,6 +42,7 @@ import {
   FollowUpScenario,
   interpolateFollowUpTemplate,
   generateIcsCalendarFile,
+  generateGoogleCalendarUrl,
 } from "@/lib/follow-up-templates";
 import { cleanAIMarkdownArtifacts } from "@/lib/monetization";
 import { callAI } from "@/lib/ai-client";
@@ -179,6 +180,17 @@ export default function FollowUpsPage() {
     link.click();
     URL.revokeObjectURL(url);
     showToast("✓ Файл напоминания в календарь (.ics на +6 дней) скачан!");
+  };
+
+  const handleOpenGoogleCalendar = () => {
+    const gCalUrl = generateGoogleCalendarUrl({
+      company: activeApp.company,
+      position: activeApp.position,
+      applied_at: activeApp.applied_at,
+      messageText: editableText,
+    });
+    window.open(gCalUrl, "_blank", "noopener,noreferrer");
+    showToast("✓ Напоминание открыто в Google Календаре (+5 дней)!");
   };
 
   const handleSendEmail = () => {
@@ -562,15 +574,26 @@ export default function FollowUpsPage() {
           </div>
 
           <DialogFooter className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDownloadIcs}
-              className="text-xs border-border flex items-center gap-1.5 cursor-pointer w-full sm:w-auto"
-            >
-              <Calendar className="w-3.5 h-3.5 text-amber-400" />
-              <span>Добавить в календарь (.ics)</span>
-            </Button>
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleOpenGoogleCalendar}
+                className="text-xs border-primary/40 bg-primary/5 hover:bg-primary/10 text-primary flex items-center gap-1.5 cursor-pointer"
+              >
+                <Calendar className="w-3.5 h-3.5 text-primary" />
+                <span>Google Календарь</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDownloadIcs}
+                className="text-xs border-border flex items-center gap-1.5 cursor-pointer"
+              >
+                <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                <span>Скачать .ICS</span>
+              </Button>
+            </div>
 
             <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
               <Button
