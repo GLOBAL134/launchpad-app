@@ -120,92 +120,105 @@ export default function LandingPage() {
 
       {/* Top Navbar */}
       <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-black text-xl shadow-lg shadow-primary/25">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2.5 shrink-0 hover:opacity-90 transition">
+            <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-black text-lg shadow-lg shadow-primary/25 shrink-0">
               🎯
             </div>
-            <div>
+            <div className="flex items-center gap-1.5 whitespace-nowrap">
               <span className="font-bold text-lg tracking-tight bg-gradient-to-r from-white via-white/90 to-white/60 bg-clip-text text-transparent">
                 LaunchPad
               </span>
-              <span className="text-[10px] uppercase font-semibold text-primary ml-1.5 px-1.5 py-0.5 rounded bg-primary/10 border border-primary/20">
+              <span className="text-[10px] uppercase font-semibold text-primary px-1.5 py-0.5 rounded bg-primary/10 border border-primary/20">
                 AI Pro
               </span>
             </div>
-          </div>
+          </Link>
 
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
-            <Link href="/examples" className="text-primary hover:text-primary/80 font-semibold transition-colors flex items-center gap-1">
+          {/* Navigation Links */}
+          <nav className="hidden lg:flex items-center gap-4 xl:gap-6 text-xs xl:text-sm font-medium text-muted-foreground whitespace-nowrap">
+            <Link
+              href="/examples"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-500/25 hover:text-white transition whitespace-nowrap"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
               <span>Примеры резюме (95%)</span>
             </Link>
-            <a href="#features" className="hover:text-foreground transition-colors">
+            <a href="#features" className="hover:text-foreground transition-colors whitespace-nowrap">
               Возможности
             </a>
-            <a href="#pain-points" className="hover:text-foreground transition-colors">
+            <a href="#funnel-calculator" className="hover:text-foreground transition-colors whitespace-nowrap">
+              Калькулятор
+            </a>
+            <a href="#pain-points" className="hover:text-foreground transition-colors whitespace-nowrap">
               Проблема
             </a>
-            <a href="#workflow" className="hover:text-foreground transition-colors">
+            <a href="#workflow" className="hover:text-foreground transition-colors whitespace-nowrap">
               Как это работает
             </a>
-            <a href="#reviews" className="hover:text-foreground transition-colors">
-              Отзывы
-            </a>
-            <a href="#pricing" className="hover:text-foreground transition-colors">
+            <a href="#pricing" className="hover:text-foreground transition-colors whitespace-nowrap">
               Тарифы
             </a>
-            <a href="#faq" className="hover:text-foreground transition-colors">
+            <a href="#faq" className="hover:text-foreground transition-colors whitespace-nowrap">
               FAQ
             </a>
           </nav>
 
-          <div className="flex items-center gap-3">
+          {/* Right Action Area */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {isPro ? (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold shadow-sm">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold shadow-sm whitespace-nowrap shrink-0">
                 <Sparkles className="w-3.5 h-3.5" />
-                ✨ PRO Активен
+                <span>✨ PRO</span>
               </div>
             ) : (
               <button
                 onClick={handleOpenUpgrade}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-indigo-500/40 bg-indigo-500/10 text-indigo-300 hover:text-white hover:bg-indigo-500/20 text-xs font-semibold shadow-sm transition cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border border-indigo-500/40 bg-indigo-500/10 text-indigo-300 hover:text-white hover:bg-indigo-500/20 text-xs font-semibold shadow-sm transition cursor-pointer whitespace-nowrap shrink-0"
               >
-                <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-                💎 Upgrade to PRO (Бесплатно: {remainingScans}/2)
+                <Sparkles className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                <span className="hidden sm:inline">💎 Upgrade to PRO</span>
+                <span className="sm:hidden">💎 PRO</span>
+                <span className="text-[10px] text-indigo-400/80 hidden xl:inline">({remainingScans}/2)</span>
               </button>
             )}
 
             {authSession ? (
-              <div className="flex items-center gap-2">
-                <Link href="/dashboard">
-                  <Button className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20 font-medium text-xs sm:text-sm cursor-pointer">
-                    Открыть кабинет ({userProfile.name.trim().split(/\s+/)[0]})
-                    <ArrowRight className="w-4 h-4 ml-1.5" />
+              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                <Link href="/dashboard" className="shrink-0">
+                  <Button className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20 font-medium text-xs sm:text-sm cursor-pointer whitespace-nowrap h-9 px-3 sm:px-4">
+                    <span>Кабинет</span>
+                    <span className="max-w-[70px] sm:max-w-[110px] truncate hidden md:inline ml-1 opacity-80">
+                      ({userProfile.name.trim().split(/\s+/)[0]})
+                    </span>
+                    <ArrowRight className="w-3.5 h-3.5 ml-1.5 shrink-0" />
                   </Button>
                 </Link>
                 <button
                   onClick={logout}
                   title="Выйти из аккаунта (Logout)"
-                  className="text-muted-foreground hover:text-rose-400 p-2 rounded-lg hover:bg-muted/70 transition cursor-pointer"
+                  className="text-muted-foreground hover:text-rose-400 p-2 rounded-lg hover:bg-muted/70 transition cursor-pointer shrink-0"
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 shrink-0">
                 <Button
                   variant="ghost"
                   onClick={() => openAuthModal("login")}
-                  className="text-xs text-muted-foreground hover:text-foreground cursor-pointer font-semibold"
+                  className="text-xs text-muted-foreground hover:text-foreground cursor-pointer font-semibold whitespace-nowrap h-9 px-3"
                 >
                   Войти
                 </Button>
                 <Button
                   onClick={() => openAuthModal("register")}
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20 font-medium text-xs sm:text-sm cursor-pointer"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20 font-medium text-xs sm:text-sm cursor-pointer whitespace-nowrap h-9 px-3 sm:px-4"
                 >
-                  Запустить командный центр
-                  <ArrowRight className="w-4 h-4 ml-1.5" />
+                  <span className="hidden sm:inline">Запустить командный центр</span>
+                  <span className="sm:hidden">Начать</span>
+                  <ArrowRight className="w-3.5 h-3.5 ml-1.5 shrink-0" />
                 </Button>
               </div>
             )}
