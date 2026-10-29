@@ -103,14 +103,38 @@ ${currentResume}
 
 Перепиши резюме целиком в эталонный Harvard ATS стандарт, оцифруй результаты по формуле X-Y-Z и органично вплети все недостающие навыки внутрь опыта работы. Без звездочек (**) и решеток (#).`;
 
-      const res = await callAI({
-        systemPrompt,
-        userPrompt,
-        temperature: 0.3,
-        mode: "resume_rewrite",
+      let groqKey = "";
+      if (typeof window !== "undefined") {
+        groqKey = localStorage.getItem("lp_groq_api_key") || "";
+      }
+
+      const res = await fetch("/api/ats-rewrite", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-groq-key": groqKey.trim(),
+        },
+        body: JSON.stringify({
+          action: "full_rewrite",
+          resumeText: currentResume,
+          vacancyText: jobDescription,
+          missingSkills,
+          userApiKey: groqKey.trim(),
+        }),
       });
 
-      setRewrittenText(res.text.trim());
+      const data = await res.json();
+      if (res.ok && data.rewrittenResume) {
+        setRewrittenText(data.rewrittenResume);
+      } else {
+        const fallbackRes = await callAI({
+          systemPrompt,
+          userPrompt,
+          temperature: 0.3,
+          mode: "resume_rewrite",
+        });
+        setRewrittenText(fallbackRes.text.trim());
+      }
     } catch (err) {
       console.error(err);
       setRewrittenText(currentResume);

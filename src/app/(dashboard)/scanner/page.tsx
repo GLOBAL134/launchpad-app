@@ -426,6 +426,8 @@ export default function ATSScannerPage() {
   const [jobRoleInput, setJobRoleInput] = useState("");
   const [jobImportTab, setJobImportTab] = useState<"preset" | "url" | "ai_role">("preset");
   const [isExportingDocx, setIsExportingDocx] = useState(false);
+  const [isRewriting, setIsRewriting] = useState(false);
+  const [embeddingSkill, setEmbeddingSkill] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -811,6 +813,131 @@ export default function ATSScannerPage() {
     }, 700);
   };
 
+  // Real Groq ATS Auto-Rewrite (85-95%+ Score Boost)
+  const handleAiAutoRewrite = async () => {
+    if (isRewriting) return;
+    if (!isPro && remainingScans <= 0) {
+      setUpgradeReason("Бесплатные проверки исчерпаны. Перейдите на тариф Pro для безлимитного ATS-улучшения резюме!");
+      setIsUpgradeModalOpen(true);
+      return;
+    }
+
+    setIsRewriting(true);
+    showToast("🤖 Groq AI переписывает опыт по формуле Google X-Y-Z...");
+
+    try {
+      let groqKey = "";
+      if (typeof window !== "undefined") {
+        groqKey = localStorage.getItem("lp_groq_api_key") || "";
+      }
+
+      const res = await fetch("/api/ats-rewrite", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-groq-key": groqKey.trim(),
+        },
+        body: JSON.stringify({
+          action: "full_rewrite",
+          resumeText,
+          vacancyText: jobDesc,
+          missingSkills: activeMissingSkills,
+          userApiKey: groqKey.trim(),
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.rewrittenResume) {
+        setResumeText(data.rewrittenResume);
+        showToast("🎉 Резюме переписано через Groq! Пересчитываем балл ATS...");
+        await fetchAtsAudit(data.rewrittenResume, jobDesc, true);
+        setTimeout(() => setViralBonusOpen(true), 800);
+      } else {
+        showToast(data.error || "Не удалось переписать резюме через Groq");
+      }
+    } catch (err: any) {
+      console.error("AI rewrite error:", err);
+      showToast("Ошибка при обращении к Groq AI");
+    } finally {
+      setIsRewriting(false);
+    }
+  };
+
+  // Real Groq 1-Click Skill Embedding
+  const handleQuickEmbedSkill = async (skill: string) => {
+    if (embeddingSkill) return;
+    setEmbeddingSkill(skill);
+    showToast(`🤖 Groq AI внедряет «${skill}» в опыт работы...`);
+
+    try {
+      let groqKey = "";
+      if (typeof window !== "undefined") {
+        groqKey = localStorage.getItem("lp_groq_api_key") || "";
+      }
+
+      const res = await fetch("/api/ats-rewrite", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-groq-key": groqKey.trim(),
+        },
+        body: JSON.stringify({
+          action: "embed_skill",
+          skillToEmbed: skill,
+          resumeText,
+          vacancyText: jobDesc,
+          userApiKey: groqKey.trim(),
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.generatedBullet) {
+        const bullet = data.generatedBullet;
+        let updated = "";
+        setResumeText((prev) => {
+          const lines = prev.split("\n");
+          let inserted = false;
+          const newLines: string[] = [];
+
+          for (let i = 0; i < lines.length; i++) {
+            newLines.push(lines[i]);
+            if (!inserted && /(?:опыт работы|профессиональный опыт|experience|work history)/i.test(lines[i])) {
+              let j = i + 1;
+              while (j < lines.length && !lines[j].trim()) {
+                newLines.push(lines[j]);
+                j++;
+              }
+              if (j < lines.length) {
+                newLines.push(lines[j]);
+                newLines.push(bullet);
+                inserted = true;
+                i = j;
+              }
+            }
+          }
+
+          if (inserted) {
+            updated = newLines.join("\n");
+            return updated;
+          }
+          updated = `${prev}\n\nОПЫТ РАБОТЫ\n${bullet}`;
+          return updated;
+        });
+
+        const targetResume = updated || `${resumeText}\n\nОПЫТ РАБОТЫ\n${bullet}`;
+        showToast(`✓ Навык «${skill}» внедрён в опыт! Пересчитываем балл...`);
+        await fetchAtsAudit(targetResume, jobDesc, true);
+      } else {
+        showToast(data.error || "Не удалось внедрить навык через Groq");
+      }
+    } catch (err: any) {
+      console.error("Embed skill error:", err);
+      showToast("Ошибка при обращении к Groq AI");
+    } finally {
+      setEmbeddingSkill(null);
+    }
+  };
+
   // 1-Click apply XYZ bullet improvement
   const handleApplyXyz = (item: XyzImprovement) => {
     let updatedResume = "";
@@ -873,11 +1000,21 @@ export default function ATSScannerPage() {
           {/* STEP 4: Rewrite Resume Button */}
           <Button
             size="sm"
-            onClick={() => setRewriteModalOpen(true)}
+            onClick={handleAiAutoRewrite}
+            disabled={isRewriting}
             className="col-span-2 sm:col-span-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-500/20 cursor-pointer flex items-center justify-center gap-1.5 h-9"
           >
-            <Sparkles className="w-3.5 h-3.5 shrink-0" />
-            <span>✨ Улучшить резюме с ИИ (до 90%+)</span>
+            {isRewriting ? (
+              <>
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                <span>Groq улучшает резюме...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                <span>✨ Улучшить резюме с ИИ (до 90%+)</span>
+              </>
+            )}
           </Button>
 
           {/* STEP 5: Save to Kanban Button */}
@@ -1271,13 +1408,20 @@ export default function ATSScannerPage() {
                 </Button>
 
                 <Button
-                  onClick={() => setRewriteModalOpen(true)}
+                  onClick={handleAiAutoRewrite}
+                  disabled={isRewriting}
                   variant="outline"
                   className="border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 text-xs font-bold h-9 cursor-pointer"
-                  title="Переписать резюме под эту вакансию с ИИ"
+                  title="Переписать резюме под эту вакансию с Groq ИИ"
                 >
-                  <Wand2 className="w-3.5 h-3.5 mr-1" />
-                  <span>ИИ</span>
+                  {isRewriting ? (
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <>
+                      <Wand2 className="w-3.5 h-3.5 mr-1" />
+                      <span>ИИ</span>
+                    </>
+                  )}
                 </Button>
               </div>
             </CardContent>
@@ -1399,11 +1543,21 @@ export default function ATSScannerPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     <Button
                       size="sm"
-                      onClick={() => setRewriteModalOpen(true)}
+                      onClick={handleAiAutoRewrite}
+                      disabled={isRewriting}
                       className="h-8 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-sm shadow-emerald-600/25 cursor-pointer flex items-center gap-1.5"
                     >
-                      <Sparkles className="w-3.5 h-3.5" />
-                      <span>✨ Улучшить до 90%+ с ИИ</span>
+                      {isRewriting ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          <span>Groq переписывает...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span>✨ Улучшить до 90%+ с ИИ</span>
+                        </>
+                      )}
                     </Button>
 
                     <Button
@@ -1613,13 +1767,20 @@ export default function ATSScannerPage() {
                         activeMissingSkills.map((kw, idx) => (
                           <button
                             key={idx}
-                            onClick={() => handleOpenEmbedSkill(kw)}
-                            title={`Нажмите, чтобы встроить «${kw}» в опыт работы через нейросеть`}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 hover:text-white text-xs font-medium transition cursor-pointer"
+                            onClick={() => handleQuickEmbedSkill(kw)}
+                            disabled={embeddingSkill === kw}
+                            title={`Нажмите, чтобы через Groq внедрить «${kw}» в опыт и поднять балл`}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-rose-500/10 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 hover:text-white text-xs font-medium transition cursor-pointer disabled:opacity-60"
                           >
-                            <Sparkles className="w-3 h-3 text-amber-400" />
+                            {embeddingSkill === kw ? (
+                              <RefreshCw className="w-3 h-3 text-amber-400 animate-spin" />
+                            ) : (
+                              <Sparkles className="w-3 h-3 text-amber-400" />
+                            )}
                             <span>{kw}</span>
-                            <span className="text-[10px] opacity-70 ml-0.5">+ ИИ</span>
+                            <span className="text-[10px] opacity-80 ml-0.5 font-bold text-amber-300">
+                              {embeddingSkill === kw ? " внедряю..." : "+ ИИ"}
+                            </span>
                           </button>
                         ))
                       )}

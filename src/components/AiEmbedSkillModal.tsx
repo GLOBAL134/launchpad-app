@@ -52,15 +52,40 @@ ${resumeText.slice(0, 700)}
 
 Сгенерируй 1-2 мощных буллета для блока «Опыт работы», доказывающих практическое применение навыка «${skillName}» с оцифрованным бизнес-результатом.`;
 
-      const res = await callAI({
-        systemPrompt,
-        userPrompt,
-        temperature: 0.3,
-        mode: "embed_skill",
+      let groqKey = "";
+      if (typeof window !== "undefined") {
+        groqKey = localStorage.getItem("lp_groq_api_key") || "";
+      }
+
+      const res = await fetch("/api/ats-rewrite", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-groq-key": groqKey.trim(),
+        },
+        body: JSON.stringify({
+          action: "embed_skill",
+          skillToEmbed: skillName,
+          resumeText,
+          vacancyText: "",
+          userApiKey: groqKey.trim(),
+        }),
       });
 
-      setBulletText(res.text.trim());
-      setProviderUsed(res.provider);
+      const data = await res.json();
+      if (res.ok && data.generatedBullet) {
+        setBulletText(data.generatedBullet);
+        setProviderUsed(data.provider || "groq");
+      } else {
+        const fallbackRes = await callAI({
+          systemPrompt,
+          userPrompt,
+          temperature: 0.3,
+          mode: "embed_skill",
+        });
+        setBulletText(fallbackRes.text.trim());
+        setProviderUsed(fallbackRes.provider);
+      }
     } catch (err) {
       console.error(err);
       setBulletText(

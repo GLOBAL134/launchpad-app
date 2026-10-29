@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cleanAIMarkdownArtifacts } from "@/lib/monetization";
 import { buildPrBatchWave } from "@/lib/pr-generator";
+import { getEffectiveGroqKey, GROQ_MODELS } from "@/lib/server-ai-keys";
 
 export const maxDuration = 30;
 
@@ -47,43 +48,43 @@ export async function POST(req: NextRequest) {
     // Dynamic timeout based on mode
     const timeoutDuration = mode === "pr_studio" ? 22000 : 8000;
 
-    // 1. Try Groq API (Custom key from header or server .env)
-    const groqKey =
-      req.headers.get("x-groq-key") ||
-      body.groqKey ||
-      process.env.GROQ_API_KEY;
+    // 1. Try Groq API (Cascade across available models using effective key)
+    const rawGroqKey = req.headers.get("x-groq-key") || body.groqKey;
+    const groqKey = getEffectiveGroqKey(rawGroqKey);
 
-    if (groqKey && groqKey.trim().length > 8 && !groqKey.includes("placeholder")) {
-      try {
-        const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${groqKey.trim()}`,
-          },
-          body: JSON.stringify({
-            model: "llama-3.3-70b-versatile",
-            messages: [
-              { role: "system", content: systemPrompt },
-              { role: "user", content: userPrompt },
-            ],
-            temperature,
-          }),
-          signal: AbortSignal.timeout(timeoutDuration),
-        });
+    if (groqKey && groqKey.trim().length > 10) {
+      for (const model of GROQ_MODELS) {
+        try {
+          const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${groqKey.trim()}`,
+            },
+            body: JSON.stringify({
+              model,
+              messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userPrompt },
+              ],
+              temperature,
+            }),
+            signal: AbortSignal.timeout(timeoutDuration),
+          });
 
-        if (groqRes.ok) {
-          const data = await groqRes.json();
-          const raw = data.choices?.[0]?.message?.content || "";
-          if (raw.trim()) {
-            return NextResponse.json({
-              text: cleanAIMarkdownArtifacts(raw),
-              provider: "groq (Llama 3.3 70B)",
-            });
+          if (groqRes.ok) {
+            const data = await groqRes.json();
+            const raw = data.choices?.[0]?.message?.content || "";
+            if (raw.trim()) {
+              return NextResponse.json({
+                text: cleanAIMarkdownArtifacts(raw),
+                provider: `groq (${model})`,
+              });
+            }
           }
+        } catch (err) {
+          console.warn(`[Groq API ${model} failed, trying next]:`, err);
         }
-      } catch (err) {
-        console.warn("[Groq API Failed, falling back]:", err);
       }
     }
 
