@@ -53,7 +53,7 @@ export default function UpgradeProModal({
 
     if (verifyAndActivateProKey(trimmed)) {
       if (trimmed === 'ADMIN777') {
-        setCodeSuccess('🎉 Секретный код владельца ADMIN777 принят! Безлимитный PRO активирован!');
+        setCodeSuccess('🎉 Секретный код владельца принят! Безлимитный PRO активирован!');
       } else {
         setCodeSuccess('🎉 Ключ активации успешно применён! PRO активирован!');
       }
@@ -62,7 +62,7 @@ export default function UpgradeProModal({
         onClose();
       }, 1000);
     } else {
-      setCodeError('Неверный ключ. Для теста используйте секретный код владельца: ADMIN777 или START30');
+      setCodeError('Неверный ключ активации. Введите ключ, полученный после оплаты.');
     }
   };
 
@@ -241,11 +241,8 @@ export default function UpgradeProModal({
             <div className="flex items-center justify-between">
               <label className="text-[11px] text-slate-300 font-semibold flex items-center gap-1.5">
                 <Gift className="w-3.5 h-3.5 text-indigo-400" />
-                <span>Есть промокод или ключ активации?</span>
+                <span>Активация доступа (для оплативших в Tribute)</span>
               </label>
-              <span className="text-[10px] text-slate-500">
-                Код владельца: <code className="text-indigo-300 font-mono font-bold">ADMIN777</code>
-              </span>
             </div>
 
             <div className="flex gap-2">
@@ -253,7 +250,7 @@ export default function UpgradeProModal({
                 type="text"
                 value={promoCode}
                 onChange={(e) => setPromoCode(e.target.value)}
-                placeholder="Введите код (например: ADMIN777 или START30)"
+                placeholder="Введите ваш персональный ключ (выдается в Tribute после оплаты)..."
                 className="flex-1 rounded-xl bg-slate-950 border border-slate-800 px-3 py-2 text-xs text-white uppercase placeholder:normal-case placeholder:text-slate-600 focus:border-indigo-500 focus:outline-none font-mono"
               />
               <Button

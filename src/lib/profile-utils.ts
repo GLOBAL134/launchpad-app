@@ -58,20 +58,26 @@ export function injectUserProfileIntoResume(
 
     if (contactLineIndex !== -1) {
       let contactLine = lines[contactLineIndex];
-      // Replace phone numbers with real phone without consuming trailing delimiter spaces
+
+      // 1. Mask all email addresses first so phone regex cannot match digits inside emails
+      const maskedEmails: string[] = [];
+      const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+      contactLine = contactLine.replace(emailRegex, (match) => {
+        maskedEmails.push(match);
+        return `__EMAIL_TOKEN_${maskedEmails.length - 1}__`;
+      });
+
+      // 2. Replace phone numbers with real phone using strict lookaround guards
       if (realPhone) {
-        contactLine = contactLine.replace(
-          /\+?7\s*\(?\d{3}\)?[\s\-]*\d{3}[\s\-]*\d{2}[\s\-]*\d{2}|\+?[1-9]\d{0,2}\s*\(?\d{2,4}\)?[\s\-]*\d{3}[\s\-]*\d{2,4}/g,
-          realPhone
-        );
+        const guardedPhoneRegex = /(?<![a-zA-Z0-9_.%+-])(?:\+?7|8)[\s\-(]*\d{3}[\s\-)]*\d{3}[\s\-]*\d{2}[\s\-]*\d{2}(?![a-zA-Z0-9_.%+-]|@)|(?<![a-zA-Z0-9_.%+-])\+?[1-9]\d{0,2}[\s\-(]*\d{2,4}[\s\-)]*\d{2,4}[\s\-]*\d{2,4}(?![a-zA-Z0-9_.%+-]|@)/g;
+        contactLine = contactLine.replace(guardedPhoneRegex, realPhone);
       }
-      // Replace emails with real email
-      if (realEmail) {
-        contactLine = contactLine.replace(
-          /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
-          realEmail
-        );
-      }
+
+      // 3. Restore email address (or substitute real profile email)
+      contactLine = contactLine.replace(/__EMAIL_TOKEN_(\d+)__/g, (m, idx) => {
+        return realEmail || maskedEmails[Number(idx)];
+      });
+
       lines[contactLineIndex] = contactLine;
     }
   } else {

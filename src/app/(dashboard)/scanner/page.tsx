@@ -764,20 +764,42 @@ export default function ATSScannerPage() {
 
   // Active dynamic values (strictly bound to real API audit with resilient fallback)
   const activeScore = auditResult ? auditResult.totalScore : simulation.score.total;
-  const activeIndustry = auditResult?.detectedIndustry || simulation.domainName;
+
+  // Accurately determine real domain from text to avoid false accounting fallback
+  const detectedRoleKey = detectRoleFromText(`${jobDesc}\n${resumeText}`);
+  const matchingPreset = DIVERSE_PRESETS.find((p) => p.id === detectedRoleKey);
+  const detectedRoleLabel = matchingPreset
+    ? matchingPreset.label.replace(/^[^\wа-яА-ЯёЁ]+/, "").split("(")[0].trim()
+    : "";
+
+  const activeIndustry = (auditResult?.detectedIndustry && auditResult.detectedIndustry !== "Общая квалификация" && auditResult.detectedIndustry !== "Финансы и Бухгалтерия")
+    ? auditResult.detectedIndustry
+    : (detectedRoleLabel && detectedRoleKey !== "accountant")
+    ? detectedRoleLabel
+    : (auditResult?.detectedIndustry || simulation.domainName);
+
   const activeHardSkills = auditResult ? auditResult.breakdown.hardSkills : simulation.score.hardSkills;
   const activeMetrics = auditResult ? auditResult.breakdown.metrics : simulation.score.metrics;
   const activeSoftSkills = auditResult ? auditResult.breakdown.softSkills : simulation.score.softSkills;
   const activeFormatting = auditResult ? auditResult.breakdown.formatting : simulation.score.layout;
   const activeMissingSkills = auditResult ? auditResult.missingHardSkills : simulation.missingSkills;
   const activeMatchingSkills = auditResult ? auditResult.matchingSkills : simulation.verifiedSkills.map((v) => v.name);
-  const activeCritique = auditResult?.critique || (
+
+  // Guarantee clean critique without 1C references for non-accounting professions
+  const isAccountingRole = detectedRoleKey === "accountant" || activeIndustry.toLowerCase().includes("бухгалтер");
+  const rawCritique = auditResult?.critique || (
     activeScore >= 80
       ? `Отличный результат! Резюме проходит автоматические фильтры ATS для сферы «${activeIndustry}».`
       : activeScore >= 65
       ? `Средний балл. Добавьте подтверждения в буллеты опыта и устраните сиротские навыки.`
       : `Высокий риск отсева. Нажмите «✨ Улучшить резюме с ИИ», чтобы поднять балл до 90%+.`
   );
+
+  const activeCritique = (!isAccountingRole && (rawCritique.includes("1С") || rawCritique.includes("Бухгалтер")))
+    ? (activeScore >= 80
+        ? `Отличный результат! Резюме соответствует ключевым требованиям для сферы «${activeIndustry}».`
+        : `Резюме оценено в ${activeScore} баллов. Для повышения рейтинга до 90%+ добавьте оцифрованные достижения по формуле Google X-Y-Z.`)
+    : rawCritique;
 
   // Handle selecting job from Kanban tracker
   const handleSelectTrackerJob = (jobId: string | null) => {
@@ -1093,6 +1115,9 @@ export default function ATSScannerPage() {
     if (updatedResume) {
       fetchAtsAudit(updatedResume, jobDesc, false);
     }
+    if (!isPro) {
+      consumeScan();
+    }
     showToast(`✓ Навык «${skillToEmbed}» оцифрован и подтвержден в опыте! Балл Hard Skills вырос.`);
   };
 
@@ -1100,6 +1125,7 @@ export default function ATSScannerPage() {
   const handleApplyRewrittenResume = (newResume: string) => {
     if (!isPro) {
       incrementRewriteUsage();
+      consumeScan();
     }
     const personalized = injectUserProfileIntoResume(newResume, userProfile);
     setResumeText(personalized);
@@ -1113,8 +1139,8 @@ export default function ATSScannerPage() {
   // Real Groq ATS Auto-Rewrite (85-95%+ Score Boost)
   const handleAiAutoRewrite = async () => {
     if (isRewriting) return;
-    if (!isPro && !canPerformAiRewrite()) {
-      setUpgradeReason("Вы уже использовали 1 бесплатное пробное улучшение резюме. Выберите тариф для безлимитной адаптации под любые вакансии!");
+    if (!isPro && remainingScans <= 0) {
+      setUpgradeReason("Бесплатные попытки закончились (0/2). Оформите доступ PRO для безлимитного улучшения резюме с ИИ!");
       setIsUpgradeModalOpen(true);
       return;
     }
@@ -1150,6 +1176,7 @@ export default function ATSScannerPage() {
       if (res.ok && data.rewrittenResume) {
         if (!isPro) {
           incrementRewriteUsage();
+          consumeScan();
         }
         const personalized = injectUserProfileIntoResume(data.rewrittenResume, userProfile);
         setResumeText(personalized);
@@ -1170,6 +1197,11 @@ export default function ATSScannerPage() {
   // Real 1-Click Skill Embedding
   const handleQuickEmbedSkill = async (skill: string) => {
     if (embeddingSkill) return;
+    if (!isPro && remainingScans <= 0) {
+      setUpgradeReason("Бесплатные попытки закончились (0/2). Оформите PRO для встраивания навыков с ИИ.");
+      setIsUpgradeModalOpen(true);
+      return;
+    }
     setEmbeddingSkill(skill);
     showToast(`🤖 ИИ внедряет «${skill}» в опыт работы...`);
 
@@ -1229,6 +1261,9 @@ export default function ATSScannerPage() {
         });
 
         const targetResume = updated || `${resumeText}\n\nОПЫТ РАБОТЫ\n${bullet}`;
+        if (!isPro) {
+          consumeScan();
+        }
         showToast(`✓ Навык «${skill}» внедрён в опыт! Пересчитываем балл...`);
         await fetchAtsAudit(targetResume, jobDesc, true);
       } else {
@@ -1468,7 +1503,14 @@ export default function ATSScannerPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setBuildResumeModalOpen(true)}
+                    onClick={() => {
+                      if (!isPro && remainingScans <= 0) {
+                        setUpgradeReason("Бесплатные попытки закончились (0/2). Оформите PRO для сборки резюме с ИИ!");
+                        setIsUpgradeModalOpen(true);
+                        return;
+                      }
+                      setBuildResumeModalOpen(true);
+                    }}
                     className="h-7 text-xs bg-amber-500/10 border-amber-500/30 text-amber-300 hover:bg-amber-500/20 font-semibold cursor-pointer"
                   >
                     <Sparkles className="w-3 h-3 mr-1 text-amber-400" />
@@ -2456,6 +2498,9 @@ export default function ATSScannerPage() {
         open={buildResumeModalOpen}
         onOpenChange={setBuildResumeModalOpen}
         onApplyResume={(newResume, matchingVacancy) => {
+          if (!isPro) {
+            consumeScan();
+          }
           const personalizedResume = injectUserProfileIntoResume(newResume, userProfile);
           setResumeText(personalizedResume);
           let targetVacancy = matchingVacancy;

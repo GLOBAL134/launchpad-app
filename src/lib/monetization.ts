@@ -6,12 +6,9 @@ export const TRIBUTE_LINKS = {
 };
 
 export const VALID_PRO_KEYS = [
-  'ADMIN777', // Секретный промокод владельца (мгновенное включение PRO)
-  'START30',
-  'START30_PRO',
-  'LP_PRO_2026',
-  'LAUNCHPAD_VIP',
-  'PRO2026',
+  'TRIBUTE_VIP_990', // Персональный ключ покупателя после оплаты в Tribute
+  'TRIBUTE_PRO_990',
+  'ADMIN777',        // Закрытый ключ владельца
 ];
 
 export const FREE_SCAN_LIMIT = 2;
@@ -125,6 +122,9 @@ export function verifyAndActivateProKey(inputKey: string): boolean {
   if (VALID_PRO_KEYS.includes(normalized)) {
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_PRO_FLAG, 'true');
+      if (normalized === 'ADMIN777') {
+        localStorage.setItem('launchpad_owner_admin', 'true');
+      }
     }
     return true;
   }

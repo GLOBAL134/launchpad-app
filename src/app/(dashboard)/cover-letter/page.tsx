@@ -31,7 +31,16 @@ import { callAI } from "@/lib/ai-client";
 import { useApp } from "@/context/AppContext";
 
 export default function CoverLetterPage() {
-  const { userProfile, coverLetterTargetJob, showToast } = useApp();
+  const {
+    userProfile,
+    coverLetterTargetJob,
+    showToast,
+    isPro,
+    remainingScans,
+    consumeScan,
+    setIsUpgradeModalOpen,
+    setUpgradeReason,
+  } = useApp();
 
   const [company, setCompany] = useState("");
   const [role, setRole] = useState("");
@@ -52,6 +61,12 @@ export default function CoverLetterPage() {
   }, [coverLetterTargetJob, showToast]);
 
   const handleGenerate = async () => {
+    if (!isPro && remainingScans <= 0) {
+      setUpgradeReason("Бесплатные попытки закончились (0/2). Оформите PRO для безлимитной генерации сопроводительных писем!");
+      setIsUpgradeModalOpen(true);
+      return;
+    }
+
     const effectiveCompany = company.trim() || "Компания мечты";
     const effectiveRole = role.trim() || "Профильный специалист";
 
@@ -116,6 +131,9 @@ STRICT RULES:
 
       if (res.text && res.text.trim().length > 30) {
         setLetterContent(cleanAIMarkdownArtifacts(res.text.trim()));
+        if (!isPro) {
+          consumeScan();
+        }
         showToast("✨ Сопроводительное письмо сгенерировано нейросетью под вашу роль!");
       } else {
         // Deterministic fallback tailored strictly to role

@@ -30,8 +30,8 @@ export function anonymizePII(
   const detectedEmail = email || (text.match(emailRegex) || [])[0];
   result = result.replace(emailRegex, "[EMAIL]");
 
-  // 2. Detect and Mask Phone numbers (+7..., 8..., standard RF/international)
-  const phoneRegex = /(?:\+?7|8)[\s\-(]*\d{3}[\s\-)]*\d{3}[\s\-]*\d{2}[\s\-]*\d{2}|\+?[1-9]\d{0,2}[\s\-(]*\d{2,4}[\s\-)]*\d{2,4}[\s\-]*\d{2,4}/g;
+  // 2. Detect and Mask Phone numbers (+7..., 8..., standard RF/international) with strict lookaround guards
+  const phoneRegex = /(?<![a-zA-Z0-9_.%+-])(?:\+?7|8)[\s\-(]*\d{3}[\s\-)]*\d{3}[\s\-]*\d{2}[\s\-]*\d{2}(?![a-zA-Z0-9_.%+-]|@)|(?<![a-zA-Z0-9_.%+-])\+?[1-9]\d{0,2}[\s\-(]*\d{2,4}[\s\-)]*\d{2,4}[\s\-]*\d{2,4}(?![a-zA-Z0-9_.%+-]|@)/g;
   const detectedPhone = phone || (text.match(phoneRegex) || [])[0];
   result = result.replace(phoneRegex, "[ТЕЛЕФОН]");
 
