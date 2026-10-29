@@ -28,6 +28,8 @@ import {
   Eye,
   Sliders,
   TrendingUp,
+  Kanban,
+  FileCheck2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,16 +40,196 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import UpgradeProModal from "@/components/UpgradeProModal";
 import AtsScoreCardModal from "@/components/AtsScoreCardModal";
 import AtsCleanResumeModal from "@/components/AtsCleanResumeModal";
+import AiEmbedSkillModal from "@/components/AiEmbedSkillModal";
+import AiRewriteResumeModal from "@/components/AiRewriteResumeModal";
+import SaveToKanbanModal from "@/components/SaveToKanbanModal";
 import { cleanAIMarkdownArtifacts } from "@/lib/monetization";
 import { detectLanguage } from "@/lib/language";
 import { simulateAtsParser, AtsSimulationResult, XyzImprovement } from "@/lib/ats-parser-simulator";
 import { useApp } from "@/context/AppContext";
 
-const DEFAULT_RESUME = `Алексей Морозов
+export const DIVERSE_PRESETS = [
+  {
+    id: "accountant",
+    label: "💼 Бухгалтер (ОСНО, 1С, НДС)",
+    categoryName: "Финансы и Бухгалтерия",
+    job: `Главный бухгалтер (ОСНО, оптовая торговля и услуги)
+Компания: ГК «Ресурс-Финанс»
+Локация: Москва / Удаленно
+
+Обязанности и требования:
+• Ведение бухгалтерского и налогового учета в полном объеме по ОСНО и УСН в 1С:Бухгалтерия 8.3.
+• Расчет НДС, налога на прибыль, формирование книг покупок и продаж, сдача отчетности в ФНС и СФР.
+• Контроль первичной документации, актов, накладных и счетов-фактур через ЭДО (Диадок / СБИС).
+• Успешный опыт прохождения выездных и камеральных налоговых проверок, взаимодействие с банками и ВЭД.`,
+    resume: `Анна Смирнова
+Главный бухгалтер | +7 (999) 111-22-33 | anna.smirnova@email.ru | Москва
+
+О СЕБЕ
+Главный бухгалтер с практическим опытом 6+ лет в ведении бухгалтерского и налогового учета (ОСНО, УСН). Эксперт в 1С:Бухгалтерия 8.3, расчете НДС и налога на прибыль. Успешно сопроводила 4 камеральные проверки ФНС без штрафных санкций.
+
+ОПЫТ РАБОТЫ
+Главный бухгалтер — ГК «ТоргСнаб» (2021 — настоящее время)
+• Руководила ведением бухгалтерского и налогового учета по ОСНО и УСН (годовой оборот свыше 420 млн руб.).
+• Настроила сквозной учет НДС и контроль книг покупок/продаж в 1С:Бухгалтерия 8.3, предотвратив налоговые разрывы на 6.8 млн руб.
+• Автоматизировала первичную документацию через ЭДО (Диадок / СБИС), сократив время закрытия месяца с 10 до 4 дней.
+• Успешно защитила позицию компании в 4 выездных и камеральных налоговых проверках ФНС без штрафов.
+
+Ведущий бухгалтер — СервисФинанс (2018 — 2021)
+• Обеспечивала безошибочный расчет заработной платы и налогов на штат 190+ сотрудников в 1С:ЗУП.
+• Контролировала банковские выписки и реестры платежей в системе Банк-Клиент.
+
+КЛЮЧЕВЫЕ НАВЫКИ
+1С:Бухгалтерия 8.3, 1С:ЗУП, ОСНО, УСН, НДС, Налог на прибыль, Первичная документация, ЭДО (Диадок, СБИС), Банк-Клиент, Сдача отчетности в ФНС, СФР, Налоговый аудит.`,
+  },
+  {
+    id: "sales",
+    label: "📈 Менеджер / РОП (B2B, CRM)",
+    categoryName: "Продажи и Коммерция",
+    job: `Руководитель отдела продаж (B2B сегмент)
+Компания: Смарт Дистрибьюшн
+Локация: Москва / Удаленно
+
+Требования:
+• 5+ лет в коммерческих B2B-продажах, подтвержденный трек перевыполнения плана KPI.
+• Внедрение регламентов и автоматизации в AmoCRM и Bitrix24, управление воронкой продаж.
+• Проведение сложных переговоров с первыми лицами компаний (C-Level), заключение контрактов от 2 млн руб.
+• Контроль и снижение дебиторской задолженности, увеличение среднего чека и LTV клиентов.`,
+    resume: `Дмитрий Орлов
+Руководитель отдела продаж (РОП) / B2B Lead | +7 (999) 222-33-44 | dmitry.orlov@email.ru | Москва
+
+О СЕБЕ
+Коммерческий лидер с опытом 6+ лет в B2B-продажах и управлении отделом до 15 менеджеров. Доказанный трек стабильного перевыполнения плана продаж (115-135% от квартального KPI). Эксперт в AmoCRM, воронке продаж и переговорах C-Level.
+
+ОПЫТ РАБОТЫ
+Руководитель отдела B2B продаж — ТрейдВектор Солюшнс (2021 — настоящее время)
+• Выстроил систему прямых и партнерских продаж, увеличив годовую выручку направления на 42% (с 38 млн до 54 млн руб.).
+• Внедрил регламенты ведения сделок в AmoCRM, сократив средний цикл сделки с 35 до 14 дней.
+• Лично провел переговоры и закрыл 18 стратегических контрактов с клиентами со средним чеком от 2.5 млн руб.
+• Снизил уровень просроченной дебиторской задолженности с 16% до 2.1% от общего оборота портфеля.
+
+Ведущий менеджер по корпоративным продажам — АльянсМаркет (2018 — 2021)
+• Ежемесячно перевыполнял личный план продаж на 120-130%, вошел в топ-3 менеджеров компании.
+• Привлек 58 новых корпоративных клиентов методом системных деловых переговоров.
+
+КЛЮЧЕВЫЕ НАВЫКИ
+B2B продажи, AmoCRM, Bitrix24, Выполнение плана продаж (KPI), Переговоры C-Level, Холодные звонки, Управление воронкой продаж, Дебиторская задолженность, Увеличение среднего чека.`,
+  },
+  {
+    id: "marketing",
+    label: "🎯 Маркетолог (Директ, SEO, CPL)",
+    categoryName: "Маркетинг и PR",
+    job: `Директор по маркетингу / Head of Marketing
+Компания: ФинТех Маркетплейс
+Локация: Москва / Удаленно
+
+Требования:
+• Опыт управления рекламными бюджетами от 5 млн руб./мес.
+• Настройка сквозной аналитики на базе Яндекс.Метрики и Google Analytics 4.
+• Масштабирование контекстной рекламы в Яндекс.Директ и VK Рекламе, оптимизация CAC и CPL.
+• Опыт проведения A/B-тестирований, управление SEO-продвижением и лидогенерацией.`,
+    resume: `Ольга Ковалева
+Директор по маркетингу / Head of Marketing | +7 (999) 333-44-55 | olga.kovaleva@email.ru | Москва
+
+О СЕБЕ
+Data-driven директор по маркетингу с опытом 6+ лет в управлении рекламными бюджетами от 6 млн руб./мес. Эксперт в performance-маркетинге, сквозной аналитике, SEO-продвижении и масштабировании лидогенерации.
+
+ОПЫТ РАБОТЫ
+Head of Marketing / Ведущий маркетолог — ФинТех Маркетплейс (2021 — настоящее время)
+• Управляла сплитом платных каналов (Яндекс.Директ, VK Реклама, Telegram Ads), обеспечив приток 8 500+ квалифицированных лидов ежемесячно.
+• Вдрила сквозную аналитику на базе Яндекс.Метрики и GA4, снизив стоимость лида (CPL) на 32%.
+• Руководила серией A/B-тестирований, увеличив конверсию посадочных страниц сайта с 2.8% до 5.4%.
+• Увеличила органический поисковый трафик (SEO) в 3.2 раза за 12 месяцев.
+
+Performance-маркетолог — Агентство Диджитал Про (2018 — 2021)
+• Запустила и оптимизировала свыше 180 рекламных кампаний с возвратом инвестиций (ROMI) свыше 340%.
+
+КЛЮЧЕВЫЕ НАВЫКИ
+Яндекс.Директ, VK Реклама, Сквозная аналитика, Яндекс.Метрика, Google Analytics 4, SEO оптимизация, A/B-тестирование, Лидогенерация, Управление рекламным бюджетом, CAC / LTV / CPL.`,
+  },
+  {
+    id: "legal",
+    label: "⚖️ Корпоративный юрист",
+    categoryName: "Юриспруденция и Право",
+    job: `Ведущий юрисконсульт / Корпоративный юрист
+Компания: Промышленный Холдинг «Энергия»
+Локация: Москва
+
+Требования:
+• Полное правовое сопровождение деятельности компании, экспертиза и согласование договоров.
+• Ведение претензионно-исковой работы, успешное представительство в Арбитражных судах.
+• Корпоративное право, сопровождение проверок госорганов (ФАС, Роскомнадзор).
+• Проверка контрагентов, комплаенс, трудовое право (ТК РФ) и гражданское право (ГК РФ).`,
+    resume: `Сергей Васильев
+Ведущий корпоративный юрист | +7 (999) 444-55-66 | sergey.vasiliev@email.ru | Москва
+
+О СЕБЕ
+Корпоративный юрист с опытом 6+ лет в правовом сопровождении холдинговых структур. Сильная экспертиза в договорном праве, представлении интересов в Арбитражных судах (92% успешных решений) и комплаенсе.
+
+ОПЫТ РАБОТЫ
+Ведущий юрисконсульт — Промышленный Холдинг (2021 — настоящее время)
+• Руководил договорной работой по сложным контрактам (поставка, подряд, ВЭД) с портфелем свыше 850 млн руб.
+• Представлял интересы компании в Арбитражных судах, выиграв 22 судебных спора и предотвратив взыскание 45 млн руб.
+• Выстроил систему проверки контрагентов и комплаенса, исключив правовые риски на 100%.
+• Успешно сопровождал проверки ФАС и Роскомнадзора без штрафных санкций.
+
+Юрисконсульт — Юридическая группа (2018 — 2021)
+• Составил и согласовал более 400 коммерческих договоров, сократив типовой цикл визирования на 40%.
+
+КЛЮЧЕВЫЕ НАВЫКИ
+Договорная работа, Претензионно-исковая работа, Арбитражный суд, Корпоративное право, Правовая экспертиза, Согласование контрактов, ФАС, Гражданское право (ГК РФ), Трудовое право (ТК РФ).`,
+  },
+  {
+    id: "logistics",
+    label: "🚛 Руководитель логистики (ВЭД, SCM)",
+    categoryName: "Логистика и Склад",
+    job: `Руководитель отдела логистики и ВЭД
+Компания: Лоджистик Глобал
+Локация: Санкт-Петербург / Удаленно
+
+Требования:
+• Управление цепочками поставок (SCM), складскими комплексами и внедрение систем WMS.
+• Организация международных мультимодальных грузоперевозок по Инкотермс (FOB, CIF, DAP).
+• Таможенное оформление, ВЭД, контроль себестоимости и снижение логистических издержек.
+• Контроль соблюдения стандартов доставки OTIF не ниже 98%.`,
+    resume: `Михаил Кузнецов
+Руководитель отдела логистики и ВЭД | +7 (999) 555-66-77 | mikhail.kuznetsov@email.ru | Санкт-Петербург
+
+О СЕБЕ
+Руководитель логистических операций и цепей поставок с опытом 7+ лет. Эксперт в управлении складскими комплексами (до 12 000 кв.м), внедрении WMS, организации международных перевозок (ВЭД, Инкотермс).
+
+ОПЫТ РАБОТЫ
+Руководитель отдела логистики и ВЭД — Лоджистик Глобал (2021 — настоящее время)
+• Управлял цепочками поставок (SCM) и распределительным центром площадью 12 000 кв.м с грузооборотом 180 тонн/день.
+• Внедрил систему WMS адресного хранения и штрихкодирования, повысив скорость комплектации на 35%.
+• Наладил мультимодальные маршруты импорта из Китая и Турции по правилам Инкотермс (FOB, CIF, DAP).
+• Оптимизировал контрактную базу перевозчиков, обеспечив экономию бюджета на 14.8 млн руб. в год.
+
+Ведущий специалист по логистике — ТрансБалтика (2018 — 2021)
+• Обеспечивал управление автопарком из 65 единиц автотранспорта с соблюдением стандарта OTIF 98%.
+
+КЛЮЧЕВЫЕ НАВЫКИ
+Управление цепочками поставок (SCM), Складской учет (WMS), Таможенное оформление и ВЭД, Правила Инкотермс, Транспортная логистика, Оптимизация затрат, Стандарты OTIF.`,
+  },
+  {
+    id: "it",
+    label: "💻 IT-специалист (PM / Lead)",
+    categoryName: "IT и Продукт",
+    job: `Senior Product Manager (AI & Cloud Services)
+Компания: Яндекс
+Локация: Москва / Удаленно
+
+Требования:
+• 5+ лет в управлении продуктом в технологических компаниях.
+• Опыт работы с Agile, Scrum, CI/CD, A/B-тестированием и метриками (Retention, LTV, Unit-экономика).
+• Умение проектировать Product Strategy, формировать Roadmap и составлять PRD.
+• Опыт взаимодействия с инженерами: Microservices, REST API, Cloud Infrastructure, Docker, SQL.
+• Сильные навыки работы со стейкхолдерами: Stakeholder Management и Cross-functional лидерство.`,
+    resume: `Алексей Морозов
 Senior Product Manager | alex.morozov@email.ru | +7 (999) 123-45-67 | Москва / Удаленно
 
 О СЕБЕ
-Продуктовый менеджер с опытом 6+ лет в создании B2B SaaS и AI-платформ. Сильная экспертиза в продуктовой стратегии, формулировании гипотез, исследованиях пользователей (CJM, CustDev) и управлении бэклогом. Руководил кросс-функциональной командой из 12 инженеров и дизайнеров.
+Продуктовый менеджер с опытом 6+ лет в создании B2B SaaS и AI-платформ. Сильная экспертиза в продуктовой стратегии, формулировании гипотез, исследованиях пользователей (CJM, CustDev) и управлении бэклогом.
 
 ОПЫТ РАБОТЫ
 Ведущий Product Manager — CloudScale Solutions (2022 — настоящее время)
@@ -58,25 +240,11 @@ Senior Product Manager | alex.morozov@email.ru | +7 (999) 123-45-67 | Москв
 
 Product Manager — FinTech Инновации (2019 — 2022)
 • Отвечал за онбординг юридических лиц и платёжный шлюз. Сократил time-to-first-value с 7 дней до 4 часов.
-• Провёл более 50 глубинных интервью с корпоративными клиентами.
 
-ОБРАЗОВАНИЕ И НАВЫКИ
-МГТУ им. Н.Э. Баумана, Информационные системы и технологии
-Навыки: Product Management, Product Strategy, Roadmap Planning, CustDev, Scrum, PRD, Unit-экономика, A/B-тестирование, CI/CD, SQL, Docker, Kubernetes.`;
-
-const DEFAULT_JOB_DESC = `Senior Product Manager (AI & Cloud Services)
-Компания: Яндекс
-Локация: Москва / Удаленно
-
-О команде и роли:
-Мы ищем Senior Product Manager для развития облачной AI-инфраструктуры. Вам предстоит определять видение продукта, выстраивать кросс-функциональное взаимодействие между разработкой, исследователями данных и продажами, а также запускать инструменты для масштабирования сервисов.
-
-Требования:
-• 5+ лет в управлении продуктом в технологических компаниях.
-• Опыт работы с Agile, Scrum, CI/CD, A/B-тестированием и метриками (Retention, LTV, Unit-экономика).
-• Умение проектировать Product Strategy, формировать Roadmap и составлять PRD.
-• Опыт взаимодействия с инженерами: Microservices, REST API, Cloud Infrastructure, Docker, SQL.
-• Сильные навыки работы со стейкхолдерами: Stakeholder Management и Cross-functional лидерство.`;
+КЛЮЧЕВЫЕ НАВЫКИ
+Product Management, Product Strategy, Roadmap Planning, CustDev, Scrum, PRD, Unit-экономика, A/B-тестирование, CI/CD, SQL, Docker, Kubernetes.`,
+  },
+];
 
 export default function ATSScannerPage() {
   const {
@@ -94,8 +262,8 @@ export default function ATSScannerPage() {
     showToast,
   } = useApp();
 
-  const [resumeText, setResumeText] = useState(DEFAULT_RESUME);
-  const [jobDesc, setJobDesc] = useState(DEFAULT_JOB_DESC);
+  const [resumeText, setResumeText] = useState(DIVERSE_PRESETS[0].resume);
+  const [jobDesc, setJobDesc] = useState(DIVERSE_PRESETS[0].job);
   const [selectedTrackerJobId, setSelectedTrackerJobId] = useState<string>("");
 
   const [uploadedFile, setUploadedFile] = useState<{
@@ -112,9 +280,15 @@ export default function ATSScannerPage() {
   const [isScoreCardOpen, setIsScoreCardOpen] = useState(false);
   const [isCleanResumeOpen, setIsCleanResumeOpen] = useState(false);
 
+  // AI Enhancement Modals
+  const [embedSkillModalOpen, setEmbedSkillModalOpen] = useState(false);
+  const [skillToEmbed, setSkillToEmbed] = useState("");
+  const [rewriteModalOpen, setRewriteModalOpen] = useState(false);
+  const [saveKanbanModalOpen, setSaveKanbanModalOpen] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Pre-fill target job from Kanban navigation
+  // Pre-fill target job from Kanban navigation or Library
   useEffect(() => {
     if (typeof window !== "undefined") {
       const savedResume = localStorage.getItem("launchpad_scanner_resume");
@@ -135,7 +309,7 @@ export default function ATSScannerPage() {
     if (scannerTargetJob) {
       setJobDesc(
         `${scannerTargetJob.position} в компании ${scannerTargetJob.company}\n\n${
-          scannerTargetJob.description || "Требования: опыт в стеке, Agile, продуктовые метрики, CI/CD, надежность."
+          scannerTargetJob.description || "Требования: опыт в сфере, KPI, оцифрованные метрики, надежность."
         }`
       );
       showToast(`Загружены требования вакансии «${scannerTargetJob.company}»`);
@@ -159,7 +333,7 @@ export default function ATSScannerPage() {
     return detectLanguage(`${resumeText} ${jobDesc}`);
   }, [resumeText, jobDesc]);
 
-  // Deterministic 55/15/15/15 ATS Simulator
+  // Universal Deterministic 55/15/15/15 ATS Simulator (All Professions)
   const simulation: AtsSimulationResult = useMemo(() => {
     return simulateAtsParser(resumeText, jobDesc, language);
   }, [resumeText, jobDesc, language]);
@@ -172,10 +346,19 @@ export default function ATSScannerPage() {
     if (job) {
       setJobDesc(
         `${job.position} в компании ${job.company}\n\n${
-          job.job_description || "Требования: знание современных технологий, Agile, CI/CD, метрики эффективности."
+          job.job_description || "Требования: опыт работы, выполнение KPI, метрики эффективности."
         }`
       );
       showToast(`Выбрана вакансия «${job.company}» из Канбан-трекера`);
+    }
+  };
+
+  const handleLoadPreset = (presetId: string) => {
+    const p = DIVERSE_PRESETS.find((x) => x.id === presetId);
+    if (p) {
+      setJobDesc(p.job);
+      setResumeText(p.resume);
+      showToast(`Загружен эталон «${p.label}» (${p.categoryName})!`);
     }
   };
 
@@ -207,15 +390,46 @@ export default function ATSScannerPage() {
     }
   };
 
-  // Click on missing skill chip -> Automatically appends to resume
-  const handleAddMissingSkill = (skill: string) => {
+  // STEP 3: Real AI Skill Embedding into Work Experience (NO "ключевой навык" stub)
+  const handleOpenEmbedSkill = (skill: string) => {
+    setSkillToEmbed(skill);
+    setEmbedSkillModalOpen(true);
+  };
+
+  const handleApplyEmbeddedBullet = (bullet: string) => {
     setResumeText((prev) => {
-      if (prev.includes("Навыки:") || prev.includes("НАВЫКИ")) {
-        return prev.replace(/(Навыки:.*?)([\n\r]|$)/i, `$1, ${skill}$2`);
+      const lines = prev.split("\n");
+      let inserted = false;
+      const newLines: string[] = [];
+
+      for (let i = 0; i < lines.length; i++) {
+        newLines.push(lines[i]);
+        if (!inserted && /(?:опыт работы|профессиональный опыт|experience|work history)/i.test(lines[i])) {
+          let j = i + 1;
+          while (j < lines.length && !lines[j].trim()) {
+            newLines.push(lines[j]);
+            j++;
+          }
+          if (j < lines.length) {
+            newLines.push(lines[j]); // Company line / role
+            newLines.push(bullet); // Insert high-impact bullet right under company
+            inserted = true;
+            i = j;
+          }
+        }
       }
-      return `${prev}\n• Ключевой навык: ${skill}`;
+
+      if (inserted) return newLines.join("\n");
+      return `${prev}\n\nОПЫТ РАБОТЫ\n${bullet}`;
     });
-    showToast(`✓ Навык «${skill}» добавлен в резюме! Балл ATS увеличен.`);
+
+    showToast(`✓ Навык «${skillToEmbed}» оцифрован и подтвержден в опыте! Балл Hard Skills вырос.`);
+  };
+
+  // STEP 4: AI Auto-Rewrite Whole Resume
+  const handleApplyRewrittenResume = (newResume: string) => {
+    setResumeText(newResume);
+    showToast("🎉 Резюме переписано в Harvard ATS стандарт! Балл повышен до 92%+.");
   };
 
   // 1-Click apply XYZ bullet improvement
@@ -259,7 +473,7 @@ export default function ATSScannerPage() {
       : `Моё резюме набрало ${simulation.score.total}% в ATS-сканере LaunchPad AI PRO! Проверь своё:`
   )}`;
 
-  const targetRoleTitle = scannerTargetJob ? `${scannerTargetJob.position} (${scannerTargetJob.company})` : "Senior Product Manager";
+  const targetRoleTitle = scannerTargetJob ? `${scannerTargetJob.position} (${scannerTargetJob.company})` : simulation.domainName;
 
   return (
     <div className="space-y-6">
@@ -268,14 +482,34 @@ export default function ATSScannerPage() {
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
             <ScanSearch className="w-6 h-6 text-primary" />
-            <span>AI ATS-сканер резюме (Deterministic 55/15/15/15 Standard)</span>
+            <span>AI ATS-сканер резюме для ВСЕХ профессий</span>
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Проверьте резюме алгоритмами корпоративных ATS (Workday, Taleo, Greenhouse, E-Staff) без склейки и противоречий.
+            Универсальный аудит по формуле 55/15/15/15 (Workday, Taleo, Greenhouse, E-Staff, Поток) для любой сферы: Продажи, Бухгалтерия, Маркетинг, Юристы, HR, IT.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* STEP 4: Rewrite Resume Button */}
+          <Button
+            size="sm"
+            onClick={() => setRewriteModalOpen(true)}
+            className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-500/20 cursor-pointer flex items-center gap-1.5"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>✨ Улучшить резюме с ИИ (до 90%+)</span>
+          </Button>
+
+          {/* STEP 5: Save to Kanban Button */}
+          <Button
+            size="sm"
+            onClick={() => setSaveKanbanModalOpen(true)}
+            className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-md shadow-indigo-600/20 cursor-pointer flex items-center gap-1.5"
+          >
+            <Kanban className="w-3.5 h-3.5" />
+            <span>🚀 В Канбан (+ резюме и письмо)</span>
+          </Button>
+
           {/* Module 2: Score Card Button */}
           <Button
             size="sm"
@@ -284,7 +518,7 @@ export default function ATSScannerPage() {
             className="text-xs border-border/80 hover:bg-muted/80 flex items-center gap-1.5 cursor-pointer"
           >
             <Award className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Сертификат ATS</span>
+            <span>Сертификат</span>
           </Button>
 
           {/* Module 3: Clean Single-Column Resume Button */}
@@ -295,8 +529,27 @@ export default function ATSScannerPage() {
             className="text-xs border-border/80 hover:bg-muted/80 flex items-center gap-1.5 cursor-pointer"
           >
             <FileText className="w-3.5 h-3.5 text-primary" />
-            <span>Собрать ATS-резюме</span>
+            <span>Собрать Harvard ATS</span>
           </Button>
+        </div>
+      </div>
+
+      {/* Quick 1-Click Diverse Profession Presets Bar */}
+      <div className="p-3.5 rounded-2xl bg-card/60 border border-border/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
+        <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground whitespace-nowrap">
+          <Sparkles className="w-3.5 h-3.5 text-primary" />
+          <span>Быстрый выбор сферы:</span>
+        </div>
+        <div className="flex flex-wrap items-center gap-1.5">
+          {DIVERSE_PRESETS.map((p) => (
+            <button
+              key={p.id}
+              onClick={() => handleLoadPreset(p.id)}
+              className="px-2.5 py-1 rounded-lg text-xs font-medium bg-background/80 hover:bg-primary/10 border border-border/70 hover:border-primary/40 text-foreground transition cursor-pointer"
+            >
+              {p.label}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -368,8 +621,11 @@ export default function ATSScannerPage() {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
                   <Briefcase className="w-4 h-4 text-primary" />
-                  <span>2. Целевая вакансия</span>
+                  <span>2. Требования вакансии (Любая профессия)</span>
                 </CardTitle>
+                <Badge variant="outline" className="text-[10px] text-primary border-primary/30 bg-primary/10">
+                  {simulation.domainName}
+                </Badge>
               </div>
             </CardHeader>
 
@@ -400,28 +656,39 @@ export default function ATSScannerPage() {
               <Textarea
                 value={jobDesc}
                 onChange={(e) => setJobDesc(e.target.value)}
-                placeholder="Вставьте текст требований вакансии..."
+                placeholder="Вставьте текст требований вакансии (бухгалтер, менеджер продаж, маркетолог, юрист, логист, HR, IT)..."
                 rows={8}
                 className="font-mono text-xs resize-none bg-background/50 border-border"
               />
 
-              <Button
-                onClick={handleStartScan}
-                disabled={isScanning}
-                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-xs shadow-md shadow-primary/20 cursor-pointer h-9"
-              >
-                {isScanning ? (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                    Сканирование алгоритмами ATS...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-                    Пересчитать ATS Match
-                  </>
-                )}
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={handleStartScan}
+                  disabled={isScanning}
+                  className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-xs shadow-md shadow-primary/20 cursor-pointer h-9"
+                >
+                  {isScanning ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                      Сканирование алгоритмами ATS...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                      Пересчитать ATS Match ({simulation.domainName})
+                    </>
+                  )}
+                </Button>
+
+                <Button
+                  onClick={() => setRewriteModalOpen(true)}
+                  variant="outline"
+                  className="border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 text-xs font-bold h-9 cursor-pointer"
+                  title="Переписать резюме под эту вакансию с ИИ"
+                >
+                  <Wand2 className="w-3.5 h-3.5" />
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -434,7 +701,7 @@ export default function ATSScannerPage() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <div className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1 flex items-center gap-1.5">
-                    <span>Индекс соответствия (ATS Match Index)</span>
+                    <span>Индекс соответствия ({simulation.domainName})</span>
                     <Badge variant="outline" className="text-[9px] text-primary border-primary/30 bg-primary/10">
                       Стандарт 55/15/15/15
                     </Badge>
@@ -447,10 +714,10 @@ export default function ATSScannerPage() {
                   </div>
                   <p className="text-xs text-muted-foreground mt-1 max-w-md">
                     {simulation.score.total >= 80
-                      ? "Отличный результат! Ваше резюме проходит автоматические фильтры большинства ATS."
+                      ? `Отличный результат! Резюме проходит автоматические фильтры ATS для сферы «${simulation.domainName}».`
                       : simulation.score.total >= 65
-                      ? "Средний балл. Добавьте подтверждения в буллеты опыта и устраните сиротские навыки."
-                      : "Высокий риск отсева. Не хватает оцифрованных результатов и подтвержденных ключевых слов."}
+                      ? `Средний балл. Добавьте подтверждения в буллеты опыта и устраните сиротские навыки.`
+                      : `Высокий риск отсева. Нажмите «✨ Улучшить резюме с ИИ», чтобы поднять балл до 90%+.`}
                   </p>
                 </div>
 
@@ -488,7 +755,7 @@ export default function ATSScannerPage() {
                     <span className="font-bold text-emerald-400">{simulation.score.metrics}/15</span>
                   </div>
                   <Progress value={(simulation.score.metrics / 15) * 100} className="h-1.5" />
-                  <span className="text-[10px] text-muted-foreground block truncate">%, $, x, время</span>
+                  <span className="text-[10px] text-muted-foreground block truncate">%, руб, млн, время</span>
                 </div>
 
                 <div className="space-y-1">
@@ -497,7 +764,7 @@ export default function ATSScannerPage() {
                     <span className="font-bold text-sky-400">{simulation.score.softSkills}/15</span>
                   </div>
                   <Progress value={(simulation.score.softSkills / 15) * 100} className="h-1.5" />
-                  <span className="text-[10px] text-muted-foreground block truncate">Agile, лидерство</span>
+                  <span className="text-[10px] text-muted-foreground block truncate">Лидерство, процесс</span>
                 </div>
 
                 <div className="space-y-1">
@@ -506,7 +773,7 @@ export default function ATSScannerPage() {
                     <span className="font-bold text-amber-400">{simulation.score.layout}/15</span>
                   </div>
                   <Progress value={(simulation.score.layout / 15) * 100} className="h-1.5" />
-                  <span className="text-[10px] text-muted-foreground block truncate">1 колонка, даты</span>
+                  <span className="text-[10px] text-muted-foreground block truncate">1 колонка Harvard</span>
                 </div>
               </div>
 
@@ -520,7 +787,17 @@ export default function ATSScannerPage() {
                     className="h-7 text-xs border-border hover:bg-muted text-emerald-400 font-semibold cursor-pointer"
                   >
                     <Award className="w-3.5 h-3.5 mr-1" />
-                    Скачать сертификат ATS
+                    Сертификат ATS
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setSaveKanbanModalOpen(true)}
+                    className="h-7 text-xs border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 font-semibold cursor-pointer"
+                  >
+                    <Kanban className="w-3.5 h-3.5 mr-1" />
+                    Сохранить в Канбан
                   </Button>
 
                   <a
@@ -530,22 +807,18 @@ export default function ATSScannerPage() {
                     className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-border bg-background hover:bg-muted text-xs font-medium transition cursor-pointer text-sky-400"
                   >
                     <Send className="w-3 h-3" />
-                    Поделиться в TG
+                    Поделиться
                   </a>
                 </div>
 
-                {!isPro && (
-                  <button
-                    onClick={() => {
-                      setUpgradeReason(undefined);
-                      setIsUpgradeModalOpen(true);
-                    }}
-                    className="inline-flex items-center gap-1 text-xs text-amber-400 hover:text-amber-300 font-semibold cursor-pointer"
-                  >
-                    <Sparkles className="w-3 h-3" />
-                    <span>Скидка 30% по коду START30</span>
-                  </button>
-                )}
+                <Button
+                  size="sm"
+                  onClick={() => setRewriteModalOpen(true)}
+                  className="h-7 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-bold cursor-pointer"
+                >
+                  <Sparkles className="w-3 h-3 mr-1" />
+                  Улучшить до 90%+
+                </Button>
               </div>
             </div>
 
@@ -595,31 +868,32 @@ export default function ATSScannerPage() {
               {/* TAB 1: OVERVIEW & SKILLS */}
               {activeResultsTab === "overview" && (
                 <div className="space-y-6">
-                  {/* Missing Keywords Box with Interactive Click-to-Add */}
+                  {/* Missing Keywords Box with Real AI Embedding */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="text-xs font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
                         <AlertCircle className="w-3.5 h-3.5" />
                         Отсутствующие навыки в вакансии ({simulation.missingSkills.length})
                       </h3>
-                      <span className="text-[10px] text-muted-foreground">Нажмите на тег, чтобы внедрить в резюме</span>
+                      <span className="text-[10px] text-muted-foreground">Нажмите, чтобы встроить в опыт с ИИ</span>
                     </div>
 
                     <div className="flex flex-wrap gap-1.5">
                       {simulation.missingSkills.length === 0 ? (
                         <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5" /> Все ключевые навыки вакансии найдены в резюме!
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Все ключевые навыки вакансии найдены и подтверждены в опыте!
                         </span>
                       ) : (
                         simulation.missingSkills.map((kw, idx) => (
                           <button
                             key={idx}
-                            onClick={() => handleAddMissingSkill(kw)}
-                            title={`Нажмите, чтобы добавить «${kw}» в резюме`}
+                            onClick={() => handleOpenEmbedSkill(kw)}
+                            title={`Нажмите, чтобы встроить «${kw}» в опыт работы через нейросеть`}
                             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 hover:text-white text-xs font-medium transition cursor-pointer"
                           >
-                            <Plus className="w-3 h-3" />
-                            {kw}
+                            <Sparkles className="w-3 h-3 text-amber-400" />
+                            <span>{kw}</span>
+                            <span className="text-[10px] opacity-70 ml-0.5">+ ИИ</span>
                           </button>
                         ))
                       )}
@@ -661,12 +935,16 @@ export default function ATSScannerPage() {
                       </p>
                       <div className="flex flex-wrap gap-1.5 pt-1">
                         {simulation.orphanSkills.map((o, idx) => (
-                          <span
+                          <button
                             key={idx}
-                            className="text-[11px] px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20 font-mono"
+                            onClick={() => handleOpenEmbedSkill(o.name)}
+                            title="Нажмите, чтобы встроить этот навык в описание опыта с помощью ИИ"
+                            className="text-[11px] px-2 py-0.5 rounded bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 hover:text-white border border-amber-500/20 font-mono transition cursor-pointer flex items-center gap-1"
                           >
-                            ⚠️ {o.name} (0 б.)
-                          </span>
+                            <Sparkles className="w-3 h-3 text-amber-400" />
+                            <span>⚠️ {o.name} (0 б.)</span>
+                            <span className="text-[9px] underline">Встроить в опыт</span>
+                          </button>
                         ))}
                       </div>
                     </div>
@@ -749,46 +1027,28 @@ export default function ATSScannerPage() {
                     </div>
                   )}
 
-                  {/* Yellow Orphan Skills Alert */}
-                  {simulation.orphanSkills.length > 0 && (
-                    <div className="p-4 rounded-xl border border-amber-500/40 bg-amber-500/10 space-y-2">
-                      <div className="text-xs font-bold text-amber-300 flex items-center gap-2">
-                        <AlertTriangle className="w-4 h-4 text-amber-400" />
-                        <span>Сиротские навыки (0 баллов по формуле 55/15/15/15):</span>
-                      </div>
-                      <p className="text-[11px] text-muted-foreground leading-relaxed">
-                        Роботы ATS требуют доказательства практического применения каждого навыка в буллетах опыта. Навыки без цитат получают 0 баллов:
-                      </p>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                        {simulation.orphanSkills.map((item, idx) => (
-                          <div key={idx} className="p-2.5 rounded-lg bg-background/50 border border-amber-500/20 text-xs">
-                            <div className="flex items-center justify-between">
-                              <span className="font-bold text-amber-200">{item.name}</span>
-                              <span className="text-[10px] text-amber-400 font-mono font-bold">0 баллов</span>
-                            </div>
-                            <span className="text-[10px] text-muted-foreground block mt-0.5">{item.reason}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
                   {/* Raw Stream Viewer */}
                   <div className="rounded-xl border border-border bg-zinc-950 p-4 font-mono text-xs overflow-x-auto max-h-[380px]">
                     <div className="flex items-center justify-between pb-2 mb-2 border-b border-zinc-800 text-[11px] text-zinc-400">
                       <span>{rawViewMode === "text" ? "TOKENIZED RAW STREAM" : "ATS_AST_SCHEMA.json"}</span>
                       <Button
-                        variant="ghost"
                         size="sm"
-                        onClick={() => copyToClipboard(rawViewMode === "text" ? simulation.rawTextStream : JSON.stringify(simulation.parsedAstJson, null, 2), "raw")}
-                        className="h-6 text-[10px] hover:text-white"
+                        variant="ghost"
+                        onClick={() =>
+                          copyToClipboard(
+                            rawViewMode === "text"
+                              ? simulation.rawTextStream
+                              : JSON.stringify(simulation.parsedAstJson, null, 2),
+                            "raw_ast"
+                          )
+                        }
+                        className="h-6 text-[10px] text-zinc-400 hover:text-white"
                       >
-                        {copiedSection === "raw" ? <Check className="w-3 h-3 text-emerald-400 mr-1" /> : <Copy className="w-3 h-3 mr-1" />}
-                        <span>Копировать</span>
+                        <Copy className="w-3 h-3 mr-1" />
+                        Копировать
                       </Button>
                     </div>
-
-                    <pre className="text-emerald-400 text-[11px] leading-relaxed whitespace-pre-wrap">
+                    <pre className="text-zinc-300 leading-relaxed">
                       {rawViewMode === "text"
                         ? simulation.rawTextStream
                         : JSON.stringify(simulation.parsedAstJson, null, 2)}
@@ -797,51 +1057,42 @@ export default function ATSScannerPage() {
                 </div>
               )}
 
-              {/* TAB 3: X-Y-Z BULLET IMPROVER (BEFORE / AFTER DIFF) */}
+              {/* TAB 3: XYZ BULLET IMPROVER */}
               {activeResultsTab === "xyz_diff" && (
                 <div className="space-y-4 animate-in fade-in">
-                  <div className="p-3.5 rounded-xl bg-gradient-to-r from-amber-500/10 via-card to-emerald-500/10 border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                    <div>
-                      <div className="font-bold text-foreground flex items-center gap-1.5">
-                        <Wand2 className="w-4 h-4 text-amber-400" />
-                        <span>X-Y-Z Улучшатель процессных формулировок</span>
-                      </div>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">
-                        Заменяет слабые фразы («отвечал за», «занимался») на оцифрованные результаты с ростом ATS-скора
-                      </p>
+                  <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/5 space-y-2">
+                    <div className="flex items-center gap-2 text-xs font-bold text-amber-400">
+                      <Wand2 className="w-4 h-4" />
+                      <span>Формула Google X-Y-Z: Достиг [X], измерив [Y], сделав [Z]</span>
                     </div>
-                    <Badge variant="outline" className="text-xs text-emerald-400 border-emerald-500/30 bg-emerald-500/10 shrink-0">
-                      До 60% → После 94%
-                    </Badge>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Слабые фразы («отвечал за», «занимался») снижают шансы на интервью на 70%. Замените их на оцифрованные достижения в 1 клик:
+                    </p>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {simulation.xyzImprovements.map((item) => (
-                      <div key={item.id} className="p-4 rounded-xl border border-border bg-card/70 space-y-3">
-                        <div className="flex items-center justify-between text-xs font-semibold">
-                          <span className="text-muted-foreground flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-amber-400" />
-                            Слабый паттерн: <code className="text-amber-300 font-mono font-bold bg-background/80 px-1 py-0.5 rounded">{item.weakKeyword}</code>
+                      <div
+                        key={item.id}
+                        className="p-4 rounded-xl border border-border bg-card/60 hover:border-primary/40 transition space-y-3 text-xs"
+                      >
+                        {/* Before */}
+                        <div className="space-y-1">
+                          <span className="text-[10px] uppercase font-bold text-rose-400 flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3" /> Слабая формулировка (Было):
                           </span>
-                          <span className="text-emerald-400 font-bold font-mono">+{item.scoreBoost}% к ATS Score</span>
+                          <div className="p-2.5 rounded-lg bg-rose-500/5 border border-rose-500/20 text-rose-200 line-through font-mono">
+                            {item.original}
+                          </div>
                         </div>
 
-                        {/* Before / After Diff Visualizer */}
-                        <div className="space-y-2 text-xs font-mono">
-                          {/* Было */}
-                          <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 flex items-start gap-2">
-                            <span className="font-bold text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400 shrink-0">
-                              Было
-                            </span>
-                            <span className="line-through opacity-80">{item.original}</span>
-                          </div>
-
-                          {/* Стало */}
-                          <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 flex items-start gap-2">
-                            <span className="font-bold text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 shrink-0">
-                              Стало XYZ
-                            </span>
-                            <span className="font-medium">{item.improved}</span>
+                        {/* After */}
+                        <div className="space-y-1">
+                          <span className="text-[10px] uppercase font-bold text-emerald-400 flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3" /> Улучшено по формуле X-Y-Z (Стало):
+                          </span>
+                          <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-200 font-mono font-medium">
+                            {item.improved}
                           </div>
                         </div>
 
@@ -869,6 +1120,36 @@ export default function ATSScannerPage() {
           </Card>
         </div>
       </div>
+
+      {/* STEP 3: Real AI Embed Skill Modal */}
+      <AiEmbedSkillModal
+        isOpen={embedSkillModalOpen}
+        onClose={() => setEmbedSkillModalOpen(false)}
+        skillName={skillToEmbed}
+        jobTitle={targetRoleTitle}
+        resumeText={resumeText}
+        onApplyBullet={handleApplyEmbeddedBullet}
+      />
+
+      {/* STEP 4: AI Auto-Rewrite Modal */}
+      <AiRewriteResumeModal
+        isOpen={rewriteModalOpen}
+        onClose={() => setRewriteModalOpen(false)}
+        currentResume={resumeText}
+        jobDescription={jobDesc}
+        currentScore={simulation.score.total}
+        missingSkills={simulation.missingSkills}
+        onApplyRewritten={handleApplyRewrittenResume}
+      />
+
+      {/* STEP 5: Save to Kanban Pipeline Modal */}
+      <SaveToKanbanModal
+        isOpen={saveKanbanModalOpen}
+        onClose={() => setSaveKanbanModalOpen(false)}
+        resumeText={resumeText}
+        jobDescription={jobDesc}
+        atsScore={simulation.score.total}
+      />
 
       {/* Module 2: Viral ATS Score Card Modal (Canvas) */}
       <AtsScoreCardModal

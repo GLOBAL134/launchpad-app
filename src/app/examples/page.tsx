@@ -20,18 +20,30 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { SEO_RESUME_EXAMPLES } from "@/data/seo-resume-examples";
+import { SEO_RESUME_EXAMPLES, ResumeCategory } from "@/data/seo-resume-examples";
 import { useApp } from "@/context/AppContext";
 
 export default function ExamplesCatalogPage() {
   const { lang, setLang } = useApp();
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<ResumeCategory>("all");
+
+  const categories: { id: ResumeCategory; labelRu: string; labelEn: string; icon: string }[] = [
+    { id: "all", labelRu: "Все сферы", labelEn: "All Fields", icon: "✨" },
+    { id: "sales", labelRu: "Продажи и Коммерция", labelEn: "Sales & Commercial", icon: "📈" },
+    { id: "marketing", labelRu: "Маркетинг и PR", labelEn: "Marketing & PR", icon: "🎯" },
+    { id: "finance_legal", labelRu: "Финансы, Бухгалтерия и Юристы", labelEn: "Finance, Accounting & Legal", icon: "💼" },
+    { id: "management_hr_logistics", labelRu: "Управление, HR и Логистика", labelEn: "Management, HR & Logistics", icon: "🚛" },
+    { id: "it", labelRu: "IT и Разработка", labelEn: "IT & Software Engineering", icon: "💻" },
+  ];
 
   const filtered = SEO_RESUME_EXAMPLES.filter((ex) => {
+    const matchesCategory = selectedCategory === "all" || ex.category === selectedCategory;
     const q = searchQuery.toLowerCase();
     const title = lang === "ru" ? ex.roleRu.toLowerCase() : ex.roleEn.toLowerCase();
     const skills = ex.targetSkills.join(" ").toLowerCase();
-    return title.includes(q) || skills.includes(q);
+    const matchesSearch = !q || title.includes(q) || skills.includes(q);
+    return matchesCategory && matchesSearch;
   });
 
   return (
@@ -112,20 +124,41 @@ export default function ExamplesCatalogPage() {
 
           <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             {lang === "ru"
-              ? "Детальные кейсы «До и После» для 8 ключевых IT-специальностей. Узнайте, из-за каких 3 фатальных ошибок резюме получают 60%, и как формула XYZ поднимает конверсию до 95%."
-              : "In-depth Before & After case studies for 8 core tech professions. Discover the 3 fatal flaws causing 60% ATS rejections and how the Google XYZ formula lifts scores to 95%."}
+              ? "Детальные кейсы «До и После» для всех ключевых профессий: Бухгалтерия, Продажи, Маркетинг, Юристы, Логистика, HR и IT. Узнайте, как формула 55/15/15/15 и X-Y-Z поднимают рейтинг до 95%+."
+              : "In-depth Before & After case studies across all major industries: Accounting, Sales, Marketing, Legal, Logistics, HR, and IT. See how the 55/15/15/15 formula and XYZ lifts ATS match to 95%+."}
           </p>
 
           {/* Search Box */}
-          <div className="max-w-md mx-auto relative pt-4">
-            <Search className="w-4 h-4 absolute left-3.5 top-7 text-muted-foreground pointer-events-none" />
+          <div className="max-w-md mx-auto relative pt-2">
+            <Search className="w-4 h-4 absolute left-3.5 top-5 text-muted-foreground pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={lang === "ru" ? "Поиск по должности или навыку (Go, React, Figma)..." : "Search by role or tech stack (Go, React, Figma)..."}
+              placeholder={lang === "ru" ? "Поиск по должности или навыку (Бухгалтер, 1С, B2B, AmoCRM, SEO)..." : "Search by role or skill (Accountant, 1C, Sales, CRM, SEO)..."}
               className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-card/80 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-inner"
             />
+          </div>
+
+          {/* Category Tabs */}
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-4">
+            {categories.map((cat) => {
+              const isActive = selectedCategory === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer border ${
+                    isActive
+                      ? "bg-primary text-primary-foreground border-primary shadow-sm shadow-primary/25"
+                      : "bg-card/70 border-border/80 text-muted-foreground hover:text-foreground hover:bg-muted/70"
+                  }`}
+                >
+                  <span>{cat.icon}</span>
+                  <span>{lang === "ru" ? cat.labelRu : cat.labelEn}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
       </section>

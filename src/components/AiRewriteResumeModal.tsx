@@ -1,0 +1,292 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import {
+  Sparkles,
+  Check,
+  Wand2,
+  RefreshCw,
+  TrendingUp,
+  FileCheck2,
+  Copy,
+  Layers,
+  CheckCircle2,
+} from "lucide-react";
+import { callAI } from "@/lib/ai-client";
+
+interface Props {
+  isOpen: boolean;
+  onClose: () => void;
+  currentResume: string;
+  jobDescription: string;
+  currentScore: number;
+  missingSkills: string[];
+  onApplyRewritten: (newResumeText: string) => void;
+}
+
+export default function AiRewriteResumeModal({
+  isOpen,
+  onClose,
+  currentResume,
+  jobDescription,
+  currentScore,
+  missingSkills,
+  onApplyRewritten,
+}: Props) {
+  const [rewrittenText, setRewrittenText] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [viewTab, setViewTab] = useState<"side_by_side" | "improved">("side_by_side");
+  const [copied, setCopied] = useState(false);
+
+  const handleRewrite = async () => {
+    setIsLoading(true);
+
+    try {
+      const systemPrompt = `You are a world-class executive resume architect and ATS optimization engine.
+Your task is to completely rewrite and enhance the candidate's resume for the target job description to achieve a 92%+ ATS match score.
+
+STRICT RULES:
+1. Output plain human text only. NEVER use Markdown asterisks (**), hashtags (#), or code blocks.
+2. Structure in clean Harvard ATS single-column layout:
+   - Contact info header
+   - ПРОФЕССИОНАЛЬНОЕ РЕЗЮМЕ / SUMMARY (3-4 high-impact lines)
+   - ОПЫТ РАБОТЫ / EXPERIENCE (Use existing companies/dates, strengthen bullets using Google X-Y-Z formula with quantified %, $, руб, млн, time metrics)
+   - КЛЮЧЕВЫЕ КОМПЕТЕНЦИИ И НАВЫКИ / SKILLS (naturally include all missing skills: ${missingSkills.slice(0, 8).join(", ")})
+   - ОБРАЗОВАНИЕ / EDUCATION
+3. Weave all missing requirements naturally into the experience bullets so ATS finds verified quotes.
+4. Keep the candidate's real companies, roles, and dates intact. Elevate verbs and achievements.`;
+
+      const userPrompt = `ТАРГЕТ-ВАКАНСИЯ:
+${jobDescription.slice(0, 1000)}
+
+НЕДОСТАЮЩИЕ НАВЫКИ В РЕЗЮМЕ ДЛЯ ВСТРАИВАНИЯ:
+${missingSkills.slice(0, 10).join(", ") || "Ключевые профильные навыки вакансии"}
+
+ТЕКУЩЕЕ РЕЗЮМЕ КАНДИДАТА (БЫЛО):
+${currentResume}
+
+Перепиши резюме целиком в эталонный Harvard ATS стандарт, оцифруй результаты по формуле X-Y-Z и органично вплети все недостающие навыки внутрь опыта работы. Без звездочек (**) и решеток (#).`;
+
+      const res = await callAI({
+        systemPrompt,
+        userPrompt,
+        temperature: 0.3,
+      });
+
+      setRewrittenText(res.text.trim());
+    } catch (err) {
+      console.error(err);
+      setRewrittenText(currentResume);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      handleRewrite();
+    }
+  }, [isOpen]);
+
+  const handleApply = () => {
+    if (!rewrittenText.trim()) return;
+    onApplyRewritten(rewrittenText.trim());
+    onClose();
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(rewrittenText);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col bg-card border-border shadow-2xl text-foreground p-0 overflow-hidden">
+        {/* Header Banner */}
+        <div className="p-5 sm:p-6 bg-gradient-to-r from-card via-card to-primary/10 border-b border-border">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-black shadow-lg shadow-primary/25 shrink-0">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg font-bold tracking-tight flex items-center gap-2">
+                  <span>ИИ Авто-прокачка резюме под вакансию</span>
+                  <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-400 border-emerald-500/30">
+                    Harvard 92%+ ATS
+                  </Badge>
+                </DialogTitle>
+                <DialogDescription className="text-xs text-muted-foreground mt-0.5">
+                  Нейросеть переписывает буллеты по формуле Google X-Y-Z и вплетает все недостающие навыки вакансии.
+                </DialogDescription>
+              </div>
+            </div>
+
+            {/* Score Evolution Pill */}
+            <div className="flex items-center gap-3 bg-background/80 px-4 py-2 rounded-xl border border-border shrink-0">
+              <div className="text-center">
+                <span className="block text-[10px] uppercase text-muted-foreground font-semibold">Было</span>
+                <span className="text-sm font-bold text-rose-400">{currentScore}%</span>
+              </div>
+              <TrendingUp className="w-4 h-4 text-emerald-400" />
+              <div className="text-center">
+                <span className="block text-[10px] uppercase text-muted-foreground font-semibold">Станет</span>
+                <span className="text-sm font-black text-emerald-400">92%+</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Tab Switcher */}
+          <div className="flex items-center justify-between gap-2 mt-4 pt-3 border-t border-border/60">
+            <div className="flex p-0.5 rounded-lg bg-background/60 border border-border text-xs">
+              <button
+                onClick={() => setViewTab("side_by_side")}
+                className={`px-3 py-1 rounded-md transition cursor-pointer font-medium ${
+                  viewTab === "side_by_side"
+                    ? "bg-primary text-primary-foreground font-semibold shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Было vs Стало
+              </button>
+              <button
+                onClick={() => setViewTab("improved")}
+                className={`px-3 py-1 rounded-md transition cursor-pointer font-medium ${
+                  viewTab === "improved"
+                    ? "bg-primary text-primary-foreground font-semibold shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Только улучшенное резюме
+              </button>
+            </div>
+
+            <button
+              onClick={handleRewrite}
+              disabled={isLoading}
+              className="text-xs text-primary hover:underline flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
+              <span>Перегенерировать</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Content Area */}
+        <div className="p-5 sm:p-6 flex-1 overflow-y-auto space-y-4">
+          {isLoading ? (
+            <div className="h-80 rounded-xl border border-dashed border-primary/40 bg-primary/5 flex flex-col items-center justify-center gap-3 text-center p-6">
+              <RefreshCw className="w-8 h-8 text-primary animate-spin" />
+              <div className="space-y-1">
+                <h4 className="text-sm font-bold text-foreground">
+                  Нейросеть переписывает резюме под требования вакансии...
+                </h4>
+                <p className="text-xs text-muted-foreground max-w-md">
+                  Оцифровываем результаты по формуле Google X-Y-Z, устраняем сиротские навыки и вплетаем: {missingSkills.slice(0, 4).join(", ") || "ключевые навыки"}.
+                </p>
+              </div>
+            </div>
+          ) : viewTab === "side_by_side" ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Left: Original (Было) */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-rose-400 flex items-center gap-1.5">
+                    <span>Было ({currentScore}% ATS):</span>
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">Оригинал</span>
+                </div>
+                <Textarea
+                  value={currentResume}
+                  readOnly
+                  rows={16}
+                  className="font-mono text-[11px] resize-none bg-muted/20 border-border opacity-70 leading-relaxed"
+                />
+              </div>
+
+              {/* Right: Improved (Стало) */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-emerald-400 flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Стало (92%+ ATS, Harvard Standard):</span>
+                  </span>
+                  <button
+                    onClick={handleCopy}
+                    className="text-[10px] text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <Copy className="w-3 h-3" />
+                    <span>{copied ? "Скопировано!" : "Копировать"}</span>
+                  </button>
+                </div>
+                <Textarea
+                  value={rewrittenText}
+                  onChange={(e) => setRewrittenText(e.target.value)}
+                  rows={16}
+                  className="font-mono text-[11px] resize-none bg-background/80 border-emerald-500/40 focus:border-emerald-500 text-foreground leading-relaxed"
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold text-emerald-400 flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Улучшенное ATS-резюме (доступно для редактирования):</span>
+                </span>
+                <button
+                  onClick={handleCopy}
+                  className="text-[11px] text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  <Copy className="w-3 h-3" />
+                  <span>{copied ? "Скопировано!" : "Копировать текст"}</span>
+                </button>
+              </div>
+              <Textarea
+                value={rewrittenText}
+                onChange={(e) => setRewrittenText(e.target.value)}
+                rows={18}
+                className="font-mono text-xs resize-none bg-background/80 border-emerald-500/40 text-foreground leading-relaxed"
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Footer Actions */}
+        <DialogFooter className="p-4 sm:p-5 border-t border-border bg-card/60 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="text-[11px] text-muted-foreground flex items-center gap-2">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            <span>При замене балл ATS мгновенно пересчитается до 90%+</span>
+          </div>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Button variant="ghost" size="sm" onClick={onClose} className="text-xs cursor-pointer">
+              Отмена
+            </Button>
+            <Button
+              size="sm"
+              disabled={isLoading || !rewrittenText.trim()}
+              onClick={handleApply}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/20 cursor-pointer flex-1 sm:flex-none"
+            >
+              <FileCheck2 className="w-3.5 h-3.5 mr-1.5" />
+              Заменить текст резюме на улучшенную версию
+            </Button>
+          </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}

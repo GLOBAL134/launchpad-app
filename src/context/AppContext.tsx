@@ -76,6 +76,8 @@ interface AppContextType {
     stage?: ApplicationStage;
     job_description?: string;
     notes?: string;
+    cover_letter?: string;
+    resume_version?: string;
   }) => void;
   moveStage: (id: string, stage: ApplicationStage) => void;
   deleteApplication: (id: string) => void;
@@ -482,6 +484,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     stage?: ApplicationStage;
     job_description?: string;
     notes?: string;
+    cover_letter?: string;
+    resume_version?: string;
   }) => {
     const salaryNums = (appData.salary || "").match(/\d[\d\s]*/g);
     let salaryMin: number | null = null;
@@ -504,13 +508,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       remote: true,
       notes: appData.notes || null,
       job_description: appData.job_description || null,
-      resume_version: "Основное резюме",
-      cover_letter: null,
+      resume_version: appData.resume_version || "Основное резюме",
+      cover_letter: appData.cover_letter || null,
       contact_name: null,
       contact_email: null,
       applied_at: appData.stage === "applied" ? new Date().toISOString() : null,
       followed_up_at: null,
-      next_follow_up: appData.stage === "applied" ? new Date(Date.now() + 7 * 86400000).toISOString() : null,
+      next_follow_up: appData.stage === "applied" ? new Date(Date.now() + 6 * 86400000).toISOString() : null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -524,8 +528,36 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
       return next;
     });
+
+    // Auto-create follow-up reminder on day 6
+    if (appData.stage === "applied") {
+      const newFollowUp: FollowUpItem = {
+        id: "fu-" + Date.now(),
+        appId: newApp.id,
+        company: newApp.company,
+        position: newApp.position,
+        contactName: "Команда найма",
+        contactEmail: "hr@" + newApp.company.toLowerCase().replace(/[^a-z0-9]/g, "") + ".ru",
+        urgency: "upcoming",
+        daysElapsed: 0,
+        subject: `Уточнение статуса рассмотрения резюме: ${newApp.position} в ${newApp.company}`,
+        template: `Здравствуйте, команда ${newApp.company}!\n\nНаправлял отклик на вакансию «${newApp.position}» и хотел подтвердить свою высокую заинтересованность в работе в вашей компании.\n\nПодскажите, удалось ли нанимающему менеджеру ознакомиться с резюме? Буду рад краткой обратной связи.\n\nС уважением,\n${userProfile.name}`,
+        sent: false,
+      };
+
+      setFollowUpsState((prev) => {
+        const next = [newFollowUp, ...prev];
+        try {
+          localStorage.setItem(STORAGE_KEYS.FOLLOW_UPS, JSON.stringify(next));
+        } catch (err) {
+          console.error(err);
+        }
+        return next;
+      });
+    }
+
     showToast(`Отклик в «${newApp.company}» успешно добавлен в пайплайн!`);
-  }, [showToast]);
+  }, [showToast, userProfile.name]);
 
   const moveStage = useCallback((id: string, stage: ApplicationStage) => {
     setApplicationsState((prev) => {

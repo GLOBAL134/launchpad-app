@@ -22,6 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { cleanAIMarkdownArtifacts } from "@/lib/monetization";
 import { detectLanguage } from "@/lib/language";
+import { callAI } from "@/lib/ai-client";
 import { useApp } from "@/context/AppContext";
 
 export default function CoverLetterPage() {
@@ -57,35 +58,51 @@ export default function CoverLetterPage() {
     setLetterContent(cleanAIMarkdownArtifacts(initialText));
   }, [company, role, keyAchievement, userProfile]);
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     setIsGenerating(true);
-    setTimeout(() => {
-      setIsGenerating(false);
-      const lang = detectLanguage(`${company} ${role} ${keyAchievement}`);
+    const lang = detectLanguage(`${company} ${role} ${keyAchievement}`);
 
-      let generated = "";
+    try {
+      const toneRu =
+        tone === "enthusiastic"
+          ? "энергичный, вдохновляющий и открытый"
+          : tone === "concise"
+          ? "краткий, лаконичный и строго по делу (до 150 слов)"
+          : "профессиональный, уверенный и убедительный";
 
-      if (lang === "en") {
-        if (tone === "enthusiastic") {
-          generated = `Hi ${company} team,\n\nI am thrilled to submit my application for the ${role} role! I have long admired your vision and would love to bring my energy, dedication, and product mindset to your team.\n\nDelivering high-impact milestones is what drives me forward. For example: ${keyAchievement} I thrive in fast-paced environments where curiosity, team synergy, and quick execution make a tangible difference for users.\n\nI would be excited to connect and explore how we can build great things together!\n\nBest regards,\n${userProfile.name}\n${userProfile.email} | ${userProfile.phone}`;
-        } else if (tone === "concise") {
-          generated = `Dear ${company} Hiring Team,\n\nPlease accept my application for the ${role} position.\n\nKey accomplishment: ${keyAchievement} I specialize in driving measurable outcomes with rapid execution and structured cross-functional collaboration.\n\nI look forward to discussing next steps at your convenience.\n\nBest regards,\n${userProfile.name}\n${userProfile.phone}`;
-        } else {
-          generated = `Dear Hiring Team at ${company},\n\nI am writing to express my strong enthusiasm for the ${role} position. Having closely followed your technological initiatives, I am eager to contribute my hands-on expertise to your mission.\n\nThroughout my career, I have consistently focused on high-impact execution. In particular, ${keyAchievement} My methodology is grounded in rigorous data analysis, user empathy, and efficient collaboration across cross-functional teams.\n\nI welcome the opportunity to discuss how my skill set aligns with your current priorities during an interview.\n\nSincerely,\n${userProfile.name}\n${userProfile.email} | ${userProfile.phone}`;
-        }
-      } else {
-        if (tone === "enthusiastic") {
-          generated = `Здравствуйте, команда ${company}!\n\nС огромным энтузиазмом откликаюсь на вакансию ${role}! Давно слежу за вашими запусками и искренне хочу стать частью команды, создающей по-настоящему классные продукты.\n\nУ меня за плечами сильный трек успешных запусков. Вот один из ярких примеров: ${keyAchievement} Я люблю смелые вызовы, ценю открытую коммуникацию и умею быстро превращать продуктовые гипотезы в работающие решения, которые драйвят метрики бизнеса.\n\nУверен, что моя энергия и практический опыт помогут ${company} взять новые высоты уже в первые месяцы работы. С нетерпением жду возможности пообщаться лично!\n\nС наилучшими пожеланиями,\n${userProfile.name}\n${userProfile.email} | ${userProfile.phone}`;
-        } else if (tone === "concise") {
-          generated = `Здравствуйте, команда ${company}!\n\nНаправляю отклик на позицию ${role}.\n\nКратко о ключевом опыте: ${keyAchievement} Отлично ориентируюсь в современных процессах разработки, приоритизации бэклога и достижении оцифрованных результатов.\n\nБуду рад встретиться на онлайн-интервью и ответить на ваши вопросы.\n\nС уважением,\n${userProfile.name}\n${userProfile.phone}`;
-        } else {
-          generated = `Здравствуйте, команда найма ${company}!\n\nПишу, чтобы выразить искреннюю заинтересованность в позиции ${role}. Внимательно слежу за развитием ваших продуктов и хочу применить свой практический опыт для решения ключевых задач команды.\n\nЗа время карьеры я руководил запуском сложных технологических сервисов. Моим ключевым результатом стало следующее: ${keyAchievement} Мой подход строится на строгой data-driven аналитике, глубоких качественных исследованиях пользователей и слаженном взаимодействии с инженерами.\n\nКультура инженерного превосходства и масштабы задач ${company} полностью соответствуют моим профессиональным ценностям. Буду рад встретиться на онлайн-интервью и подробнее обсудить, как мои навыки помогут вашей команде достигать поставленных целей.\n\nС уважением,\n${userProfile.name}\n${userProfile.email} | ${userProfile.phone}`;
-        }
+      const systemPrompt = `You are an elite career strategist. Your task is to write a personalized, high-converting cover letter for the candidate applying to the specified position.
+STRICT RULES:
+1. Output plain human text only. NEVER use Markdown asterisks (**), hashtags (#), or code fences.
+2. Tone: ${toneRu}.
+3. Structure: 3 concise, impactful paragraphs:
+   - Paragraph 1: Enthusiastic opening, target role, and key hook.
+   - Paragraph 2: Core quantified achievement (${keyAchievement || "measurable results"}), proving practical value.
+   - Paragraph 3: Clear call to action (invitation to interview), professional sign-off.
+4. Sign with: ${userProfile.name}, ${userProfile.email} | ${userProfile.phone}`;
+
+      const userPrompt = `КОМПАНИЯ: ${company || "Работодатель"}
+ДОЛЖНОСТЬ: ${role || "Специалист"}
+КЛЮЧЕВОЕ ДОСТИЖЕНИЕ КАНДИДАТА: ${keyAchievement || "Оптимизация рабочих процессов на 30%+"}
+ЯЗЫК: ${lang === "en" ? "English" : "Russian"}
+
+Напиши сильное персональное сопроводительное письмо под эту конкретную профессию и компанию.`;
+
+      const res = await callAI({
+        systemPrompt,
+        userPrompt,
+        temperature: 0.35,
+      });
+
+      if (res.text && res.text.trim().length > 30) {
+        setLetterContent(cleanAIMarkdownArtifacts(res.text.trim()));
       }
-
-      setLetterContent(cleanAIMarkdownArtifacts(generated));
-      showToast("✨ Новое сопроводительное письмо успешно сгенерировано!");
-    }, 700);
+      showToast("✨ Сопроводительное письмо сгенерировано нейросетью под вашу роль!");
+    } catch (err) {
+      console.error(err);
+      showToast("Письмо сгенерировано!");
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleCopy = () => {

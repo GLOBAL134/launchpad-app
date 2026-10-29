@@ -1,4 +1,13 @@
+export type ResumeCategory =
+  | "all"
+  | "sales"
+  | "marketing"
+  | "finance_legal"
+  | "management_hr_logistics"
+  | "it";
+
 export interface SeoResumeExample {
+  category: ResumeCategory;
   slug: string;
   roleRu: string;
   roleEn: string;
@@ -32,6 +41,7 @@ export interface SeoResumeExample {
 export const SEO_RESUME_EXAMPLES: SeoResumeExample[] = [
   {
     slug: "backend-engineer",
+    category: "it",
     roleRu: "Senior / Middle Backend Разработчик (Go, Python, PostgreSQL)",
     roleEn: "Senior / Middle Backend Engineer (Go, Python, PostgreSQL)",
     level: "Middle+ / Senior",
@@ -178,6 +188,7 @@ EDUCATION & CERTIFICATIONS
   },
   {
     slug: "frontend-engineer",
+    category: "it",
     roleRu: "Senior / Middle Frontend Разработчик (React, TypeScript, Next.js)",
     roleEn: "Senior / Middle Frontend Engineer (React, TypeScript, Next.js)",
     level: "Middle+ / Senior",
@@ -324,6 +335,7 @@ EDUCATION
   },
   {
     slug: "qa-automation",
+    category: "it",
     roleRu: "QA Automation Engineer (Python, Playwright, CI/CD)",
     roleEn: "QA Automation Engineer (Python, Playwright, CI/CD)",
     level: "Middle+ / Senior",
@@ -464,6 +476,7 @@ EDUCATION
   },
   {
     slug: "product-manager",
+    category: "management_hr_logistics",
     roleRu: "Senior Product Manager (B2B SaaS, Unit Economics, AI)",
     roleEn: "Senior Product Manager (B2B SaaS, Unit Economics, AI)",
     level: "Senior / Lead",
@@ -610,6 +623,7 @@ EDUCATION & CREDENTIALS
   },
   {
     slug: "data-scientist",
+    category: "it",
     roleRu: "Data Scientist / ML Engineer (PyTorch, LLM, MLOps, SQL)",
     roleEn: "Data Scientist / ML Engineer (PyTorch, LLM, MLOps, SQL)",
     level: "Middle+ / Senior",
@@ -748,6 +762,7 @@ EDUCATION
   },
   {
     slug: "devops-sre",
+    category: "it",
     roleRu: "Senior DevOps / SRE Инженер (Kubernetes, Terraform, CI/CD)",
     roleEn: "Senior DevOps / SRE Engineer (Kubernetes, Terraform, CI/CD)",
     level: "Middle+ / Senior",
@@ -892,6 +907,7 @@ EDUCATION & CERTIFICATIONS
   },
   {
     slug: "system-analyst",
+    category: "it",
     roleRu: "Lead / Senior Системный Аналитик (REST API, SQL, UML, Kafka)",
     roleEn: "Lead / Senior System Analyst (REST API, SQL, UML, Kafka)",
     level: "Middle+ / Senior",
@@ -1030,6 +1046,7 @@ EDUCATION
   },
   {
     slug: "ux-ui-designer",
+    category: "marketing",
     roleRu: "Senior UX/UI Product Designer (Figma, Design Systems, Research)",
     roleEn: "Senior UX/UI Product Designer (Figma, Design Systems, Research)",
     level: "Middle+ / Senior",
@@ -1170,6 +1187,347 @@ Product Designer | 2020 — 2022
 
 EDUCATION
 — British Higher School of Art & Design, Product & UX Design, 2020`
+  }
+,
+{
+    "slug": "chief-accountant",
+    "category": "finance_legal",
+    "roleRu": "Главный бухгалтер / Финансовый контролер (ОСНО, 1С 8.3, НДС, ФНС)",
+    "roleEn": "Chief Accountant / Financial Controller (OSNO, 1C 8.3, VAT, Tax Audit)",
+    "level": "Senior / Head",
+    "salaryRangeRu": "180 000 — 320 000 ₽ / месяц",
+    "salaryRangeEn": "$2,500 — $4,500 / month",
+    "demandBadge": "💼 92% вакансий требуют подтвержденный опыт сдачи отчетности в ФНС без штрафов",
+    "metaDescriptionRu": "Пример резюме Главного бухгалтера с разбором до и после аудита ATS. Как поднять скор до 96% за счёт 1С:Бухгалтерия 8.3, ОСНО, НДС, ЭДО и оцифрованных результатов.",
+    "metaDescriptionEn": "Chief Accountant resume case study with ATS audit breakdown. How to reach 96% match score with 1C 8.3, OSNO, VAT compliance, and audit defense.",
+    "beforeScore": 56,
+    "afterScore": 96,
+    "breakdown": {
+      "hardSkills": 53,
+      "quantMetrics": 15,
+      "softSkills": 14,
+      "atsLayout": 14
+    },
+    "flawsRu": [
+      "Размытые фразы обязанностей: «ведение бухучета», «работа с первичкой» без указания объемов документов и налоговых режимов.",
+      "Отсутствие ключевых инструментов в опыте: 1С:Бухгалтерия 8.3, 1С:ЗУП, ЭДО Диадок/СБИС, расчет НДС и книги покупок/продаж.",
+      "Нет подтверждения успешных налоговых проверок ФНС и сэкономленных сумм."
+    ],
+    "flawsEn": [
+      "Vague duty descriptions without volume of documents or tax regimes specified.",
+      "Missing critical tools: 1C:Enterprise 8.3, ZUP, Diadoc/SBIS, VAT calculation and ledger audit.",
+      "No measurable achievements regarding tax audits or financial penalty prevention."
+    ],
+    "improvementsRu": [
+      "Внедрена формула X-Y-Z: указан штат компании (280+ чел.), объем документооборота и успешное прохождение 4 камеральных проверок ФНС.",
+      "Органично встроены ключевые навыки: ОСНО, УСН, НДС, Первичная документация, 1С 8.3, Банк-Клиент, ЭДО.",
+      "Форматирование приведено к эталонному 1-колоночному стандарту Harvard ATS Layout."
+    ],
+    "improvementsEn": [
+      "Applied Google XYZ formula: highlighted company headcount, document volume, and successful defense in 4 tax audits.",
+      "Seamlessly integrated essential keywords: OSNO, USN, VAT, 1C 8.3, Electronic Invoicing, Tax Reporting.",
+      "Converted to Harvard single-column ATS layout."
+    ],
+    "targetSkills": [
+      "1С:Бухгалтерия 8.3",
+      "1С:ЗУП",
+      "ОСНО",
+      "УСН",
+      "НДС",
+      "Первичная документация",
+      "Сдача отчетности в ФНС",
+      "ЭДО (Диадок, СБИС)",
+      "Банк-Клиент",
+      "Камеральные проверки"
+    ],
+    "sampleJobSnippetRu": "Ищем Главного бухгалтера (ОСНО, торговля и услуги). Требования: ведение бухгалтерского и налогового учета в 1С:Бухгалтерия 8.3, расчет НДС и налога на прибыль, сдача отчетности в ФНС и СФР, контроль первички и ЭДО, опыт успешного прохождения проверок.",
+    "sampleJobSnippetEn": "Seeking Chief Accountant. Requirements: Full-cycle financial and tax accounting in 1C 8.3, VAT calculation, tax authority reporting, primary documentation control, electronic invoicing.",
+    "beforeResumeTextRu": "Анна Смирнова\nБухгалтер | +7 999 111-22-33\nОпыт работы: 5 лет вела бухгалтерский учет. Занималась первичной документацией, выставляла счета, делала сверки с поставщиками. Работала в программе 1С. Сдавала отчетность.\nНавыки: 1С, бухучет, первичка, ответственность.",
+    "beforeResumeTextEn": "Anna Smirnova\nAccountant\nExperience: 5 years managing accounting. Handled primary docs, invoices, reconciliation with vendors. Used 1C. Submitted reports.\nSkills: 1C, accounting, responsibility.",
+    "afterResumeTextRu": "Анна Смирнова\nГлавный бухгалтер / Ведущий финансовый специалист | +7 (999) 111-22-33 | anna.smirnova@email.ru | Москва\n\nПРОФЕССИОНАЛЬНОЕ РЕЗЮМЕ\nГлавный бухгалтер с практическим опытом 6+ лет в ведении бухгалтерского и налогового учета в полном объеме (ОСНО, УСН). Эксперт в 1С:Бухгалтерия 8.3, 1С:ЗУП, расчете НДС и налога на прибыль. Успешно сопроводила 4 камеральные проверки ФНС без штрафных санкций, автоматизировала первичный документооборот через ЭДО (Диадок), сократив срок закрытия периода на 6 рабочих дней.\n\nОПЫТ РАБОТЫ\nГлавный бухгалтер — Группа компаний «ТоргСнаб» (2021 — настоящее время)\n• Руководила ведением бухгалтерского и налогового учета в полном объеме по ОСНО и УСН (годовой оборот свыше 420 млн руб.).\n• Настроила сквозной учет НДС и контроль книг покупок/продаж в 1С:Бухгалтерия 8.3, предотвратив налоговые разрывы на сумму свыше 6.8 млн руб.\n• Автоматизировала первичную документацию через ЭДО (Диадок / СБИС), сократив время закрытия отчетного месяца с 10 до 4 рабочих дней.\n• Успешно защитила позицию компании в 4 выездных и камеральных проверках ФНС, добившись 100% подтверждения налоговых вычетов без штрафов.\n\nВедущий бухгалтер — СервисФинанс (2018 — 2021)\n• Обеспечивала безошибочный расчет заработной платы, налогов и взносов на штат 190+ сотрудников в 1С:ЗУП.\n• Контролировала банковские выписки и реестры платежей в системе Банк-Клиент с ежедневным объемом от 50 транзакций.\n\nКЛЮЧЕВЫЕ НАВЫКИ\n1С:Бухгалтерия 8.3, 1С:ЗУП, ОСНО, УСН, НДС, Налог на прибыль, Первичная документация, ЭДО (Диадок, СБИС), Банк-Клиент, Сдача отчетности в ФНС, СФР, Налоговый аудит, Excel (ВПР, сводные таблицы).\n\nОБРАЗОВАНИЕ\nРЭУ им. Г.В. Плеханова, Финансы и кредит / Бухгалтерский учет и аудит.",
+    "afterResumeTextEn": "Anna Smirnova\nChief Accountant | +7 (999) 111-22-33 | anna.smirnova@email.ru\n\nPROFESSIONAL SUMMARY\nChief Accountant with 6+ years managing full-cycle accounting and tax reporting (OSNO, USN). Expert in 1C:Enterprise 8.3, VAT, profit tax compliance, and tax audit defense without penalties.\n\nEXPERIENCE\nChief Accountant — TorgSnab Group (2021 — Present)\n• Directed complete tax and financial reporting (OSNO, USN) for operations exceeding 420M RUB annually.\n• Reconciled VAT and ledger reporting in 1C 8.3, preventing tax exposure risks of 6.8M RUB.\n• Automated primary document flow via Diadoc and SBIS, slashing monthly close cycle from 10 to 4 business days.\n• Defended company interests across 4 tax audits with 100% compliance record and zero fines.\n\nCORE SKILLS\n1C:Enterprise 8.3, 1C:ZUP, OSNO, USN, VAT, Tax Auditing, Electronic Invoicing, Bank-Client, Financial Reporting."
+  },
+  {
+    "slug": "b2b-sales-lead",
+    "category": "sales",
+    "roleRu": "Руководитель отдела продаж (РОП) / Senior B2B Sales Manager",
+    "roleEn": "Head of B2B Sales / Senior Commercial Manager",
+    "level": "Lead / Head",
+    "salaryRangeRu": "220 000 — 450 000 ₽ / месяц",
+    "salaryRangeEn": "$3,000 — $6,000 / month",
+    "demandBadge": "📈 88% работодателей ищут подтвержденный трек перевыполнения плана KPI",
+    "metaDescriptionRu": "Пример резюме Руководителя отдела продаж (РОП) с разбором ATS. Как повысить скор с 58% до 95% за счёт оцифровки воронки AmoCRM, B2B продаж и чека сделок.",
+    "metaDescriptionEn": "Head of B2B Sales resume case study with ATS audit breakdown. Boost match score from 58% to 95% with CRM metrics, deal sizes, and C-level negotiation tracking.",
+    "beforeScore": 58,
+    "afterScore": 95,
+    "breakdown": {
+      "hardSkills": 52,
+      "quantMetrics": 15,
+      "softSkills": 14,
+      "atsLayout": 14
+    },
+    "flawsRu": [
+      "Общие фразы: «продавал товары компании», «общался с клиентами» без оцифровки выручки, конверсий и среднего чека.",
+      "Не упомянуты современные CRM-системы: AmoCRM, Bitrix24, этапы воронки и управление дебиторской задолженностью.",
+      "Отсутствуют доказательства побед в переговорах с первыми лицами (C-Level)."
+    ],
+    "flawsEn": [
+      "Generic duty verbs without revenue numbers, conversion metrics, or deal velocity.",
+      "Missing modern CRM tooling: AmoCRM, Bitrix24, pipeline stages, and accounts receivable control.",
+      "No track record of enterprise C-level negotiations."
+    ],
+    "improvementsRu": [
+      "Каждый пункт опыта переписан по формуле XYZ с указанием роста выручки (+42%) и сокращения цикла сделки с 35 до 14 дней.",
+      "Внедрены профильные ключевые слова: B2B продажи, AmoCRM, Переговоры C-Level, Воронка продаж, Дебиторская задолженность, LTV/CAC.",
+      "Устранена многоколоночная верстка для 100% распознавания роботами ATS."
+    ],
+    "improvementsEn": [
+      "Enhanced experience bullets with quantified revenue growth (+42%) and deal cycle reduction from 35 to 14 days.",
+      "Integrated domain keywords: B2B Sales, AmoCRM, C-Level Negotiations, Sales Funnel, LTV/CAC.",
+      "Eliminated formatting bottlenecks for 100% ATS readability."
+    ],
+    "targetSkills": [
+      "B2B продажи",
+      "AmoCRM",
+      "Bitrix24",
+      "Выполнение плана продаж (KPI)",
+      "Переговоры C-Level",
+      "Холодные звонки",
+      "Дебиторская задолженность",
+      "Воронка продаж",
+      "Увеличение среднего чека"
+    ],
+    "sampleJobSnippetRu": "Требуется Руководитель отдела продаж (B2B сегмент). Обязанности: выполнение плана продаж, внедрение стандартов в AmoCRM/Bitrix24, ведение ключевых переговоров с первыми лицами, контроль дебиторской задолженности, развитие команды менеджеров.",
+    "sampleJobSnippetEn": "Hiring Head of B2B Sales. Responsibilities: quota attainment, CRM governance in AmoCRM/Bitrix24, leading high-stakes negotiations with C-level stakeholders, managing accounts receivable.",
+    "beforeResumeTextRu": "Дмитрий Орлов\nМенеджер по продажам | +7 999 222-33-44\nОпыт работы: 4 года работал в продажах. Звонил клиентам, проводил встречи, продавал услуги. Выполнял план. Работал с договорами.\nНавыки: продажи, коммуникабельность, активность.",
+    "beforeResumeTextEn": "Dmitry Orlov\nSales Manager\nExperience: 4 years in sales. Cold calling, meetings, closing deals. Managed contracts.\nSkills: sales, communication.",
+    "afterResumeTextRu": "Дмитрий Орлов\nРуководитель отдела продаж (РОП) / Head of B2B Sales | +7 (999) 222-33-44 | dmitry.orlov@email.ru | Москва / Удаленно\n\nПРОФЕССИОНАЛЬНОЕ РЕЗЮМЕ\nКоммерческий лидер с опытом 6+ лет в B2B-продажах и управлении отделом до 15 менеджеров. Доказанный трек стабильного перевыполнения плана продаж (115-135% от квартального KPI). Эксперт в выстраивании воронки в AmoCRM и Bitrix24, проведении переговоров на уровне первых лиц (C-Level), согласовании крупных контрактов и снижении дебиторской задолженности.\n\nОПЫТ РАБОТЫ\nРуководитель отдела B2B продаж — ТрейдВектор Солюшнс (2021 — настоящее время)\n• Выстроил систему прямых и партнерских продаж, увеличив годовую выручку направления на 42% (с 38 млн до 54 млн руб.).\n• Внедрил регламенты ведения сделок в AmoCRM и автоматические триггеры дожима, сократив средний цикл сделки с 35 до 14 дней.\n• Лично провел переговоры и закрыл 18 стратегических контрактов с федеральными клиентами со средним чеком от 2.5 млн руб.\n• Снизил уровень просроченной дебиторской задолженности с 16% до 2.1% от общего оборота портфеля.\n\nВедущий менеджер по корпоративным продажам — АльянсМаркет (2018 — 2021)\n• Ежемесячно перевыполнял личный план продаж на 120-130%, вошел в топ-3 менеджеров компании среди 45 коллег.\n• Привлек 58 новых корпоративных клиентов методом системных холодных и теплых переговоров.\n\nКЛЮЧЕВЫЕ НАВЫКИ\nB2B продажи, AmoCRM, Bitrix24, Выполнение плана продаж (KPI), Переговоры C-Level, Холодные звонки, Управление воронкой продаж, Дебиторская задолженность, Увеличение среднего чека, Управление командой, Мотивация персонала.\n\nОБРАЗОВАНИЕ\nГосударственный университет управления, Менеджмент организации.",
+    "afterResumeTextEn": "Dmitry Orlov\nHead of B2B Sales | +7 (999) 222-33-44 | dmitry.orlov@email.ru\n\nPROFESSIONAL SUMMARY\nCommercial sales leader with 6+ years driving B2B revenue and leading teams up to 15 reps. Track record of delivering 115-135% quota achievement.\n\nEXPERIENCE\nHead of B2B Sales — TradeVector Solutions (2021 — Present)\n• Built enterprise B2B sales pipeline, accelerating annual revenue by 42% (38M to 54M RUB).\n• Standardized AmoCRM funnel stages and trigger automations, slashing sales velocity from 35 to 14 days.\n• Closed 18 strategic key enterprise accounts with average deal size of 2.5M RUB.\n• Reduced overdue receivables from 16% to 2.1% of total portfolio.\n\nCORE SKILLS\nB2B Sales, AmoCRM, Bitrix24, Quota Attainment, C-Level Negotiations, Pipeline Optimization, Deal Closing, Sales Leadership."
+  },
+  {
+    "slug": "head-of-marketing",
+    "category": "marketing",
+    "roleRu": "Директор по маркетингу / Lead Performance Marketer",
+    "roleEn": "Head of Marketing / Lead Performance Marketer",
+    "level": "Lead / Head",
+    "salaryRangeRu": "250 000 — 420 000 ₽ / месяц",
+    "salaryRangeEn": "$3,500 — $6,000 / month",
+    "demandBadge": "🎯 94% компаний требуют подтвержденный опыт оцифровки CAC, CPL и сквозной аналитики",
+    "metaDescriptionRu": "Пример резюме Директора по маркетингу с разбором ATS. Как поднять скор до 96% за счёт Яндекс.Директ, сквозной аналитики, SEO, A/B-тестов и формулы XYZ.",
+    "metaDescriptionEn": "Head of Marketing resume case study with ATS audit breakdown. Boost match score to 96% with performance marketing, CAC/LTV metrics, and GA4 tracking.",
+    "beforeScore": 57,
+    "afterScore": 96,
+    "breakdown": {
+      "hardSkills": 53,
+      "quantMetrics": 15,
+      "softSkills": 14,
+      "atsLayout": 14
+    },
+    "flawsRu": [
+      "Размытые обязанности: «настраивал рекламу», «занимался соцсетями» без оцифровки ROMI, CAC и стоимости лида.",
+      "Отсутствие упоминаний систем сквозной аналитики: Яндекс.Метрика, GA4, когортного анализа и A/B-тестирования.",
+      "Слабая структура резюме с нерелевантными дизайн-элементами."
+    ],
+    "flawsEn": [
+      "Unquantified achievements: managed ads, handled social media without ROMI, CAC, or CPL metrics.",
+      "Missing end-to-end analytics tools: Yandex Metrica, GA4, cohort analysis, and A/B test experiments.",
+      "Non-standard layout failing automated ATS filters."
+    ],
+    "improvementsRu": [
+      "Каждое достижение подкреплено конкретными цифрами: снижение CPL на 32%, рост органики в 3.2 раза, бюджет 6 млн руб./мес.",
+      "Встроены обязательные ключевые слова: Яндекс.Директ, Сквозная аналитика, SEO оптимизация, A/B-тестирование, Лидогенерация, CAC/LTV.",
+      "100% совместимость с парсерами Workday, Taleo и Greenhouse."
+    ],
+    "improvementsEn": [
+      "Quantified impact metrics: reduced CPL by 32%, scaled organic search traffic 3.2x with monthly budget of 6M RUB.",
+      "Integrated essential keywords: Yandex Direct, Full-funnel Analytics, SEO, A/B Testing, Lead Gen, CAC/LTV.",
+      "Full compliance with automated ATS readers."
+    ],
+    "targetSkills": [
+      "Яндекс.Директ",
+      "VK Реклама",
+      "Сквозная аналитика",
+      "Яндекс.Метрика",
+      "GA4",
+      "SEO оптимизация",
+      "A/B-тестирование",
+      "Лидогенерация",
+      "CPA / CPL / CAC",
+      "Управление бюджетом"
+    ],
+    "sampleJobSnippetRu": "Ищем Директора по маркетингу / Head of Marketing. Задачи: управление бюджетом от 5 млн руб., сквозная аналитика в Яндекс.Метрике и GA4, оптимизация стоимости привлечения лида (CPL/CAC), масштабирование контекстной рекламы и SEO.",
+    "sampleJobSnippetEn": "Seeking Head of Marketing. Responsibilities: manage multi-million ad budgets, implement full-funnel attribution in GA4, optimize CAC/CPL, scale paid channels and organic search acquisition.",
+    "beforeResumeTextRu": "Ольга Ковалева\nМаркетолог | +7 999 333-44-55\nОпыт работы: 5 лет в маркетинге. Запускала контекстную рекламу и таргет. Писала тексты для сайта. Анализировала переходы. Управляла рекламным кабинетом.\nНавыки: маркетинг, реклама, креативность, копирайтинг.",
+    "beforeResumeTextEn": "Olga Kovaleva\nMarketer\nExperience: 5 years in marketing. Ran PPC and social ads. Wrote website copy. Looked at analytics.\nSkills: marketing, ads, copy.",
+    "afterResumeTextRu": "Ольга Ковалева\nДиректор по маркетингу / Head of Marketing | +7 (999) 333-44-55 | olga.kovaleva@email.ru | Москва / Удаленно\n\nПРОФЕССИОНАЛЬНОЕ РЕЗЮМЕ\nData-driven директор по маркетингу с опытом 6+ лет в управлении рекламными бюджетами от 6 млн руб./мес. Эксперт в performance-маркетинге, сквозной аналитике, SEO-продвижении и масштабировании лидогенерации. Доказанный трек снижения стоимости привлечения клиента (CAC/CPL) до 35% при росте общего объема качественных лидов в 2.4 раза.\n\nОПЫТ РАБОТЫ\nHead of Marketing / Ведущий маркетолог — ФинТех Маркетплейс (2021 — настоящее время)\n• Управляла сплитом платных каналов (Яндекс.Директ, VK Реклама, Telegram Ads), обеспечив приток 8 500+ квалифицированных лидов ежемесячно.\n• Вдрила сквозную аналитику на базе Яндекс.Метрики и GA4, снизив стоимость лида (CPL) на 32% и исключив неэффективные кампании.\n• Руководила переработкой посадочных страниц и проведением серии A/B-тестирований, увеличив конверсию сайта с 2.8% до 5.4%.\n• Увеличила органический поисковый трафик (SEO) в 3.2 раза за 12 месяцев за счет внедрения кластерной семантики.\n\nPerformance-маркетолог — Агентство Диджитал Про (2018 — 2021)\n• Запустила и оптимизировала свыше 180 рекламных кампаний с возвратом инвестиций (ROMI) свыше 340%.\n\nКЛЮЧЕВЫЕ НАВЫКИ\nЯндекс.Директ, VK Реклама, Сквозная аналитика, Яндекс.Метрика, Google Analytics 4, SEO оптимизация, A/B-тестирование, Лидогенерация, Управление рекламным бюджетом, Контент-маркетинг, CAC / LTV / CPL.\n\nОБРАЗОВАНИЕ\nНИУ ВШЭ, Интегрированные коммуникации / Маркетинг.",
+    "afterResumeTextEn": "Olga Kovaleva\nHead of Marketing | +7 (999) 333-44-55 | olga.kovaleva@email.ru\n\nPROFESSIONAL SUMMARY\nData-driven marketing executive with 6+ years scaling user acquisition on 6M+ RUB monthly budgets. Specialized in performance marketing, attribution modeling, and CAC reduction.\n\nEXPERIENCE\nHead of Marketing — FinTech Marketplace (2021 — Present)\n• Directed multi-channel acquisition (Yandex Direct, Paid Social), delivering 8,500+ qualified leads per month.\n• Implemented full-funnel attribution in Yandex Metrica & GA4, slashing cost-per-lead (CPL) by 32%.\n• Executed systematic A/B testing roadmap, lifting website conversion rate from 2.8% to 5.4%.\n• Expanded organic search acquisition (SEO) 3.2x year-over-year.\n\nCORE SKILLS\nYandex Direct, Performance Marketing, Full-Funnel Analytics, GA4, SEO, A/B Testing, Lead Generation, CAC/LTV, Budget Allocation."
+  },
+  {
+    "slug": "corporate-lawyer",
+    "category": "finance_legal",
+    "roleRu": "Ведущий корпоративный юрист / Head of Legal",
+    "roleEn": "Lead Corporate Lawyer / Head of Legal",
+    "level": "Senior / Head",
+    "salaryRangeRu": "190 000 — 350 000 ₽ / месяц",
+    "salaryRangeEn": "$2,800 — $5,000 / month",
+    "demandBadge": "⚖️ 89% компаний требуют практический опыт в Арбитраже и договорной работе",
+    "metaDescriptionRu": "Пример резюме Корпоративного юриста с аудитом ATS. Как поднять рейтинг с 55% до 95% за счёт арбитражной практики, договорной работы, комплаенса и снижения правовых рисков.",
+    "metaDescriptionEn": "Corporate Lawyer resume case study with ATS audit breakdown. Elevate match rate to 95% highlighting arbitration victories, contracts, compliance, and risk mitigation.",
+    "beforeScore": 55,
+    "afterScore": 95,
+    "breakdown": {
+      "hardSkills": 52,
+      "quantMetrics": 15,
+      "softSkills": 14,
+      "atsLayout": 14
+    },
+    "flawsRu": [
+      "Общие формулировки: «составлял договоры», «представлял интересы в суде» без указания выигранных сумм и категорий дел.",
+      "Не упомянуты профильные направления: Корпоративное право, Претензионно-исковая работа, Арбитраж, ФАС, проверка контрагентов.",
+      "Отсутствуют метрики оптимизации сроков согласования контрактов."
+    ],
+    "flawsEn": [
+      "Vague descriptions: drafted contracts, represented in court without dispute values or win rates.",
+      "Missing regulatory and litigation keywords: Corporate Law, Commercial Arbitration, Antitrust (FAS), Due Diligence.",
+      "No measurable data on contract turnaround optimization."
+    ],
+    "improvementsRu": [
+      "Оцифрованы результаты судебной защиты: 92% выигранных дел, защищено свыше 45 млн руб. от необоснованных претензий.",
+      "Добавлены ключевые термины: Договорная работа, Претензионно-исковая работа, Арбитражный суд, Корпоративное право, Правовая экспертиза, ФАС.",
+      "Соблюдена Harvard ATS структура без декоративных элементов."
+    ],
+    "improvementsEn": [
+      "Quantified litigation record: 92% favorable rulings, 45M+ RUB protected from damages.",
+      "Integrated legal keywords: Contract Governance, Arbitration, Corporate Governance, Legal Due Diligence, Compliance.",
+      "Harvard ATS layout compatibility."
+    ],
+    "targetSkills": [
+      "Договорная работа",
+      "Претензионно-исковая работа",
+      "Арбитражный суд",
+      "Корпоративное право",
+      "Правовая экспертиза",
+      "Согласование контрактов",
+      "ФАС / Роскомнадзор",
+      "ТК РФ / ГК РФ"
+    ],
+    "sampleJobSnippetRu": "Ищем Ведущего юрисконсульта. Обязанности: полное правовое сопровождение деятельности компании, разработка и согласование сложных договоров (поставка, подряд, аренда), претензионно-исковая работа, защита интересов в Арбитражных судах, комплаенс.",
+    "sampleJobSnippetEn": "Seeking Lead Corporate Counsel. Responsibilities: full-cycle legal operations, complex contract negotiation, arbitration representation, dispute resolution, regulatory compliance.",
+    "beforeResumeTextRu": "Сергей Васильев\nЮрист | +7 999 444-55-66\nОпыт работы: 6 лет в юридической сфере. Составлял договоры поставки и аренды. Ходил в суды. Писал претензии контрагентам. Консультировал руководство.\nНавыки: юриспруденция, право, договоры, суды.",
+    "beforeResumeTextEn": "Sergey Vasiliev\nLawyer\nExperience: 6 years in legal. Drafted supply contracts. Attended courts. Wrote claims. Consulted management.\nSkills: law, contracts, litigation.",
+    "afterResumeTextRu": "Сергей Васильев\nВедущий корпоративный юрист / Head of Legal | +7 (999) 444-55-66 | sergey.vasiliev@email.ru | Москва\n\nПРОФЕССИОНАЛЬНОЕ РЕЗЮМЕ\nКорпоративный юрист с опытом 6+ лет в правовом сопровождении холдинговых структур и коммерческих предприятий. Сильная экспертиза в договорном праве, представлении интересов в Арбитражных судах (92% успешных решений) и снижении регуляторных рисков. Оптимизировал регламент согласования контрактов, сократив срок подписания с 14 до 4 рабочих дней при нулевых судебных издержках.\n\nОПЫТ РАБОТЫ\nВедущий юрисконсульт — Промышленный Холдинг «Энергия» (2021 — настоящее время)\n• Руководил договорной работой по сложным контрактам (поставка, подряд, ВЭД) с совокупным портфелем свыше 850 млн руб.\n• Представлял интересы компании в Арбитражных судах, добившись победы в 22 спорах и предотвратив взыскание более 45 млн руб.\n• Выстроил систему комплаенса и проверки контрагентов, что снизило риск сотрудничества с недобросовестными поставщиками на 100%.\n• Успешно сопровождал проверки ФАС и Роскомнадзора без наложения штрафных санкций на компанию.\n\nЮрисконсульт — Юридическая группа «Правовой Стандарт» (2018 — 2021)\n• Составил и согласовал более 400 коммерческих договоров, сократив типовой цикл визирования на 40%.\n\nКЛЮЧЕВЫЕ НАВЫКИ\nДоговорная работа в полном объеме, Претензионно-исковая работа, Арбитражный суд, Корпоративное право, Правовая экспертиза, Согласование контрактов, ФАС, ВЭД, Гражданское право (ГК РФ), Трудовое право (ТК РФ).\n\nОБРАЗОВАНИЕ\nМГЮА им. О.Е. Кутафина, Юриспруденция / Гражданское и предпринимательское право.",
+    "afterResumeTextEn": "Sergey Vasiliev\nLead Corporate Counsel | +7 (999) 444-55-66 | sergey.vasiliev@email.ru\n\nPROFESSIONAL SUMMARY\nCorporate attorney with 6+ years handling commercial contracts, dispute arbitration, and regulatory compliance.\n\nEXPERIENCE\nLead Corporate Counsel — Energy Industrial Holding (2021 — Present)\n• Governed full-cycle commercial contracting with portfolio exceeding 850M RUB.\n• Won 22 commercial arbitration cases, safeguarding over 45M RUB in contested claims (92% win rate).\n• Cut contract review turnaround from 14 to 4 business days.\n• Led antitrust compliance audits with zero penalty record.\n\nCORE SKILLS\nContract Negotiation, Commercial Arbitration, Corporate Governance, Regulatory Compliance, Legal Risk Assessment, Civil Law."
+  },
+  {
+    "slug": "head-of-logistics",
+    "category": "management_hr_logistics",
+    "roleRu": "Руководитель отдела логистики и ВЭД (SCM, WMS, Склад)",
+    "roleEn": "Head of Logistics & Supply Chain (SCM, WMS, Customs)",
+    "level": "Senior / Head",
+    "salaryRangeRu": "170 000 — 300 000 ₽ / месяц",
+    "salaryRangeEn": "$2,400 — $4,200 / month",
+    "demandBadge": "🚛 91% компаний проверяют знание WMS, Инкотермс и оптимизации затрат",
+    "metaDescriptionRu": "Пример резюме Руководителя логистики и ВЭД с разбором ATS. Как повысить скор с 59% до 96% за счёт SCM, WMS, Инкотермс, OTIF и сокращения издержек.",
+    "metaDescriptionEn": "Head of Logistics resume case study with ATS audit breakdown. Reach 96% match score with SCM, WMS, Incoterms, and freight optimization.",
+    "beforeScore": 59,
+    "afterScore": 96,
+    "breakdown": {
+      "hardSkills": 53,
+      "quantMetrics": 15,
+      "softSkills": 14,
+      "atsLayout": 14
+    },
+    "flawsRu": [
+      "Размытые обязанности: «отвечал за доставку», «контролировал склад» без метрик своевременности (OTIF) и затрат.",
+      "Не упомянуты международные правила Инкотермс, WMS-системы, таможенное декларирование и ВЭД.",
+      "Отсутствуют данные по объемам грузооборота и сэкономленному бюджету."
+    ],
+    "flawsEn": [
+      "Vague bullet points without OTIF delivery metrics, freight cost reductions, or warehouse scale.",
+      "Missing critical terms: Incoterms, WMS automation, customs clearance, and SCM planning.",
+      "No inventory accuracy numbers."
+    ],
+    "improvementsRu": [
+      "Достижения оцифрованы: снижение транспортных затрат на 19%, точность поставок OTIF 98.6%, оптимизация склада 12 000 кв.м.",
+      "Внедрены профильные термины: SCM, WMS, Таможенное оформление, ВЭД, Инкотермс, Маршрутизация, Контроль отгрузок.",
+      "Чистый 1-колоночный формат Harvard ATS."
+    ],
+    "improvementsEn": [
+      "Quantified achievements: reduced transport expenses by 19%, OTIF delivery accuracy 98.6%, managed 12,000 sqm warehouse.",
+      "Integrated industry keywords: SCM, WMS, Customs Clearance, Incoterms, Route Optimization, Inventory Control.",
+      "Clean Harvard ATS layout."
+    ],
+    "targetSkills": [
+      "Управление цепочками поставок (SCM)",
+      "Складской учет (WMS)",
+      "Таможенное оформление",
+      "ВЭД",
+      "Инкотермс",
+      "Транспортная логистика",
+      "Оптимизация затрат",
+      "Стандарты OTIF"
+    ],
+    "sampleJobSnippetRu": "Ищем Руководителя логистики и ВЭД. Требования: управление цепочками поставок (SCM), внедрение WMS, организация международных перевозок по Инкотермс, таможенное оформление, сокращение логистических издержек, контроль OTIF.",
+    "sampleJobSnippetEn": "Seeking Head of Logistics & SCM. Requirements: supply chain management, WMS warehouse control, international freight via Incoterms, customs operations, freight cost reduction, OTIF performance.",
+    "beforeResumeTextRu": "Михаил Кузнецов\nЛогист | +7 999 555-66-77\nОпыт работы: 5 лет в логистике. Организовывал перевозки грузов, общался с водителями и транспортными компаниями. Вел учет на складе. Работал с документами.\nНавыки: логистика, склад, транспорт, ответственность.",
+    "beforeResumeTextEn": "Mikhail Kuznetsov\nLogistics Coordinator\nExperience: 5 years in logistics. Arranged truck shipments, talked to carriers. Managed warehouse inventory.\nSkills: logistics, shipping.",
+    "afterResumeTextRu": "Михаил Кузнецов\nРуководитель отдела логистики и ВЭД / Head of SCM | +7 (999) 555-66-77 | mikhail.kuznetsov@email.ru | Санкт-Петербург\n\nПРОФЕССИОНАЛЬНОЕ РЕЗЮМЕ\nРуководитель логистических операций и цепей поставок с опытом 7+ лет. Эксперт в управлении складскими комплексами (до 12 000 кв.м), внедрении WMS, организации мультимодальных международных перевозок (ВЭД, Инкотермс) и таможенном оформлении. Оптимизировал транспортные тарифы, снизив совокупные логистические затраты на 19% при росте точности доставки (OTIF) до 98.6%.\n\nОПЫТ РАБОТЫ\nРуководитель отдела логистики и ВЭД — Лоджистик Глобал (2021 — настоящее время)\n• Управлял цепочками поставок (SCM) и распределительным центром площадью 12 000 кв.м с ежедневным грузооборотом свыше 180 тонн.\n• Внедрил систему WMS адресного хранения и штрихкодирования, повысив скорость комплектации заказов на 35% и снизив пересортицу до 0.05%.\n• Наладил мультимодальные маршруты импорта из Китая и Турции по правилам Инкотермс (FOB, CIF, DAP), сократив средний срок доставки на 5 дней.\n• Оптимизировал контрактную базу перевозчиков, обеспечив экономию бюджета компании на 14.8 млн руб. в год.\n\nВедущий специалист по транспортной логистике — ТрансБалтика (2018 — 2021)\n• Обеспечивал бесперебойное управление парком из 65 единиц автотранспорта с соблюдением стандарта OTIF 98%.\n\nКЛЮЧЕВЫЕ НАВЫКИ\nУправление цепочками поставок (SCM), Складской учет (WMS), Таможенное оформление и ВЭД, Международные правила Инкотермс, Транспортная логистика и маршрутизация, Оптимизация логистических затрат, Контроль отгрузок и OTIF, 1С:Склад.\n\nОБРАЗОВАНИЕ\nСПбГЭУ, Логистика и управление цепями поставок.",
+    "afterResumeTextEn": "Mikhail Kuznetsov\nHead of Logistics & Supply Chain | +7 (999) 555-66-77 | mikhail.kuznetsov@email.ru\n\nPROFESSIONAL SUMMARY\nSupply chain executive with 7+ years managing warehouse facilities (12,000 sqm), WMS deployments, and international freight operations under Incoterms.\n\nEXPERIENCE\nHead of Logistics & SCM — Global Logistics (2021 — Present)\n• Governed supply chain network handling 180+ tons daily freight throughput.\n• Deployed automated WMS barcoding, accelerating pick-and-pack speed by 35%.\n• Optimized international multimodal routes from Asia, slashing delivery lead times by 5 days.\n• Cut annual freight procurement spending by 14.8M RUB.\n\nCORE SKILLS\nSupply Chain Management (SCM), WMS Automation, Customs Clearance, Incoterms, Route Optimization, Freight Procurement, OTIF Compliance."
+  },
+  {
+    "slug": "hr-business-partner",
+    "category": "management_hr_logistics",
+    "roleRu": "HR Business Partner (HRBP) / Руководитель отдела подбора персонала",
+    "roleEn": "HR Business Partner (HRBP) / Head of Talent Acquisition",
+    "level": "Senior / Lead",
+    "salaryRangeRu": "180 000 — 320 000 ₽ / месяц",
+    "salaryRangeEn": "$2,500 — $4,500 / month",
+    "demandBadge": "👥 86% работодателей требуют сокращение Time-to-Hire и оценку eNPS",
+    "metaDescriptionRu": "Пример резюме HRBP / Руководителя подбора с аудитом ATS. Как поднять рейтинг до 96% за счёт сокращения Time-to-Hire, внедрения Huntflow, адаптации и метрик удержания.",
+    "metaDescriptionEn": "HR Business Partner resume case study with ATS audit breakdown. Elevate match rate to 96% showcasing reduced Time-to-Hire, Huntflow ATS workflows, and eNPS.",
+    "beforeScore": 56,
+    "afterScore": 96,
+    "breakdown": {
+      "hardSkills": 52,
+      "quantMetrics": 15,
+      "softSkills": 15,
+      "atsLayout": 14
+    },
+    "flawsRu": [
+      "Размытые фразы: «искал людей», «проводил собеседования» без данных о количестве закрытых вакансий и сроках (Time-to-Hire).",
+      "Не упомянуты современные ATS для рекрутинга: Huntflow, E-Staff, Поток, системы оценки и адаптации персонала.",
+      "Отсутствуют метрики удержания на испытательном сроке и eNPS."
+    ],
+    "flawsEn": [
+      "Unquantified statements: hired people, conducted interviews without Time-to-Hire or volume data.",
+      "Missing modern recruitment tech: Huntflow, E-Staff, applicant tracking, competency-based assessments.",
+      "No retention or eNPS satisfaction metrics."
+    ],
+    "improvementsRu": [
+      "Показаны оцифрованные успехи: сокращение Time-to-Hire с 45 до 21 дня, закрытие 140+ вакансий в год, удержание 94%.",
+      "Встроены обязательные ключевые навыки: Full-cycle подбор, Скрининг, Huntflow, Онбординг, Time-to-Hire, HR-бренд, eNPS.",
+      "Структурировано по 1-колоночному эталону Harvard ATS."
+    ],
+    "improvementsEn": [
+      "Demonstrated quantifiable impact: slashed Time-to-Hire from 45 to 21 days, closed 140+ roles annually, 94% retention.",
+      "Integrated industry keywords: Full-cycle Recruiting, Competency Interviews, Huntflow ATS, Onboarding, eNPS, Employer Brand.",
+      "Formatted into Harvard ATS single-column design."
+    ],
+    "targetSkills": [
+      "Полный цикл подбора (Full-cycle)",
+      "Проведение интервью по компетенциям",
+      "Работа в ATS (Huntflow, E-Staff)",
+      "Адаптация и онбординг сотрудников",
+      "Сокращение Time-to-Hire",
+      "Развитие HR-бренда",
+      "Метрики eNPS и удержание"
+    ],
+    "sampleJobSnippetRu": "Ищем HR Business Partner / Руководителя подбора. Задачи: управление полным циклом найма (Full-cycle), ведение базы в Huntflow/E-Staff, проведение интервью по компетенциям, оптимизация воронки подбора (сокращение Time-to-Hire), построение процессов онбординга.",
+    "sampleJobSnippetEn": "Seeking HR Business Partner. Responsibilities: lead full-cycle talent acquisition, manage ATS pipelines (Huntflow/Greenhouse), conduct behavioral interviews, accelerate Time-to-Hire, design onboarding programs.",
+    "beforeResumeTextRu": "Екатерина Морозова\nМенеджер по персоналу | +7 999 666-77-88\nОпыт работы: 5 лет в отделе кадров и подборе. Размещала вакансии на hh.ru, отбирала резюме, проводила собеседования. Оформляла новых сотрудников.\nНавыки: подбор персонала, интервью, кадры, стрессоустойчивость.",
+    "beforeResumeTextEn": "Ekaterina Morozova\nHR Specialist\nExperience: 5 years in HR. Posted jobs on job boards, screened resumes, interviewed candidates. Onboarded hires.\nSkills: recruiting, HR.",
+    "afterResumeTextRu": "Екатерина Морозова\nHR Business Partner / Руководитель отдела подбора персонала | +7 (999) 666-77-88 | ekaterina.morozova@email.ru | Москва / Удаленно\n\nПРОФЕССИОНАЛЬНОЕ РЕЗЮМЕ\nHR Business Partner и лидер подбора с опытом 6+ лет в выстраивании полного цикла рекрутинга (Full-cycle) и программ удержания персонала. Эксперт во внедрении ATS (Huntflow, E-Staff), проведении глубинных интервью по компетенциям и формировании кадрового резерва. Сократила средний срок закрытия ключевых вакансий (Time-to-Hire) с 45 до 21 дня при удержании сотрудников на испытательном сроке 94%.\n\nОПЫТ РАБОТЫ\nHR Business Partner / Ведущий рекрутер — ТехноЛаб Инновации (2021 — настоящее время)\n• Управляла подбором персонала полного цикла для 6 бизнес-юнитов, лично закрывая свыше 140 сложных позиций ежегодно.\n• Внедрила корпоративную ATS Huntflow и автоматизировала аналитику воронки кандидатов, сократив Time-to-Hire более чем в 2 раза (с 45 до 21 дня).\n• Разработала программу адаптации и онбординга новых сотрудников, повысив уровень прохождения испытательного срока до 94%.\n• Провела аудит вовлеченности персонала и перезапустила процессы внутреннего менторства, подняв индекс eNPS с 54% до 82%.\n\nМенеджер по подбору персонала — Стафф Партнерс (2018 — 2021)\n• Закрыла более 200 позиций коммерческого, финансового и технического блоков со средней стоимостью найма на 30% ниже рынка.\n\nКЛЮЧЕВЫЕ НАВЫКИ\nПолный цикл подбора персонала (Full-cycle), Проведение интервью по компетенциям, Работа в ATS (Huntflow, E-Staff, Поток), Адаптация и онбординг, Сокращение Time-to-Hire, Развитие HR-бренда, Аналитика eNPS и удержание, Кадровый резерв.\n\nОБРАЗОВАНИЕ\nМГУ им. М.В. Ломоносова, Управление персоналом / Организационная психология.",
+    "afterResumeTextEn": "Ekaterina Morozova\nHR Business Partner / Head of Talent Acquisition | +7 (999) 666-77-88 | ekaterina.morozova@email.ru\n\nPROFESSIONAL SUMMARY\nHR Business Partner with 6+ years designing full-cycle talent acquisition, behavioral interviewing, and retention frameworks.\n\nEXPERIENCE\nHR Business Partner — TechnoLab Innovations (2021 — Present)\n• Managed full-cycle recruitment across 6 business divisions, closing 140+ complex hires annually.\n• Implemented Huntflow ATS workflows, slashing Time-to-Hire by 53% (from 45 to 21 days).\n• Redesigned onboarding experience, elevating 90-day retention to 94%.\n• Boosted company eNPS from 54% to 82%.\n\nCORE SKILLS\nFull-Cycle Recruiting, Competency Interviews, Huntflow ATS, Onboarding, Time-to-Hire Optimization, Employer Branding, eNPS, Talent Retention."
   }
 ];
 
