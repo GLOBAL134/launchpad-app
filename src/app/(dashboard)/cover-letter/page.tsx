@@ -91,6 +91,7 @@ STRICT RULES:
         systemPrompt,
         userPrompt,
         temperature: 0.35,
+        mode: "cover_letter",
       });
 
       if (res.text && res.text.trim().length > 30) {

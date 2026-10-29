@@ -19,6 +19,7 @@ import {
   LogOut,
   User,
   Trash2,
+  KeyRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +27,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/co
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import UpgradeProModal from "@/components/UpgradeProModal";
 import AuthGateModal from "@/components/AuthGateModal";
+import AiSettingsModal from "@/components/AiSettingsModal";
 import { useApp } from "@/context/AppContext";
 
 export default function DashboardLayout({
@@ -36,6 +38,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isAiSettingsOpen, setIsAiSettingsOpen] = useState(false);
 
   const {
     authSession,
@@ -378,6 +381,18 @@ export default function DashboardLayout({
               </button>
             )}
 
+            {/* AI Settings Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsAiSettingsOpen(true)}
+              className="hidden md:flex text-xs font-medium border-cyan-500/40 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20 cursor-pointer"
+              title="Настроить бесплатные API ключи Groq (Llama 3.3) или Gemini Flash"
+            >
+              <KeyRound className="w-3.5 h-3.5 mr-1.5 text-cyan-400" />
+              Ключи ИИ
+            </Button>
+
             {/* Быстрый аудит (переводит на /scanner и запускает свежий расчет) */}
             <Button
               variant="outline"
@@ -467,6 +482,12 @@ export default function DashboardLayout({
         onActivated={() => {
           activateWithKey("LP_PRO_2026");
         }}
+      />
+
+      {/* Free AI Provider Settings (Groq / Gemini) */}
+      <AiSettingsModal
+        isOpen={isAiSettingsOpen}
+        onClose={() => setIsAiSettingsOpen(false)}
       />
     </div>
   );

@@ -56,7 +56,7 @@ ${jobText.slice(0, 1600)}
           "Ты независимый консультант по карьерной безопасности. Формулируй острые дипломатичные проверочные вопросы для кандидатов без разметки markdown.",
         userPrompt,
         temperature: 0.3,
-        mode: "text",
+        mode: "interview_prep",
       });
 
       if (res.text) {

@@ -103,6 +103,7 @@ export default function FollowUpsPage() {
         systemPrompt: "Ты карьерный стратег. Пиши живые естественные деловые сообщения без markdown-разметки.",
         userPrompt,
         temperature: 0.3,
+        mode: "follow_up",
       });
 
       if (res.text) {

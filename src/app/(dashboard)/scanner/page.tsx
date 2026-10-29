@@ -42,6 +42,7 @@ import {
   Gift,
   Flag,
   DollarSign,
+  KeyRound,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -55,6 +56,7 @@ import AtsScoreCardModal from "@/components/AtsScoreCardModal";
 import AtsCleanResumeModal from "@/components/AtsCleanResumeModal";
 import AiEmbedSkillModal from "@/components/AiEmbedSkillModal";
 import AiRewriteResumeModal from "@/components/AiRewriteResumeModal";
+import AiSettingsModal from "@/components/AiSettingsModal";
 import SaveToKanbanModal from "@/components/SaveToKanbanModal";
 import { AiBuildResumeModal } from "@/components/AiBuildResumeModal";
 import { HhCopyModal } from "@/components/HhCopyModal";
@@ -302,6 +304,7 @@ export default function ATSScannerPage() {
   const [jobInputMode, setJobInputMode] = useState<"single" | "batch">("single");
   const [salaryModalOpen, setSalaryModalOpen] = useState(false);
   const [viralBonusOpen, setViralBonusOpen] = useState(false);
+  const [aiSettingsOpen, setAiSettingsOpen] = useState(false);
 
   // Modals for Module 2 & Module 3
   const [isScoreCardOpen, setIsScoreCardOpen] = useState(false);
@@ -681,6 +684,18 @@ export default function ATSScannerPage() {
           >
             <Gift className="w-3.5 h-3.5 text-amber-400" />
             <span>🎁 +3 проверки</span>
+          </Button>
+
+          {/* AI Provider Settings Button */}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setAiSettingsOpen(true)}
+            className="text-xs border-cyan-500/40 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20 flex items-center gap-1.5 cursor-pointer"
+            title="Подключить бесплатные ключи Groq (Llama 3.3) или Google Gemini Flash"
+          >
+            <KeyRound className="w-3.5 h-3.5 text-cyan-400" />
+            <span>⚡ Ключи ИИ</span>
           </Button>
         </div>
       </div>
@@ -1652,6 +1667,12 @@ export default function ATSScannerPage() {
       <ViralBonusModal
         isOpen={viralBonusOpen}
         onClose={() => setViralBonusOpen(false)}
+      />
+
+      {/* Free AI Provider Settings (Groq / Gemini) */}
+      <AiSettingsModal
+        isOpen={aiSettingsOpen}
+        onClose={() => setAiSettingsOpen(false)}
       />
     </div>
   );

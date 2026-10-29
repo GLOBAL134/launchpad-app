@@ -56,6 +56,7 @@ ${resumeText.slice(0, 700)}
         systemPrompt,
         userPrompt,
         temperature: 0.3,
+        mode: "embed_skill",
       });
 
       setBulletText(res.text.trim());

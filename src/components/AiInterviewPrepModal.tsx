@@ -66,7 +66,7 @@ ${resumeText.slice(0, 1500)}
           "Ты элитный карьерный коуч и нанимающий директор. Формируй готовый сценарий собеседования без markdown-звёздочек и решёток.",
         userPrompt,
         temperature: 0.3,
-        mode: "text",
+        mode: "interview_prep",
       });
 
       const fullText = res.text || "";

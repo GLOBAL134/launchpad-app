@@ -81,7 +81,7 @@ ${resumeText.slice(0, 1500)}
           "Ты эксперт по зарплатным переговорам для топ-менеджеров и специалистов. Пиши живые дипломатичные скрипты на русском языке без markdown-разметки.",
         userPrompt,
         temperature: 0.3,
-        mode: "text",
+        mode: "salary_negotiator",
       });
 
       const fullText = res.text || "";

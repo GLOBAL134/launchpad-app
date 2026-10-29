@@ -22,8 +22,10 @@ import {
   Copy,
   Layers,
   CheckCircle2,
+  KeyRound,
 } from "lucide-react";
 import { callAI } from "@/lib/ai-client";
+import AiSettingsModal from "@/components/AiSettingsModal";
 
 export type LifeSituation = "standard" | "switch" | "gap" | "junior";
 
@@ -53,6 +55,7 @@ export default function AiRewriteResumeModal({
   const [viewTab, setViewTab] = useState<"side_by_side" | "improved">("side_by_side");
   const [lifeSituation, setLifeSituation] = useState<LifeSituation>(initialLifeSituation);
   const [copied, setCopied] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   useEffect(() => {
     setLifeSituation(initialLifeSituation);
@@ -92,7 +95,7 @@ STRICT RULES:
       const userPrompt = `ТАРГЕТ-ВАКАНСИЯ:
 ${jobDescription.slice(0, 1000)}
 
-НЕДОСТАЮЩИЕ НАВЫКИ В РЕЗЮМЕ ДЛЯ ВСТРАИВАНИЯ:
+ЦЕЛЕВЫЕ НАВЫКИ ДЛЯ ИНТЕГРАЦИИ В ОПЫТ:
 ${missingSkills.slice(0, 10).join(", ") || "Ключевые профильные навыки вакансии"}
 
 ТЕКУЩЕЕ РЕЗЮМЕ КАНДИДАТА (БЫЛО):
@@ -104,6 +107,7 @@ ${currentResume}
         systemPrompt,
         userPrompt,
         temperature: 0.3,
+        mode: "resume_rewrite",
       });
 
       setRewrittenText(res.text.trim());
@@ -260,14 +264,25 @@ ${currentResume}
               </button>
             </div>
 
-            <button
-              onClick={() => handleRewrite()}
-              disabled={isLoading}
-              className="text-xs text-primary hover:underline flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
-              <span>Перегенерировать</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsSettingsOpen(true)}
+                className="text-xs text-muted-foreground hover:text-cyan-400 flex items-center gap-1 cursor-pointer px-2 py-1 rounded hover:bg-muted/50 transition"
+                title="Настроить бесплатный API ключ Groq или Gemini"
+              >
+                <KeyRound className="w-3.5 h-3.5 text-cyan-400" />
+                <span className="hidden sm:inline">Ключи ИИ</span>
+              </button>
+              <button
+                onClick={() => handleRewrite()}
+                disabled={isLoading}
+                className="text-xs text-primary hover:underline flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
+                <span>Перегенерировать</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -373,6 +388,11 @@ ${currentResume}
             </Button>
           </div>
         </DialogFooter>
+
+        <AiSettingsModal
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+        />
       </DialogContent>
     </Dialog>
   );
