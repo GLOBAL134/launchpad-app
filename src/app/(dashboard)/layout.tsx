@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
@@ -119,9 +120,15 @@ export default function DashboardLayout({
       <aside className="hidden md:flex w-64 flex-col border-r border-border bg-card/60 backdrop-blur-md">
         {/* Brand */}
         <div className="h-16 flex items-center justify-between px-5 border-b border-border/70">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-black text-base shadow-md shadow-primary/20">
-              🎯
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="w-8 h-8 rounded-lg overflow-hidden shadow-md shadow-primary/20 shrink-0 border border-white/10 group-hover:border-primary/40 transition">
+              <Image
+                src="/logo.png"
+                alt="LaunchPad AI PRO"
+                width={32}
+                height={32}
+                className="w-full h-full object-cover"
+              />
             </div>
             <span className="font-bold text-base tracking-tight text-foreground">LaunchPad</span>
           </Link>
@@ -275,7 +282,15 @@ export default function DashboardLayout({
                 <div>
                   <SheetHeader className="p-4 border-b border-border">
                     <SheetTitle className="flex items-center gap-2 text-left">
-                      <span className="text-xl">🎯</span>
+                      <div className="w-7 h-7 rounded-lg overflow-hidden shrink-0 border border-white/10">
+                        <Image
+                          src="/logo.png"
+                          alt="LaunchPad AI PRO"
+                          width={28}
+                          height={28}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
                       <span>LaunchPad</span>
                       {authSession?.isDemo && (
                         <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono font-bold">

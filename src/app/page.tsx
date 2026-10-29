@@ -3,6 +3,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   ScanSearch,
@@ -122,9 +123,16 @@ export default function LandingPage() {
       <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 shrink-0 hover:opacity-90 transition">
-            <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-black text-lg shadow-lg shadow-primary/25 shrink-0">
-              🎯
+          <Link href="/" className="flex items-center gap-2.5 shrink-0 hover:opacity-90 transition group">
+            <div className="w-9 h-9 rounded-xl overflow-hidden shadow-lg shadow-indigo-500/25 shrink-0 border border-white/10 group-hover:border-primary/50 transition">
+              <Image
+                src="/logo.png"
+                alt="LaunchPad AI PRO"
+                width={36}
+                height={36}
+                className="w-full h-full object-cover"
+                priority
+              />
             </div>
             <div className="flex items-center gap-1.5 whitespace-nowrap">
               <span className="font-bold text-lg tracking-tight bg-gradient-to-r from-white via-white/90 to-white/60 bg-clip-text text-transparent">
@@ -507,7 +515,15 @@ export default function LandingPage() {
       <footer className="border-t border-border/60 py-10 bg-background text-xs text-muted-foreground">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 font-medium text-foreground">
-            <span>🎯</span>
+            <div className="w-5 h-5 rounded-md overflow-hidden shrink-0 border border-white/10">
+              <Image
+                src="/logo.png"
+                alt="LaunchPad AI PRO"
+                width={20}
+                height={20}
+                className="w-full h-full object-cover"
+              />
+            </div>
             <span>LaunchPad © 2026. Все права защищены. Интеллектуальный помощник для поиска работы.</span>
           </div>
           <div className="flex items-center gap-6">

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -134,8 +135,14 @@ export default function AuthGateModal({
         <div className="relative p-6 pb-4 bg-gradient-to-b from-primary/15 via-primary/5 to-transparent border-b border-border/50">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-black text-lg shadow-lg shadow-primary/30">
-                🎯
+              <div className="w-9 h-9 rounded-xl overflow-hidden shadow-lg shadow-primary/30 shrink-0 border border-white/10">
+                <Image
+                  src="/logo.png"
+                  alt="LaunchPad AI PRO"
+                  width={36}
+                  height={36}
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
