@@ -4,8 +4,9 @@ export const TRIBUTE_LINKS = {
 };
 
 export const VALID_PRO_KEYS = [
-  'LP_PRO_2026',
+  'START30',
   'START30_PRO',
+  'LP_PRO_2026',
   'LAUNCHPAD_VIP',
   'PRO2026',
 ];

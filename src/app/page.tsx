@@ -34,6 +34,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import UpgradeProModal from "@/components/UpgradeProModal";
 import HiringFunnelCalculator from "@/components/HiringFunnelCalculator";
+import ProductHuntBanner from "@/components/ProductHuntBanner";
 import { useApp } from "@/context/AppContext";
 import {
   isUserPro,
@@ -113,6 +114,9 @@ export default function LandingPage() {
           {toastMessage}
         </div>
       )}
+
+      {/* Product Hunt Launch Banner with START30 promo */}
+      <ProductHuntBanner onOpenUpgrade={handleOpenUpgrade} onToast={showToast} />
 
       {/* Top Navbar */}
       <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-md">
