@@ -61,12 +61,12 @@ import SaveToKanbanModal from "@/components/SaveToKanbanModal";
 import { AiBuildResumeModal } from "@/components/AiBuildResumeModal";
 import { HhCopyModal } from "@/components/HhCopyModal";
 import { AiInterviewPrepModal } from "@/components/AiInterviewPrepModal";
-import { JobRedFlagsCard } from "@/components/JobRedFlagsCard";
+import { JobXRayCard } from "@/components/JobXRayCard";
 import { SalaryNegotiatorModal } from "@/components/SalaryNegotiatorModal";
 import { BatchJobComparator } from "@/components/BatchJobComparator";
 import { ViralBonusModal } from "@/components/ViralBonusModal";
 import { exportResumeToDocx, exportResumeToPdf } from "@/lib/export-resume";
-import { cleanAIMarkdownArtifacts } from "@/lib/monetization";
+import { cleanAIMarkdownArtifacts, canPerformAiRewrite, incrementRewriteUsage, getFreeRewritesUsed } from "@/lib/monetization";
 import { detectLanguage } from "@/lib/language";
 import { simulateAtsParser, AtsSimulationResult, XyzImprovement } from "@/lib/ats-parser-simulator";
 import type { AtsAuditResponse } from "@/app/api/ats-audit/route";
@@ -514,6 +514,7 @@ export default function ATSScannerPage() {
     consumeScan,
     isUpgradeModalOpen,
     setIsUpgradeModalOpen,
+    upgradeReason,
     setUpgradeReason,
     showToast,
   } = useApp();
@@ -942,7 +943,7 @@ export default function ATSScannerPage() {
           // Immediately trigger real ATS-audit with the loaded vacancy!
           fetchAtsAudit(resumeText, hhData.fullJobText, true);
           showToast(
-            `✅ Вакансия загружена напрямую из базы HH.ru: ${hhData.company} — извлечено ${skillsCount} скрытых ключевых тегов фильтра HR`
+            `🔥 Из базы HH.ru извлечено ${skillsCount} скрытых тегов автофильтра HR для компании ${hhData.company}`
           );
           setJobUrlInput("");
           return;
@@ -1017,6 +1018,11 @@ export default function ATSScannerPage() {
 
   // Module 3: Export to Word (.docx)
   const handleExportDocx = async () => {
+    if (!isPro) {
+      setUpgradeReason("Скачивание резюме в формате Word (.docx) доступно в тарифах «Турбо-Старт» и «Оффер под ключ».");
+      setIsUpgradeModalOpen(true);
+      return;
+    }
     setIsExportingDocx(true);
     try {
       await exportResumeToDocx(resumeText);
@@ -1031,6 +1037,11 @@ export default function ATSScannerPage() {
 
   // Module 3: Export to Printable PDF
   const handleExportPdf = () => {
+    if (!isPro) {
+      setUpgradeReason("Печать и сохранение резюме в PDF доступны в тарифах «Турбо-Старт» и «Оффер под ключ».");
+      setIsUpgradeModalOpen(true);
+      return;
+    }
     exportResumeToPdf(resumeText);
   };
 
@@ -1087,6 +1098,9 @@ export default function ATSScannerPage() {
 
   // STEP 4: AI Auto-Rewrite Whole Resume
   const handleApplyRewrittenResume = (newResume: string) => {
+    if (!isPro) {
+      incrementRewriteUsage();
+    }
     const personalized = injectUserProfileIntoResume(newResume, userProfile);
     setResumeText(personalized);
     fetchAtsAudit(personalized, jobDesc, false);
@@ -1099,8 +1113,8 @@ export default function ATSScannerPage() {
   // Real Groq ATS Auto-Rewrite (85-95%+ Score Boost)
   const handleAiAutoRewrite = async () => {
     if (isRewriting) return;
-    if (!isPro && remainingScans <= 0) {
-      setUpgradeReason("Бесплатные проверки исчерпаны. Перейдите на тариф Pro для безлимитного ATS-улучшения резюме!");
+    if (!isPro && !canPerformAiRewrite()) {
+      setUpgradeReason("Вы уже использовали 1 бесплатное пробное улучшение резюме. Выберите тариф для безлимитной адаптации под любые вакансии!");
       setIsUpgradeModalOpen(true);
       return;
     }
@@ -1134,9 +1148,12 @@ export default function ATSScannerPage() {
 
       const data = await res.json();
       if (res.ok && data.rewrittenResume) {
+        if (!isPro) {
+          incrementRewriteUsage();
+        }
         const personalized = injectUserProfileIntoResume(data.rewrittenResume, userProfile);
         setResumeText(personalized);
-        showToast("🎉 Резюме успешно улучшено! Пересчитываем балл ATS...");
+        showToast("🎉 Резюме успешно улучшено нейросетью до 92%+!");
         await fetchAtsAudit(personalized, jobDesc, true);
         setTimeout(() => setViralBonusOpen(true), 800);
       } else {
@@ -1318,7 +1335,14 @@ export default function ATSScannerPage() {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => setIsScoreCardOpen(true)}
+            onClick={() => {
+              if (!isPro) {
+                setUpgradeReason("Официальный Сертификат соответствия ATS доступен в тарифах «Турбо-Старт» и «Оффер под ключ».");
+                setIsUpgradeModalOpen(true);
+                return;
+              }
+              setIsScoreCardOpen(true);
+            }}
             className="text-xs border-border/80 hover:bg-muted/80 flex items-center justify-center gap-1.5 cursor-pointer h-8 sm:h-9"
           >
             <Award className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
@@ -1891,7 +1915,14 @@ export default function ATSScannerPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => setInterviewPrepModalOpen(true)}
+                      onClick={() => {
+                        if (!isPro) {
+                          setUpgradeReason("ИИ-шпаргалка к собеседованию (3 каверзных вопроса и STAR-ответы) доступна в тарифе «Оффер под ключ».");
+                          setIsUpgradeModalOpen(true);
+                          return;
+                        }
+                        setInterviewPrepModalOpen(true);
+                      }}
                       className="h-8 text-xs border-purple-500/40 text-purple-300 hover:bg-purple-500/10 font-semibold cursor-pointer flex items-center gap-1.5"
                     >
                       <Target className="w-3.5 h-3.5 text-purple-400" />
@@ -1911,7 +1942,14 @@ export default function ATSScannerPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => setSalaryModalOpen(true)}
+                      onClick={() => {
+                        if (!isPro) {
+                          setUpgradeReason("Модуль торга по зарплате (+20–25% к офферу для HR) доступен в тарифе «Оффер под ключ».");
+                          setIsUpgradeModalOpen(true);
+                          return;
+                        }
+                        setSalaryModalOpen(true);
+                      }}
                       className="h-8 text-xs border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 font-semibold cursor-pointer flex items-center gap-1.5"
                     >
                       <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
@@ -1960,7 +1998,14 @@ export default function ATSScannerPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => setIsScoreCardOpen(true)}
+                      onClick={() => {
+                        if (!isPro) {
+                          setUpgradeReason("Официальный Сертификат соответствия ATS доступен в тарифах «Турбо-Старт» и «Оффер под ключ».");
+                          setIsUpgradeModalOpen(true);
+                          return;
+                        }
+                        setIsScoreCardOpen(true);
+                      }}
                       className="h-7 text-xs border-border/80 hover:bg-muted text-emerald-400 font-medium cursor-pointer"
                     >
                       <Award className="w-3 h-3 mr-1" />
@@ -2337,13 +2382,13 @@ export default function ATSScannerPage() {
                 </div>
               )}
 
-              {/* TAB 4: JOB RED FLAGS & TOXICITY ANALYZER */}
+              {/* TAB 4: JOB RED FLAGS & TOXICITY ANALYZER (VIRAL X-RAY) */}
               {activeResultsTab === "red_flags" && (
                 <div className="space-y-4 animate-in fade-in">
-                  <JobRedFlagsCard
+                  <JobXRayCard
                     jobText={jobDesc}
-                    companyName="Работодатель"
-                    positionName={activeIndustry}
+                    companyName={importedHhJob?.company || scannerTargetJob?.company || "Работодатель"}
+                    positionName={importedHhJob?.position || scannerTargetJob?.position || activeIndustry}
                     onToast={showToast}
                   />
                 </div>
@@ -2446,10 +2491,14 @@ export default function ATSScannerPage() {
         jobDesc={jobDesc}
       />
 
-      {/* Upgrade Pro Modal (Tribute) */}
+      {/* Upgrade Pro Modal (Paywall) */}
       <UpgradeProModal
         isOpen={isUpgradeModalOpen}
-        onClose={() => setIsUpgradeModalOpen(false)}
+        onClose={() => {
+          setIsUpgradeModalOpen(false);
+          setUpgradeReason(undefined);
+        }}
+        reasonMessage={upgradeReason}
         onActivated={() => {
           showToast("🎉 Тариф LaunchPad AI PRO успешно активирован!");
         }}

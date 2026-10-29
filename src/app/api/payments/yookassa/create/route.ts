@@ -9,9 +9,21 @@ interface PlanConfig {
 }
 
 const PLANS: Record<string, PlanConfig> = {
+  turbo_24h: {
+    title: "Турбо-Старт (24 часа)",
+    priceRub: 290,
+    description: "Разовый доступ к скачиванию Word/PDF и 15 AI-адаптациям резюме",
+    durationMonths: 0.1,
+  },
+  offer_pro_30d: {
+    title: "Оффер под ключ (30 дней PRO)",
+    priceRub: 690,
+    description: "Полный безлимит на 30 дней: Шпаргалка к интервью, Торг по зарплате, Канбан",
+    durationMonths: 1,
+  },
   pro_monthly: {
     title: "LaunchPad Pro (1 месяц)",
-    priceRub: 1490,
+    priceRub: 690,
     description: "Подписка LaunchPad Pro на 1 месяц",
     durationMonths: 1,
   },

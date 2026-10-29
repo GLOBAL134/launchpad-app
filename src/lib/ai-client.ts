@@ -12,7 +12,7 @@ export interface AICallOptions {
   systemPrompt?: string;
   userPrompt: string;
   temperature?: number;
-  mode?: "text" | "json" | "resume_rewrite" | "embed_skill" | "cover_letter" | "follow_up" | "interview_prep" | "salary_negotiator" | "pr_studio" | "ping";
+  mode?: "text" | "json" | "resume_rewrite" | "embed_skill" | "cover_letter" | "follow_up" | "interview_prep" | "salary_negotiator" | "pr_studio" | "job_xray" | "ping";
 }
 
 export interface AICallResponse {

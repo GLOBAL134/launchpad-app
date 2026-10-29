@@ -1,7 +1,27 @@
 'use client';
 
 import React, { useState } from 'react';
-import { TRIBUTE_LINKS, verifyAndActivateProKey } from '../lib/monetization';
+import {
+  Check,
+  Sparkles,
+  ShieldCheck,
+  Zap,
+  Flame,
+  FileDown,
+  Target,
+  DollarSign,
+  Clock,
+  ArrowRight,
+  Gift,
+  Loader2,
+} from 'lucide-react';
+import {
+  MONETIZATION_PLANS,
+  TRIBUTE_LINKS,
+  verifyAndActivateProKey,
+  PlanOption,
+} from '../lib/monetization';
+import { Button } from '@/components/ui/button';
 
 interface UpgradeProModalProps {
   isOpen: boolean;
@@ -16,118 +36,254 @@ export default function UpgradeProModal({
   onActivated,
   reasonMessage,
 }: UpgradeProModalProps) {
+  const [selectedPlanId, setSelectedPlanId] = useState<'turbo_24h' | 'offer_pro_30d'>('offer_pro_30d');
   const [promoCode, setPromoCode] = useState('');
   const [codeError, setCodeError] = useState<string | null>(null);
+  const [codeSuccess, setCodeSuccess] = useState<string | null>(null);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   if (!isOpen) return null;
 
   const handleActivateCode = (e: React.FormEvent) => {
     e.preventDefault();
     setCodeError(null);
-    if (verifyAndActivateProKey(promoCode)) {
-      onActivated();
-      onClose();
+    setCodeSuccess(null);
+
+    const trimmed = promoCode.trim().toUpperCase();
+
+    if (verifyAndActivateProKey(trimmed)) {
+      if (trimmed === 'ADMIN777') {
+        setCodeSuccess('🎉 Секретный код владельца ADMIN777 принят! Безлимитный PRO активирован!');
+      } else {
+        setCodeSuccess('🎉 Ключ активации успешно применён! PRO активирован!');
+      }
+      setTimeout(() => {
+        onActivated();
+        onClose();
+      }, 1000);
     } else {
-      setCodeError('Неверный ключ активации. Введите LP_PRO_2026 или START30_PRO.');
+      setCodeError('Неверный ключ. Для теста используйте секретный код владельца: ADMIN777 или START30');
+    }
+  };
+
+  const handleCheckout = async (plan: PlanOption) => {
+    setIsProcessingPayment(true);
+    try {
+      // 1. Try YooKassa API checkout
+      const res = await fetch('/api/payments/yookassa/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          planId: plan.id,
+          returnUrl: typeof window !== 'undefined' ? `${window.location.origin}/scanner?payment=success&plan=${plan.id}` : undefined,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.confirmationUrl) {
+          window.location.href = data.confirmationUrl;
+          return;
+        }
+      }
+
+      // 2. Direct payment link fallback (Tribute / YooMoney)
+      const directUrl = `${TRIBUTE_LINKS.WEB_CHECKOUT}?plan=${plan.id}&amount=${plan.priceRub}`;
+      window.open(directUrl, '_blank');
+    } catch {
+      window.open(TRIBUTE_LINKS.WEB_CHECKOUT, '_blank');
+    } finally {
+      setIsProcessingPayment(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-3 sm:p-4">
-      <div className="relative w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-2xl bg-slate-900 border border-indigo-500/40 p-4 sm:p-8 shadow-2xl text-slate-100">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-4 animate-in fade-in">
+      <div className="relative w-full max-w-2xl max-h-[94vh] overflow-y-auto rounded-3xl bg-slate-950 border border-indigo-500/40 p-5 sm:p-7 shadow-2xl text-slate-100 space-y-5">
+        {/* Close Button */}
         <button
           onClick={onClose}
           aria-label="Закрыть"
-          className="absolute top-4 right-4 w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition cursor-pointer"
+          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition cursor-pointer z-10"
         >
           ✕
         </button>
 
-        <div className="flex items-center gap-2 mb-4">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-semibold">
-            🚀 LaunchPad AI PRO — Полный доступ
+        {/* Modal Header */}
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-bold">
+              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+              <span>LaunchPad AI PRO</span>
+            </span>
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[11px] font-bold">
+              Разовый платёж без автосписаний
+            </span>
           </div>
-          <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[11px] font-bold">
-            🏷️ START30 (-30%)
-          </div>
-        </div>
 
-        <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">
-          Проходите ATS-фильтры с первого раза
-        </h3>
+          <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-tight">
+            Инвестиция в оффер: выберите ваш тариф
+          </h3>
 
-        {reasonMessage ? (
-          <p className="text-xs sm:text-sm text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 mb-4">
-            {reasonMessage}
-          </p>
-        ) : (
-          <p className="text-xs sm:text-sm text-slate-400 mb-5">
-            Промокод <span className="font-mono text-indigo-300 font-bold">START30</span> активирован: скидка 30% на безлимитный анализ резюме, генерацию писем и трекинг вакансий!
-          </p>
-        )}
-
-        <ul className="space-y-2.5 text-xs sm:text-sm text-slate-200 mb-6">
-          <li className="flex items-start gap-2.5">
-            <span className="text-emerald-400 font-bold">✓</span>
-            <span>Безлимитные детерминированные ATS-аудиты резюме с проверкой по цитатам</span>
-          </li>
-          <li className="flex items-start gap-2.5">
-            <span className="text-emerald-400 font-bold">✓</span>
-            <span>Генерация сопроводительных писем без галлюцинаций ИИ (на русском и английском)</span>
-          </li>
-          <li className="flex items-start gap-2.5">
-            <span className="text-emerald-400 font-bold">✓</span>
-            <span>Точечное усиление слабых строчек резюме по формуле результата (XYZ)</span>
-          </li>
-          <li className="flex items-start gap-2.5">
-            <span className="text-emerald-400 font-bold">✓</span>
-            <span>Полный доступ к Канбан-трекеру откликов и экспорту документов</span>
-          </li>
-        </ul>
-
-        <div className="space-y-3 mb-6">
-          <a
-            href={TRIBUTE_LINKS.WEB_CHECKOUT}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full py-3.5 px-5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold text-sm shadow-lg shadow-indigo-600/30 transition flex items-center justify-center gap-2 cursor-pointer"
-          >
-            💳 Оплатить картой в браузере (МИР / СБП / Visa / Mastercard)
-          </a>
-
-          <a
-            href={TRIBUTE_LINKS.TG_APP_CHECKOUT}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full py-3 px-5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-medium text-xs sm:text-sm transition flex items-center justify-center gap-2 cursor-pointer"
-          >
-            ✈ Оплатить через Telegram / Stars
-          </a>
-        </div>
-
-        <form onSubmit={handleActivateCode} className="pt-4 border-t border-slate-800 space-y-2">
-          <label className="block text-xs text-slate-400">
-            Уже оформили подписку? Введите ваш PRO-ключ активации:
-          </label>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={promoCode}
-              onChange={(e) => setPromoCode(e.target.value)}
-              placeholder="Например: LP_PRO_2026 или START30_PRO"
-              className="flex-1 rounded-xl bg-slate-950 border border-slate-800 px-3.5 py-2 text-xs sm:text-sm text-white focus:border-indigo-500 focus:outline-none"
-            />
-            <button
-              type="submit"
-              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs sm:text-sm font-semibold text-white transition cursor-pointer"
-            >
-              Активировать
-            </button>
-          </div>
-          {codeError && (
-            <p className="text-xs text-rose-400">{codeError}</p>
+          {reasonMessage ? (
+            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs leading-relaxed flex items-center gap-2">
+              <Zap className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>{reasonMessage}</span>
+            </div>
+          ) : (
+            <p className="text-xs sm:text-sm text-slate-400">
+              ATS-роботы отсекают 80% резюме. Получите адаптированное резюме 90%+, шпаргалку к интервью и скрипт торга по зарплате.
+            </p>
           )}
-        </form>
+        </div>
+
+        {/* 2 Plans Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {MONETIZATION_PLANS.map((plan) => {
+            const isSelected = selectedPlanId === plan.id;
+            const isFeatured = plan.recommended;
+
+            return (
+              <div
+                key={plan.id}
+                onClick={() => setSelectedPlanId(plan.id)}
+                className={`relative rounded-2xl p-4 sm:p-5 flex flex-col justify-between transition-all cursor-pointer border ${
+                  isSelected
+                    ? isFeatured
+                      ? 'bg-gradient-to-b from-indigo-950/80 to-slate-900 border-indigo-500 ring-2 ring-indigo-500/30 shadow-xl shadow-indigo-500/10'
+                      : 'bg-slate-900 border-primary ring-2 ring-primary/30'
+                    : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
+                }`}
+              >
+                {/* Featured Badge */}
+                {plan.badge && (
+                  <div className="absolute -top-3 right-4 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-rose-500 text-white font-bold text-[10px] shadow-md uppercase tracking-wider flex items-center gap-1">
+                    <Flame className="w-3 h-3" />
+                    <span>{plan.badge}</span>
+                  </div>
+                )}
+
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <h4 className="text-sm sm:text-base font-bold text-white flex items-center justify-between">
+                      <span>{plan.name}</span>
+                      <span className="w-4 h-4 rounded-full border border-slate-600 flex items-center justify-center text-[10px]">
+                        {isSelected && <span className="w-2 h-2 rounded-full bg-indigo-400" />}
+                      </span>
+                    </h4>
+                    <p className="text-[11px] text-slate-400 leading-tight">
+                      {plan.tagline}
+                    </p>
+                  </div>
+
+                  {/* Price */}
+                  <div className="pt-1 flex items-baseline gap-2">
+                    <span className="text-2xl sm:text-3xl font-black text-white font-mono">
+                      {plan.priceRub} ₽
+                    </span>
+                    {plan.oldPriceRub && (
+                      <span className="text-xs text-slate-500 line-through font-mono">
+                        {plan.oldPriceRub} ₽
+                      </span>
+                    )}
+                    <span className="text-[10px] text-slate-400 font-sans">
+                      / {plan.periodLabel}
+                    </span>
+                  </div>
+
+                  {/* Features List */}
+                  <ul className="space-y-2 pt-2 border-t border-slate-800/80 text-[11px] text-slate-300">
+                    {plan.features.map((feat, idx) => (
+                      <li key={idx} className="flex items-start gap-2">
+                        <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                        <span className="leading-tight">{feat}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Select / Pay Button */}
+                <div className="pt-4 mt-2">
+                  <Button
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCheckout(plan);
+                    }}
+                    disabled={isProcessingPayment}
+                    className={`w-full font-bold text-xs h-9 cursor-pointer transition shadow-md ${
+                      isFeatured
+                        ? 'bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white shadow-indigo-600/30'
+                        : 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700'
+                    }`}
+                  >
+                    {isProcessingPayment && selectedPlanId === plan.id ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                        Переход к оплате...
+                      </>
+                    ) : (
+                      <>
+                        <span>{isFeatured ? 'Оформить Оффер под ключ' : 'Выбрать Турбо-Старт'}</span>
+                        <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Promo code & Owner Secret Key activation */}
+        <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2">
+          <form onSubmit={handleActivateCode} className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-[11px] text-slate-300 font-semibold flex items-center gap-1.5">
+                <Gift className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Есть промокод или ключ активации?</span>
+              </label>
+              <span className="text-[10px] text-slate-500">
+                Код владельца: <code className="text-indigo-300 font-mono font-bold">ADMIN777</code>
+              </span>
+            </div>
+
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={promoCode}
+                onChange={(e) => setPromoCode(e.target.value)}
+                placeholder="Введите код (например: ADMIN777 или START30)"
+                className="flex-1 rounded-xl bg-slate-950 border border-slate-800 px-3 py-2 text-xs text-white uppercase placeholder:normal-case placeholder:text-slate-600 focus:border-indigo-500 focus:outline-none font-mono"
+              />
+              <Button
+                type="submit"
+                size="sm"
+                className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 h-9 cursor-pointer shrink-0"
+              >
+                Активировать
+              </Button>
+            </div>
+
+            {codeError && (
+              <p className="text-[11px] text-rose-400 animate-in fade-in">{codeError}</p>
+            )}
+            {codeSuccess && (
+              <p className="text-[11px] text-emerald-400 font-semibold animate-in fade-in">{codeSuccess}</p>
+            )}
+          </form>
+        </div>
+
+        {/* Guarantees Footer */}
+        <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400 pt-1 border-t border-slate-800">
+          <div className="flex items-center gap-1.5">
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <span>Безопасная оплата через ЮKassa / СБП / Карты РФ</span>
+          </div>
+          <div className="text-slate-500">
+            Никаких скрытых списаний • Разовый платёж
+          </div>
+        </div>
       </div>
     </div>
   );

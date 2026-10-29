@@ -1,9 +1,12 @@
 export const TRIBUTE_LINKS = {
   WEB_CHECKOUT: 'https://web.tribute.tg/s/1aEM',
   TG_APP_CHECKOUT: 'https://t.me/tribute/app?startapp=s1aEM',
+  // Direct payment link (ЮMoney / Банковская карта РФ / СБП)
+  YOOMONEY_CHECKOUT: 'https://yoomoney.ru/to/4100118580210283',
 };
 
 export const VALID_PRO_KEYS = [
+  'ADMIN777', // Секретный промокод владельца (мгновенное включение PRO)
   'START30',
   'START30_PRO',
   'LP_PRO_2026',
@@ -12,10 +15,60 @@ export const VALID_PRO_KEYS = [
 ];
 
 export const FREE_SCAN_LIMIT = 2;
+export const FREE_AI_REWRITE_LIMIT = 1;
+
+export interface PlanOption {
+  id: 'turbo_24h' | 'offer_pro_30d';
+  name: string;
+  tagline: string;
+  badge?: string;
+  priceRub: number;
+  oldPriceRub: number;
+  periodLabel: string;
+  features: string[];
+  recommended?: boolean;
+}
+
+export const MONETIZATION_PLANS: PlanOption[] = [
+  {
+    id: 'turbo_24h',
+    name: 'Турбо-Старт (24 часа)',
+    tagline: 'Разовый платеж без подписок и автосписаний',
+    priceRub: 290,
+    oldPriceRub: 490,
+    periodLabel: 'доступ на 24 часа',
+    features: [
+      'Скачивание резюме в Word (.docx) без ограничений',
+      'Печать и сохранение в гарвардский PDF',
+      '15 AI-адаптаций опыта под целевые вакансии',
+      'Генератор сопроводительных писем',
+      'Сертификат прохождения ATS-аудита',
+    ],
+  },
+  {
+    id: 'offer_pro_30d',
+    name: 'Оффер под ключ (30 дней PRO)',
+    tagline: 'Хит продаж — полный арсенал для быстрого выхода на оффер',
+    badge: '🔥 Хит продаж',
+    priceRub: 690,
+    oldPriceRub: 1290,
+    periodLabel: '30 дней полного безлимита',
+    recommended: true,
+    features: [
+      'Полный БЕЗЛИМИТ на все функции сканера и ИИ',
+      '🎯 ИИ-шпаргалка к собеседованию (3 каверзных вопроса + STAR-ответы)',
+      '💰 Скрипт торга по зарплате (+20–25% к офферу для HR)',
+      '🚩 Вирусный «Рентген вакансии» с расшифровкой боли босса',
+      'Скачивание Word (.docx) и PDF в 1 клик',
+      'Канбан-трекер откликов + Центр Follow-Up напоминаний',
+    ],
+  },
+];
 
 const STORAGE_PRO_FLAG = 'launchpad_pro_active_v1';
 const STORAGE_SCAN_COUNT = 'launchpad_free_scans_used_v1';
 const STORAGE_BONUS_SCANS = 'launchpad_bonus_scans_v1';
+const STORAGE_REWRITE_COUNT = 'launchpad_free_rewrites_used_v1';
 
 export function isUserPro(): boolean {
   if (typeof window === 'undefined') return false;
@@ -48,6 +101,23 @@ export function incrementScanUsage(): void {
   if (typeof window === 'undefined' || isUserPro()) return;
   const current = getFreeScansUsed();
   localStorage.setItem(STORAGE_SCAN_COUNT, String(current + 1));
+}
+
+// AI Resume Rewrite usage limits (Free users get exactly 1 free trial improvement)
+export function getFreeRewritesUsed(): number {
+  if (typeof window === 'undefined') return 0;
+  return Number(localStorage.getItem(STORAGE_REWRITE_COUNT) || '0');
+}
+
+export function incrementRewriteUsage(): void {
+  if (typeof window === 'undefined' || isUserPro()) return;
+  const current = getFreeRewritesUsed();
+  localStorage.setItem(STORAGE_REWRITE_COUNT, String(current + 1));
+}
+
+export function canPerformAiRewrite(): boolean {
+  if (isUserPro()) return true;
+  return getFreeRewritesUsed() < FREE_AI_REWRITE_LIMIT;
 }
 
 export function verifyAndActivateProKey(inputKey: string): boolean {

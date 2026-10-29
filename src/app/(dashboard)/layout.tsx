@@ -53,6 +53,8 @@ export default function DashboardLayout({
     remainingScans,
     isUpgradeModalOpen,
     setIsUpgradeModalOpen,
+    upgradeReason,
+    setUpgradeReason,
     setIsAddJobModalOpen,
     setTriggerQuickAudit,
     toastMessage,
@@ -235,19 +237,22 @@ export default function DashboardLayout({
             <div className="p-3 rounded-xl border border-indigo-500/30 bg-gradient-to-br from-indigo-500/15 to-card space-y-2">
               <div className="flex items-center justify-between text-xs font-bold text-foreground">
                 <span className="flex items-center gap-1.5 text-indigo-400">
-                  <Sparkles className="w-3.5 h-3.5" /> Тариф Pro
+                  <Sparkles className="w-3.5 h-3.5" /> Тариф Free
                 </span>
-                <span className="text-[10px] text-indigo-300/80 font-mono">Бесплатно: {remainingScans}/2</span>
+                <span className="text-[10px] text-indigo-300/80 font-mono">1 улучшение</span>
               </div>
               <p className="text-[11px] text-muted-foreground leading-tight">
-                Безлимитный AI ATS-сканер и генерация сопроводительных писем.
+                Базовый ATS-сканер, рентген вакансий и 1 пробное AI-улучшение.
               </p>
               <Button
                 size="sm"
-                onClick={() => setIsUpgradeModalOpen(true)}
+                onClick={() => {
+                  setUpgradeReason("Выберите тариф для безлимитной адаптации резюме и выхода на оффер.");
+                  setIsUpgradeModalOpen(true);
+                }}
                 className="w-full h-7 text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-semibold cursor-pointer"
               >
-                💎 Перейти на Pro
+                💎 Перейти на Pro (от 290 ₽)
               </Button>
             </div>
           )}
@@ -442,12 +447,15 @@ export default function DashboardLayout({
               </div>
             ) : (
               <button
-                onClick={() => setIsUpgradeModalOpen(true)}
+                onClick={() => {
+                  setUpgradeReason("Выберите тариф для безлимитной адаптации резюме и выхода на оффер.");
+                  setIsUpgradeModalOpen(true);
+                }}
                 className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-indigo-500/40 bg-indigo-500/10 text-indigo-300 hover:text-white hover:bg-indigo-500/20 text-[11px] sm:text-xs font-semibold shadow-sm transition cursor-pointer whitespace-nowrap shrink-0"
               >
                 <Sparkles className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-                <span className="hidden sm:inline">💎 Upgrade to PRO (Бесплатно: {remainingScans}/2)</span>
-                <span className="sm:hidden">💎 PRO ({remainingScans}/2)</span>
+                <span className="hidden sm:inline">💎 Перейти на PRO (от 290 ₽)</span>
+                <span className="sm:hidden">💎 PRO</span>
               </button>
             )}
 
@@ -546,12 +554,16 @@ export default function DashboardLayout({
         </main>
       </div>
 
-      {/* Upgrade to Pro Modal (Tribute) */}
+      {/* Upgrade to Pro Modal (Paywall) */}
       <UpgradeProModal
         isOpen={isUpgradeModalOpen}
-        onClose={() => setIsUpgradeModalOpen(false)}
+        onClose={() => {
+          setIsUpgradeModalOpen(false);
+          setUpgradeReason(undefined);
+        }}
+        reasonMessage={upgradeReason}
         onActivated={() => {
-          activateWithKey("LP_PRO_2026");
+          activateWithKey("ADMIN777");
         }}
       />
 
