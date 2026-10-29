@@ -62,8 +62,19 @@ export async function POST(req: NextRequest) {
     const groqKey = getEffectiveGroqKey(rawGroqKey);
 
     if (groqKey && groqKey.trim().length > 10) {
-      for (const model of GROQ_MODELS) {
+      // For large batch modes like pr_studio, prefer gpt-oss models with 8k limit
+      const modelsToTry = mode === "pr_studio"
+        ? ["openai/gpt-oss-120b", "openai/gpt-oss-20b", "qwen/qwen3.8-27b"]
+        : GROQ_MODELS;
+
+      for (const model of modelsToTry) {
         try {
+          const modelMaxTokens = model.includes("qwen")
+            ? 950
+            : mode === "pr_studio"
+            ? 4500
+            : 2000;
+
           const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
             headers: {
@@ -77,6 +88,7 @@ export async function POST(req: NextRequest) {
                 { role: "user", content: safeUserPrompt },
               ],
               temperature,
+              max_tokens: modelMaxTokens,
             }),
             signal: AbortSignal.timeout(timeoutDuration),
           });

@@ -60,6 +60,7 @@ export async function POST(req: NextRequest) {
                 },
               ],
               temperature: 0.2,
+              max_tokens: model.includes("qwen") ? 900 : 1500,
             });
 
             const text = resp.choices?.[0]?.message?.content?.trim();

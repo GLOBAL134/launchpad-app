@@ -121,52 +121,42 @@ function PrStudioContent() {
   const handleGenerateWave = async () => {
     setIsLoading(true);
 
-    const featureObj = PR_FEATURES.find((f) => f.id === selectedFeature) || PR_FEATURES[0];
-
-    const systemPrompt = `You are the Head of Growth and Chief PR Strategist for LaunchPad AI PRO (an ATS resume optimization, red flag detection, and salary negotiation platform for ALL professions).
-Generate a viral marketing wave of 7 high-converting posts formatted exactly with the following delimiter tags:
-===PIKABU===
-(Engaging first-person storytelling, promo code START30 for 30% discount, STRICTLY NO direct links)
-===TENCHAT===
-(Business expert breakdown with clean bullets, reminder "link in 1st comment", engaging closing question)
-===LINKEDIN===
-(Punchy 2-line hook before 'see more', bullets with ✅, comment-bait asking readers to comment their job title)
-===VC===
-(In-depth case study with numbers: from 60% to 95% ATS match, Google X-Y-Z formula breakdown)
-===HASHNODE===
-(Technical career deep dive in English explaining 55/15/15/15 ATS heuristics and Harvard formatting)
-===INDIEHACKERS===
-(English Build in Public update. STRICTLY NO .vercel.app links, STRICTLY NO words like 'free', 'promo', 'discount'. Focus on AI tech stack, MRR traction, and retention)
-===CREATIVE===
-(Nano Banana image prompt for Midjourney/Flux + 10-second vertical video script with 0-3s Hook, 3-7s Pain/Demo, 7-10s CTA)`;
-
-    const userPrompt = `TARGET ROLE: ${activeRoleLabel}
-FEATURE FOCUS: ${featureObj.label} (${featureObj.desc})
-TONE: ${tone === "viral" ? "Вирусный / Провокационный" : tone === "case_study" ? "Глубокий кейс с цифрами" : "Экспертный обучающий гайд"}
-BRAND: LaunchPad AI PRO (https://launchpad-app-ashy.vercel.app)
-PROMO CODE: START30 (30% скидка на PRO)
-
-Сгенерируй все 7 готовых публикаций по тегам ===PIKABU===, ===TENCHAT===, ===LINKEDIN===, ===VC===, ===HASHNODE===, ===INDIEHACKERS===, ===CREATIVE===.`;
-
     try {
-      const res = await callAI({
-        systemPrompt,
-        userPrompt,
-        temperature: 0.7,
-        mode: "pr_studio",
+      const gKey = typeof window !== "undefined" ? localStorage.getItem("lp_groq_api_key") || "" : "";
+      const res = await fetch("/api/pr-generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-groq-key": gKey.trim(),
+        },
+        body: JSON.stringify({
+          role: activeRoleLabel,
+          featureId: selectedFeature,
+          tone,
+        }),
       });
 
-      if (res.provider) {
-        setProviderBadge(res.provider);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.channels) {
+          const newBatch: PrBatchResult = {
+            roleName: data.roleName || activeRoleLabel,
+            featureName: data.featureName || "",
+            tone: data.tone || tone,
+            createdAt: data.createdAt || new Date().toLocaleDateString("ru-RU"),
+            channels: data.channels,
+          };
+          setBatchResult(newBatch);
+          setProviderBadge(data.provider || "Groq AI (Qwen 3.8 27B)");
+          const newTexts: Record<string, string> = {};
+          Object.entries(data.channels).forEach(([k, v]: [string, any]) => {
+            newTexts[k] = v.content;
+          });
+          setEditableChannels(newTexts);
+          return;
+        }
       }
-
-      const newBatch = buildPrBatchWave(activeRoleLabel, selectedFeature, res.text, tone);
-      setBatchResult(newBatch);
-      const newTexts: Record<string, string> = {};
-      Object.entries(newBatch.channels).forEach(([k, v]) => {
-        newTexts[k] = v.content;
-      });
-      setEditableChannels(newTexts);
+      throw new Error("Не удалось получить структурированный ответ от /api/pr-generate");
     } catch (err) {
       console.warn("Using localized PR engine wave:", err);
       const fallback = buildPrBatchWave(activeRoleLabel, selectedFeature, undefined, tone);

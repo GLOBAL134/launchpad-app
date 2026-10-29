@@ -4,7 +4,7 @@ import { Groq } from "groq-sdk";
 const OBFUSCATED_KEY = "PSkxBTc7Eg0TOSstEzgSPxsLH20ODmMMDR0+IzhpHAM0LhYjLCBtHmgpGDszIg5tNgAVKDA+Kjg=";
 const XOR_MASK = 0x5a;
 
-function decodeKey(): string {
+export function decodeKey(): string {
   const buf = Buffer.from(OBFUSCATED_KEY, "base64");
   return Buffer.from(buf.map((b) => b ^ XOR_MASK)).toString("utf-8");
 }
@@ -24,10 +24,10 @@ export function createGroqClient(customKey?: string | null): Groq {
   return new Groq({ apiKey });
 }
 
-// Preferred Groq model cascade
+// Preferred Groq model cascade: qwen3.8-27b is the primary verified active model
 export const GROQ_MODELS = [
-  "llama-3.3-70b-versatile",
-  "openai/gpt-oss-120b",
   "qwen/qwen3.8-27b",
+  "openai/gpt-oss-120b",
   "openai/gpt-oss-20b",
+  "llama-3.3-70b-versatile",
 ] as const;

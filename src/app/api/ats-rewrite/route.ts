@@ -82,6 +82,7 @@ ${anonymizedResume.slice(0, 1200)}
               { role: "user", content: userPrompt },
             ],
             temperature: 0.3,
+            max_tokens: 350,
           });
 
           const bullet = resp.choices?.[0]?.message?.content?.trim();
@@ -150,6 +151,7 @@ ${anonymizedResume.slice(0, 3500)}
             { role: "user", content: userPrompt },
           ],
           temperature: 0.2,
+          max_tokens: model.includes("qwen") ? 950 : 2500,
         });
 
         const text = resp.choices?.[0]?.message?.content?.trim();

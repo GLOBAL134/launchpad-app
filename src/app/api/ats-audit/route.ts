@@ -96,6 +96,7 @@ export async function POST(req: NextRequest) {
           ],
           response_format: { type: "json_object" },
           temperature: 0.1,
+          max_tokens: model.includes("qwen") ? 800 : 1500,
         });
 
         const rawContent = chatCompletion.choices?.[0]?.message?.content;
