@@ -17,7 +17,7 @@ import { callAI } from "@/lib/ai-client";
 interface AiBuildResumeModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onApplyResume: (generatedResume: string) => void;
+  onApplyResume: (generatedResume: string, matchingVacancy?: string) => void;
   defaultRole?: string;
 }
 
@@ -35,12 +35,26 @@ export function AiBuildResumeModal({
 
   const [isLoading, setIsLoading] = useState(false);
   const [generatedResume, setGeneratedResume] = useState<string | null>(null);
+  const [matchingVacancy, setMatchingVacancy] = useState<string | null>(null);
 
   const handleGenerate = async () => {
     if (!role.trim()) return;
 
     setIsLoading(true);
     setGeneratedResume(null);
+    setMatchingVacancy(null);
+
+    // Concurrently generate matching vacancy requirements so Field 1 and Field 2 are strictly synchronized
+    const vacancyPromise = fetch("/api/parse-job", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ roleTitle: role.trim(), mode: "generate_role" }),
+    })
+      .then((r) => r.json())
+      .catch((e) => {
+        console.warn("Matching vacancy fetch error:", e);
+        return null;
+      });
 
     const userPrompt = `Создай полноценное профессиональное резюме по гарвардскому одноколоночному стандарту ATS (на 90%+ скора) для человека любой сферы.
     
@@ -103,13 +117,21 @@ ${educationCity.trim()}`;
 
       setGeneratedResume(fallback);
     } finally {
+      try {
+        const vacData = await vacancyPromise;
+        if (vacData?.success && vacData?.jobDesc) {
+          setMatchingVacancy(vacData.jobDesc);
+        }
+      } catch (vErr) {
+        console.warn("Failed resolving vacancy promise:", vErr);
+      }
       setIsLoading(false);
     }
   };
 
   const handleApply = () => {
     if (generatedResume) {
-      onApplyResume(generatedResume);
+      onApplyResume(generatedResume, matchingVacancy || undefined);
       onOpenChange(false);
     }
   };

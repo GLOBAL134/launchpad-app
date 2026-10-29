@@ -367,7 +367,139 @@ AutoCAD, Компас-3D, SolidWorks, Revit, Проектирование по �
 КЛЮЧЕВЫЕ НАВЫКИ
 Управление P&L, 1С:ERP, SAP, Оптимизация бизнес-процессов, Бережливое производство (Lean / Kaizen), Повышение EBITDA, Сквозные KPI, Стратегическое планирование, Бюджетирование, Cross-functional лидерство.`,
   },
+  {
+    id: "actor",
+    label: "🎭 Актер театра и кино",
+    categoryName: "Культура и Искусство",
+    job: `Актер театра и кино / Артист
+Компания: Киностудия / Театральное объединение «Арт-Продакшн»
+Локация: Москва / Санкт-Петербург
+
+Обязанности и требования:
+• Участие в репетициях и съемках художественных фильмов, сериалов, рекламных и театральных проектов.
+• Создание сценического образа, читка сценария и детальный разбор роли с режиссером.
+• Озвучивание, дубляж и работа в студии звукозаписи.
+• Высшее или среднее профильное актерское образование (ВГИК, ГИТИС, ТИ им. Щукина, ВТУ им. Щепкина, Школа-студия МХАТ).
+• Отличная дикция, сценическая речь, владение сценическим движением и пластическая выразительность.
+• Ключевые навыки: Мастерство актера, Сценическая речь, Работа на камеру, Импровизация, Читка сценария, Дубляж и озвучивание, Сценическое движение, Сценический бой, Драматическое искусство.`,
+    resume: `Михаил Романов
+Актер театра и кино | +7 (999) 711-22-33 | mikhail.romanov.actor@email.ru | Москва
+
+О СЕБЕ
+Профессиональный драматический актер театра и кино с опытом более 5 лет в репертуарном театре и на съемочной площадке (12+ кино- и сериальных проектов). Выпускник актерского факультета ГИТИС. Владею широким эмоциональным диапазоном, сценическим движением, фехтованием и искусством дубляжа.
+
+ОПЫТ РАБОТЫ
+Актер драматического театра и кино — Московский драматический театр (2021 — настоящее время)
+• Исполнил ведущие и характерные роли в 8 репертуарных спектаклях сезона (более 140 выходов на сцену с заполняемостью зала 95%+).
+• Принял участие в съемках 4 многосерийных художественных фильмов для ведущих стриминговых платформ (Кинопоиск, Иви, START).
+• Провёл читку сценария и подготовку сложных драматургических образов в плотном съемочном графике (до 14 смен в месяц).
+• Осуществил дубляж и закадровое озвучивание 18 художественных и анимационных картин на профессиональной студии звукозаписи.
+
+Актер молодежной труппы — Театр юного зрителя (2019 — 2021)
+• Сыграл более 80 спектаклей, участвовал в гастрольных турах труппы по 12 городам России.
+
+КЛЮЧЕВЫЕ НАВЫКИ
+Мастерство актера, Сценическая речь, Работа на камеру, Сценическое движение, Импровизация, Читка сценария, Дубляж и озвучивание, Сценический бой, Вокал, Драматическое искусство.`,
+  },
+  {
+    id: "teacher",
+    label: "👩‍🏫 Учитель / Преподаватель (ФГОС, ЕГЭ)",
+    categoryName: "Образование и Педагогика",
+    job: `Учитель / Преподаватель профильных дисциплин
+Компания: Академическая гимназия / Образовательный комплекс «Интеллект»
+Локация: Москва / Удаленно
+
+Обязанности и требования:
+• Проведение уроков и факультативных занятий в строгом соответствии с актуальными стандартами ФГОС.
+• Качественная подготовка учащихся к успешной сдаче ОГЭ и ЕГЭ (средний балл выпускников 82+).
+• Ведение электронного журнала (МЭШ / ЭлЖур), разработка календарно-тематических планов и рабочих программ.
+• Применение интерактивных цифровых методик преподавания, индивидуальный подход к мотивации учащихся.
+• Ключевые навыки: ФГОС, Подготовка к ОГЭ и ЕГЭ, Методика преподавания, Электронный журнал (МЭШ/ЭлЖур), Календарно-тематическое планирование, Классное руководство, Педагогика, Мотивация учащихся.`,
+    resume: `Татьяна Николаева
+Учитель высшей квалификационной категории | +7 (999) 422-55-66 | t.nikolaeva.edu@email.ru | Москва
+
+О СЕБЕ
+Педагог высшей квалификационной категории с педагогическим стажем 7+ лет. Эксперт в подготовке учащихся к ОГЭ и ЕГЭ (средний балл выпускников 84.6 балла, 14 стобалльников). Владею стандартами ФГОС, цифровыми инструментами МЭШ и интерактивными форматами обучения.
+
+ОПЫТ РАБОТЫ
+Учитель — ГБОУ Лицей № 1535 (2020 — настоящее время)
+• Подготовила более 220 учеников к успешной сдаче ОГЭ и ЕГЭ со средним баллом 84.6 (выше среднегородского показателя на 12.4 балла).
+• Разработала авторские календарно-тематические планы по ФГОС и интерактивные рабочие тетради в системе МЭШ.
+• Организовала участие школьников во Всероссийской олимпиаде школьников: 6 победителей и 15 призеров регионального этапа.
+• Осуществляла классное руководство, поддерживая 100% успеваемость и доверительную атмосферу в коллективе.
+
+Преподаватель — Образовательный центр «Эрудит» (2017 — 2020)
+• Вела групповые и индивидуальные курсы интенсивной подготовки к государственным экзаменам.
+
+КЛЮЧЕВЫЕ НАВЫКИ
+ФГОС, Подготовка к ЕГЭ, Подготовка к ОГЭ, Методика преподавания, МЭШ, ЭлЖур, Календарно-тематическое планирование, Классное руководство, Педагогическая диагностика, Интерактивное обучение, Олимпиадная подготовка.`,
+  },
 ];
+
+export function detectRoleFromText(text: string): string {
+  const t = (text || "").toLowerCase();
+  if (t.includes("актер") || t.includes("актрис") || t.includes("театр") || t.includes("кино") || t.includes("съемок") || t.includes("gitis") || t.includes("вгик") || t.includes("actor")) {
+    return "actor";
+  }
+  if (t.includes("учител") || t.includes("преподават") || t.includes("педагог") || t.includes("фгос") || t.includes("огэ") || t.includes("егэ") || t.includes("мэш") || t.includes("teacher")) {
+    return "teacher";
+  }
+  if (t.includes("инженер") || t.includes("гип") || t.includes("сапр") || t.includes("autocad") || t.includes("компас-3d") || t.includes("solidworks") || t.includes("главгосэкспертиз") || t.includes("engineer")) {
+    return "engineer";
+  }
+  if (t.includes("бухгалтер") || t.includes("осно") || t.includes("усн") || t.includes("ндс") || t.includes("1с:бухгалтерия") || t.includes("accountant")) {
+    return "accountant";
+  }
+  if (t.includes("руководитель отдела продаж") || t.includes("b2b") || t.includes("amocrm") || t.includes("дебиторск") || t.includes("менеджер по продажам") || t.includes("sales")) {
+    return "sales";
+  }
+  if (t.includes("маркетолог") || t.includes("директ") || t.includes("cpl") || t.includes("cac") || t.includes("romi") || t.includes("marketing")) {
+    return "marketing";
+  }
+  if (t.includes("юрист") || t.includes("юрисконсульт") || t.includes("арбитраж") || t.includes("гк рф") || t.includes("договорн") || t.includes("legal")) {
+    return "legal";
+  }
+  if (t.includes("логист") || t.includes("scm") || t.includes("wms") || t.includes("инкотермс") || t.includes("otif") || t.includes("logistics")) {
+    return "logistics";
+  }
+  if (t.includes("product manager") || t.includes("руководитель продукта") || t.includes("scrum") || t.includes("kubernetes") || t.includes("разработ")) {
+    return "it";
+  }
+  if (t.includes("hr-директор") || t.includes("рекрутер") || t.includes("huntflow") || t.includes("подбор персонал")) {
+    return "hr";
+  }
+  if (t.includes("операционный директор") || t.includes("coo") || t.includes("генеральный директор") || t.includes("p&l") || t.includes("ebitda") || t.includes("executive")) {
+    return "executive";
+  }
+  return "";
+}
+
+export function isStaleAccountantOrEngineerText(text: string): boolean {
+  if (!text) return false;
+  const t = text.toLowerCase();
+  const hasAccountantMarkers =
+    t.includes("ресурс-финанс") ||
+    (t.includes("1с:бухгалтерия") && t.includes("осно") && t.includes("фнс"));
+  const hasEngineerMarkers =
+    t.includes("промавтоматика") ||
+    (t.includes("сапр") && t.includes("главгосэкспертиз") && t.includes("ескд"));
+  return hasAccountantMarkers || hasEngineerMarkers;
+}
+
+export function findPresetForRole(roleOrText: string) {
+  const detected = detectRoleFromText(roleOrText);
+  if (detected) {
+    const p = DIVERSE_PRESETS.find((x) => x.id === detected);
+    if (p) return p;
+  }
+  const r = (roleOrText || "").toLowerCase().trim();
+  return DIVERSE_PRESETS.find(
+    (p) =>
+      p.id === r ||
+      p.label.toLowerCase().includes(r) ||
+      p.categoryName.toLowerCase().includes(r)
+  );
+}
 
 export default function ATSScannerPage() {
   const {
@@ -431,19 +563,39 @@ export default function ATSScannerPage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Pre-fill target job from Kanban navigation or Library
+  // Pre-fill target job from Kanban navigation or Library + clean stale defaults
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const savedResume = localStorage.getItem("launchpad_scanner_resume");
-      const savedJob = localStorage.getItem("launchpad_scanner_job");
+      let savedResume = localStorage.getItem("launchpad_scanner_resume");
+      let savedJob = localStorage.getItem("launchpad_scanner_job");
+
+      // Clean stale default accountant / engineer job from localStorage if user didn't explicitly pick it
+      if (savedJob && isStaleAccountantOrEngineerText(savedJob)) {
+        if (savedResume && !detectRoleFromText(savedResume).includes("accountant")) {
+          localStorage.removeItem("launchpad_scanner_job");
+          savedJob = null;
+        }
+      }
+
       if (savedResume) {
         setResumeText(savedResume);
         localStorage.removeItem("launchpad_scanner_resume");
+
+        // If no savedJob or savedJob is stale, synchronize vacancy with the resume's role!
+        if (!savedJob || isStaleAccountantOrEngineerText(savedJob)) {
+          const matchingPreset = findPresetForRole(savedResume);
+          if (matchingPreset) {
+            setJobDesc(matchingPreset.job);
+            savedJob = matchingPreset.job;
+          }
+        }
       }
+
       if (savedJob) {
         setJobDesc(savedJob);
         localStorage.removeItem("launchpad_scanner_job");
       }
+
       if (savedResume || savedJob) {
         showToast("Загружен эталонный образец из библиотеки резюме!");
       }
@@ -496,6 +648,32 @@ export default function ATSScannerPage() {
   const simulation: AtsSimulationResult = useMemo(() => {
     return simulateAtsParser(resumeText, jobDesc, language);
   }, [resumeText, jobDesc, language]);
+
+  // Check if current resume and current job belong to mismatched domains
+  const roleMismatchInfo = useMemo(() => {
+    const resRole = detectRoleFromText(resumeText);
+    const vacRole = detectRoleFromText(jobDesc);
+    if (resRole && vacRole && resRole !== vacRole) {
+      const resPreset = DIVERSE_PRESETS.find((p) => p.id === resRole);
+      const vacPreset = DIVERSE_PRESETS.find((p) => p.id === vacRole);
+      return {
+        isMismatch: true,
+        resumeRole: resRole,
+        resumeLabel: resPreset?.label || resRole,
+        vacancyRole: vacRole,
+        vacancyLabel: vacPreset?.label || vacRole,
+        matchingVacancy: resPreset?.job,
+      };
+    }
+    return {
+      isMismatch: false,
+      resumeRole: "",
+      resumeLabel: "",
+      vacancyRole: "",
+      vacancyLabel: "",
+      matchingVacancy: undefined,
+    };
+  }, [resumeText, jobDesc]);
 
   // Real LLM / API ATS Audit invoker
   const fetchAtsAudit = useCallback(
@@ -599,8 +777,20 @@ export default function ATSScannerPage() {
 
   const handleLoadPreset = (presetId: string) => {
     const aliasMap: Record<string, string> = {
+      actor: "actor",
+      актер: "actor",
+      актёр: "actor",
+      teacher: "teacher",
+      учитель: "teacher",
+      преподаватель: "teacher",
+      педагог: "teacher",
       lawyer: "legal",
       jurist: "legal",
+      юрист: "legal",
+      sales: "sales",
+      продажи: "sales",
+      marketing: "marketing",
+      маркетинг: "marketing",
       director: "executive",
       lead: "executive",
       ceo: "executive",
@@ -610,8 +800,14 @@ export default function ATSScannerPage() {
       software: "it",
       recruiter: "hr",
       hrbp: "hr",
+      hr: "hr",
       engineer: "engineer",
+      инженер: "engineer",
       pto: "engineer",
+      accountant: "accountant",
+      бухгалтер: "accountant",
+      logistics: "logistics",
+      логистика: "logistics",
     };
     const key = presetId.toLowerCase().trim();
     const targetId = aliasMap[key] || key;
@@ -652,7 +848,15 @@ export default function ATSScannerPage() {
         const data = await res.json();
         if (data.text) {
           setResumeText(data.text);
-          fetchAtsAudit(data.text, jobDesc, false);
+          let effectiveJob = jobDesc;
+          if (isStaleAccountantOrEngineerText(jobDesc) && !detectRoleFromText(data.text).includes("accountant")) {
+            const matchingPreset = findPresetForRole(data.text);
+            if (matchingPreset) {
+              effectiveJob = matchingPreset.job;
+              setJobDesc(matchingPreset.job);
+            }
+          }
+          fetchAtsAudit(data.text, effectiveJob, false);
           showToast(`✓ Резюме «${file.name}» (${data.fileType || "DOC"}) успешно извлечено без искажений!`);
           setIsParsingFile(false);
           return;
@@ -666,7 +870,15 @@ export default function ATSScannerPage() {
         if (text && text.trim().length > 30) {
           const cleaned = cleanAIMarkdownArtifacts(text);
           setResumeText(cleaned);
-          fetchAtsAudit(cleaned, jobDesc, false);
+          let effectiveJob = jobDesc;
+          if (isStaleAccountantOrEngineerText(jobDesc) && !detectRoleFromText(cleaned).includes("accountant")) {
+            const matchingPreset = findPresetForRole(cleaned);
+            if (matchingPreset) {
+              effectiveJob = matchingPreset.job;
+              setJobDesc(matchingPreset.job);
+            }
+          }
+          fetchAtsAudit(cleaned, effectiveJob, false);
           showToast(`Файл «${file.name}» загружен.`);
         }
       };
@@ -707,21 +919,34 @@ export default function ATSScannerPage() {
     }
   };
 
-  // Module 2: Generate Job Requirements from Single Role Title
+  // Module 2: Generate Job Requirements from Single Role Title with 2-way sync
   const handleGenerateRoleRequirements = async () => {
     if (!jobRoleInput.trim()) return;
+    const targetRole = jobRoleInput.trim();
     setIsImportingJob(true);
     try {
       const res = await fetch("/api/parse-job", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ roleTitle: jobRoleInput.trim(), mode: "generate_role" }),
+        body: JSON.stringify({ roleTitle: targetRole, mode: "generate_role" }),
       });
       const data = await res.json();
       if (data.success && data.jobDesc) {
         setJobDesc(data.jobDesc);
-        fetchAtsAudit(resumeText, data.jobDesc, false);
-        showToast(`✓ Требования рынка для «${jobRoleInput}» успешно сгенерированы!`);
+
+        // Reverse synchronization: if current resume is a default preset or stale accountant/engineer,
+        // sync the resume to the matching profession preset!
+        let currentResumeToAudit = resumeText;
+        const matchingPreset = findPresetForRole(targetRole);
+        if (matchingPreset && (isStaleAccountantOrEngineerText(resumeText) || detectRoleFromText(resumeText) !== detectRoleFromText(targetRole))) {
+          setResumeText(matchingPreset.resume);
+          currentResumeToAudit = matchingPreset.resume;
+          showToast(`✓ Вакансия и резюме синхронизированы для профессии «${targetRole}»!`);
+        } else {
+          showToast(`✓ Требования рынка для «${targetRole}» успешно сгенерированы!`);
+        }
+
+        fetchAtsAudit(currentResumeToAudit, data.jobDesc, false);
         setJobRoleInput("");
       } else {
         showToast("Не удалось сгенерировать требования. Попробуйте ещё раз.");
@@ -1309,6 +1534,36 @@ export default function ATSScannerPage() {
             </CardHeader>
 
             <CardContent className="space-y-3">
+              {roleMismatchInfo.isMismatch && (
+                <div className="p-3 rounded-xl border border-amber-500/40 bg-amber-500/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 animate-in fade-in">
+                  <div className="flex items-start gap-2 text-xs text-amber-200">
+                    <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-bold text-amber-300">
+                        Несоответствие: резюме ({roleMismatchInfo.resumeLabel}) vs вакансия ({roleMismatchInfo.vacancyLabel})
+                      </p>
+                      <p className="text-[11px] text-amber-200/80 mt-0.5">
+                        ATS-сканер требует навыки другой профессии. Синхронизируйте требования вакансии в 1 клик.
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    type="button"
+                    onClick={() => {
+                      if (roleMismatchInfo.matchingVacancy) {
+                        setJobDesc(roleMismatchInfo.matchingVacancy);
+                        fetchAtsAudit(resumeText, roleMismatchInfo.matchingVacancy, false);
+                        showToast(`✓ Вакансия синхронизирована с профессией «${roleMismatchInfo.resumeLabel}»!`);
+                      }
+                    }}
+                    className="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs h-7 px-3 shrink-0 cursor-pointer shadow-sm shadow-amber-600/30"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 mr-1" />
+                    Синхронизировать вакансию
+                  </Button>
+                </div>
+              )}
               {jobImportTab === "url" && (
                 <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl space-y-2">
                   <span className="text-[11px] font-semibold text-red-300 block">
@@ -2078,14 +2333,24 @@ export default function ATSScannerPage() {
         language={language}
       />
 
-      {/* Module 1: Build Resume from Scratch with AI */}
+      {/* Module 1: Build Resume from Scratch with AI (with 2-way sync) */}
       <AiBuildResumeModal
         open={buildResumeModalOpen}
         onOpenChange={setBuildResumeModalOpen}
-        onApplyResume={(newResume) => {
+        onApplyResume={(newResume, matchingVacancy) => {
           setResumeText(newResume);
-          fetchAtsAudit(newResume, jobDesc, false);
-          showToast("✓ Резюме успешно сгенерировано с ИИ и помещено в сканер!");
+          let targetVacancy = matchingVacancy;
+          if (!targetVacancy) {
+            const preset = findPresetForRole(newResume);
+            if (preset) targetVacancy = preset.job;
+          }
+          if (targetVacancy) {
+            setJobDesc(targetVacancy);
+            fetchAtsAudit(newResume, targetVacancy, false);
+          } else {
+            fetchAtsAudit(newResume, jobDesc, false);
+          }
+          showToast("✓ Резюме и требования вакансии успешно синхронизированы!");
         }}
         defaultRole={activeIndustry}
       />
