@@ -45,6 +45,7 @@ export async function callAI(options: AICallOptions): Promise<AICallResponse> {
         temperature,
         mode,
       }),
+      signal: AbortSignal.timeout(10000),
     });
 
     if (res.ok) {
@@ -63,7 +64,10 @@ export async function callAI(options: AICallOptions): Promise<AICallResponse> {
     try {
       const combined = `${systemPrompt || "You are an ATS career expert"}\n\n${userPrompt}`;
       const url = `https://text.pollinations.ai/${encodeURIComponent(combined.slice(0, 700))}?model=${model}`;
-      const clientRes = await fetch(url, { headers: { "User-Agent": "LaunchPad-ATS/2026" } });
+      const clientRes = await fetch(url, {
+        headers: { "User-Agent": "LaunchPad-ATS/2026" },
+        signal: AbortSignal.timeout(2500),
+      });
       if (clientRes.ok) {
         const text = await clientRes.text();
         if (text && !text.includes("Free limit reached") && !text.includes("SERVICE_UNAVAILABLE")) {

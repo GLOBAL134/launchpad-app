@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cleanAIMarkdownArtifacts } from "@/lib/monetization";
 
+export const maxDuration = 30;
+
 /**
  * Universal Free LLM Cascade:
  * 1. User Client Key or Server ENV: Groq API (llama-3.3-70b-versatile)
  * 2. User Client Key or Server ENV: Google Gemini (gemini-1.5-flash)
  * 3. User Client Key or Server ENV: OpenRouter
- * 4. Free Pollinations AI Endpoint (rotating models: openai, qwen, mistral)
+ * 4. Free Pollinations AI Endpoint (fast 3s timeout)
  * 5. Intelligent Deterministic Career Engine (guaranteed personalized, zero-downtime rewrite)
  */
 
@@ -63,6 +65,7 @@ export async function POST(req: NextRequest) {
             ],
             temperature,
           }),
+          signal: AbortSignal.timeout(6000),
         });
 
         if (groqRes.ok) {
@@ -101,6 +104,7 @@ export async function POST(req: NextRequest) {
             ],
             generationConfig: { temperature },
           }),
+          signal: AbortSignal.timeout(6000),
         });
 
         if (geminiRes.ok) {
@@ -118,43 +122,42 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 3. Try Pollinations AI free models
-    for (const model of ["openai", "qwen", "mistral"]) {
-      try {
-        const pollPostRes = await fetch("https://text.pollinations.ai/openai", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "User-Agent": "LaunchPad-ATS/2026",
-          },
-          body: JSON.stringify({
-            messages: [
-              { role: "system", content: systemPrompt },
-              { role: "user", content: userPrompt },
-            ],
-            model,
-            temperature,
-          }),
-        });
+    // 3. Try Pollinations AI free models (fast 3s timeout to avoid Vercel gateway timeout)
+    try {
+      const pollPostRes = await fetch("https://text.pollinations.ai/openai", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "User-Agent": "LaunchPad-ATS/2026",
+        },
+        body: JSON.stringify({
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt },
+          ],
+          model: "openai",
+          temperature,
+        }),
+        signal: AbortSignal.timeout(2800),
+      });
 
-        if (pollPostRes.ok) {
-          const data = await pollPostRes.json();
-          const raw = data.choices?.[0]?.message?.content || "";
-          if (
-            raw.trim() &&
-            !raw.includes("Free limit reached") &&
-            !raw.includes("SERVICE_UNAVAILABLE") &&
-            !raw.includes("budget")
-          ) {
-            return NextResponse.json({
-              text: cleanAIMarkdownArtifacts(raw),
-              provider: `pollinations_${model}`,
-            });
-          }
+      if (pollPostRes.ok) {
+        const data = await pollPostRes.json();
+        const raw = data.choices?.[0]?.message?.content || "";
+        if (
+          raw.trim() &&
+          !raw.includes("Free limit reached") &&
+          !raw.includes("SERVICE_UNAVAILABLE") &&
+          !raw.includes("budget")
+        ) {
+          return NextResponse.json({
+            text: cleanAIMarkdownArtifacts(raw),
+            provider: "pollinations_ai",
+          });
         }
-      } catch {
-        // try next model
       }
+    } catch {
+      // Pollinations busy or timed out; immediately proceed to deterministic engine
     }
 
     // 4. Guaranteed High-Precision Career Synthesizer
