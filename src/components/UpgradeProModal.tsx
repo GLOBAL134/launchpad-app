@@ -19,6 +19,7 @@ import {
   MONETIZATION_PLANS,
   TRIBUTE_LINKS,
   verifyAndActivateProKey,
+  checkDiscountPromoCode,
   PlanOption,
 } from '../lib/monetization';
 import { Button } from '@/components/ui/button';
@@ -37,7 +38,13 @@ export default function UpgradeProModal({
   reasonMessage,
 }: UpgradeProModalProps) {
   const [selectedPlanId, setSelectedPlanId] = useState<'turbo_24h' | 'offer_pro_30d'>('offer_pro_30d');
-  const [promoCode, setPromoCode] = useState('');
+  const [promoCode, setPromoCode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const p = new URLSearchParams(window.location.search);
+      return p.get('promo') || p.get('promocode') || p.get('code') || '';
+    }
+    return '';
+  });
   const [codeError, setCodeError] = useState<string | null>(null);
   const [codeSuccess, setCodeSuccess] = useState<string | null>(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
@@ -51,6 +58,20 @@ export default function UpgradeProModal({
 
     const trimmed = promoCode.trim().toUpperCase();
 
+    // 1. Проверяем скидочные промокоды из наших рекламных видео в Reels/TikTok (START30)
+    const discountCheck = checkDiscountPromoCode(trimmed);
+    if (discountCheck.valid && discountCheck.checkoutUrl) {
+      setCodeSuccess(
+        discountCheck.message ||
+          '🎉 Промокод START30 успешно применен! Скидка 30% активирована: 490 ₽ вместо 690 ₽. Перенаправляем к оплате...'
+      );
+      setTimeout(() => {
+        window.open(discountCheck.checkoutUrl, '_blank', 'noopener,noreferrer');
+      }, 1200);
+      return;
+    }
+
+    // 2. Проверяем ключи активации PRO после оплаты (TRIBUTE_VIP_990 / ADMIN777)
     if (verifyAndActivateProKey(trimmed)) {
       if (trimmed === 'ADMIN777') {
         setCodeSuccess('🎉 Секретный код владельца принят! Безлимитный PRO активирован!');
@@ -62,7 +83,7 @@ export default function UpgradeProModal({
         onClose();
       }, 1000);
     } else {
-      setCodeError('Неверный ключ активации. Введите ключ, полученный после оплаты.');
+      setCodeError('Неверный промокод или ключ активации. Введите промокод START30 или ключ после оплаты.');
     }
   };
 
@@ -293,7 +314,7 @@ export default function UpgradeProModal({
             <div className="flex items-center justify-between">
               <label className="text-[11px] text-slate-300 font-semibold flex items-center gap-1.5">
                 <Gift className="w-3.5 h-3.5 text-indigo-400" />
-                <span>Активация доступа (для оплативших в Tribute)</span>
+                <span>Промокод на скидку или ключ активации PRO</span>
               </label>
             </div>
 
@@ -302,7 +323,7 @@ export default function UpgradeProModal({
                 type="text"
                 value={promoCode}
                 onChange={(e) => setPromoCode(e.target.value)}
-                placeholder="Введите ваш персональный ключ (выдается в Tribute после оплаты)..."
+                placeholder="Промокод (START30) или ключ активации..."
                 className="flex-1 rounded-xl bg-slate-950 border border-slate-800 px-3 py-2 text-xs text-white uppercase placeholder:normal-case placeholder:text-slate-600 focus:border-indigo-500 focus:outline-none font-mono"
               />
               <Button
@@ -310,7 +331,7 @@ export default function UpgradeProModal({
                 size="sm"
                 className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 h-9 cursor-pointer shrink-0"
               >
-                Активировать
+                Применить
               </Button>
             </div>
 

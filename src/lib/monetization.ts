@@ -11,6 +11,25 @@ export const VALID_PRO_KEYS = [
   'ADMIN777',        // Закрытый ключ владельца
 ];
 
+// Рекламные промокоды со скидкой из Reels/TikTok (не активируют бесплатный PRO, а ведут на скидочную оплату)
+export const DISCOUNT_PROMO_CODES: Record<
+  string,
+  {
+    code: string;
+    discountPercent: number;
+    message: string;
+    checkoutUrl: string;
+  }
+> = {
+  START30: {
+    code: 'START30',
+    discountPercent: 30,
+    message:
+      '🎉 Промокод START30 успешно применен! Скидка 30% активирована: 490 ₽ вместо 690 ₽. Перенаправляем к оплате...',
+    checkoutUrl: 'https://web.tribute.tg/p/ICg',
+  },
+};
+
 export const FREE_SCAN_LIMIT = 2;
 export const FREE_AI_REWRITE_LIMIT = 1;
 
@@ -129,6 +148,25 @@ export function verifyAndActivateProKey(inputKey: string): boolean {
     return true;
   }
   return false;
+}
+
+export function checkDiscountPromoCode(inputCode: string): {
+  valid: boolean;
+  message?: string;
+  checkoutUrl?: string;
+  code?: string;
+} {
+  const normalized = inputCode.trim().toUpperCase();
+  const found = DISCOUNT_PROMO_CODES[normalized];
+  if (found) {
+    return {
+      valid: true,
+      message: found.message,
+      checkoutUrl: found.checkoutUrl,
+      code: found.code,
+    };
+  }
+  return { valid: false };
 }
 
 // Удаление всех «нейрозвёздочек» (**текст**, ###, `код`) из ответов ИИ и сопроводительных писем
