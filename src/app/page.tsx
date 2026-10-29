@@ -33,6 +33,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import UpgradeProModal from "@/components/UpgradeProModal";
+import HiringFunnelCalculator from "@/components/HiringFunnelCalculator";
 import { useApp } from "@/context/AppContext";
 import {
   isUserPro,
@@ -266,6 +267,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Interactive Hiring Funnel & Lost Salary Calculator */}
+      <HiringFunnelCalculator />
 
       {/* Pain Points Section */}
       <section id="pain-points" className="py-20 border-t border-border/60 bg-muted/20">
