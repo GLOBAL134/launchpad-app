@@ -66,13 +66,15 @@ export default function LandingPage() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
-    const proKey = params.get("pro_key");
-    if (proKey && verifyAndActivateProKey(proKey)) {
+    const activateKey = params.get("activate_pro") || params.get("pro_key") || params.get("activate");
+    if (activateKey && verifyAndActivateProKey(activateKey)) {
       setIsPro(true);
       setRemainingScans(Infinity);
-      showToast("🎉 Тариф LaunchPad AI PRO успешно активирован!");
+      showToast("🎉 Доступ PRO успешно активирован! Все функции и скачивания разблокированы.");
       const url = new URL(window.location.href);
+      url.searchParams.delete("activate_pro");
       url.searchParams.delete("pro_key");
+      url.searchParams.delete("activate");
       window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
     } else {
       setIsPro(isUserPro());

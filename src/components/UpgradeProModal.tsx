@@ -204,35 +204,87 @@ export default function UpgradeProModal({
 
                 {/* Select / Pay Button */}
                 <div className="pt-4 mt-2">
-                  <Button
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCheckout(plan);
-                    }}
-                    disabled={isProcessingPayment}
-                    className={`w-full font-bold text-xs h-9 cursor-pointer transition shadow-md ${
-                      isFeatured
-                        ? 'bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white shadow-indigo-600/30'
-                        : 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700'
-                    }`}
-                  >
-                    {isProcessingPayment && selectedPlanId === plan.id ? (
-                      <>
-                        <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                        Переход к оплате...
-                      </>
-                    ) : (
-                      <>
-                        <span>{isFeatured ? 'Оформить Оффер под ключ' : 'Выбрать Турбо-Старт'}</span>
+                  {plan.id === 'offer_pro_30d' ? (
+                    <div className="space-y-2">
+                      <Button
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.open(TRIBUTE_LINKS.WEB_CHECKOUT, '_blank', 'noopener,noreferrer');
+                        }}
+                        className="w-full font-bold text-xs h-9 bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 text-white shadow-md shadow-emerald-500/20 cursor-pointer"
+                      >
+                        💳 Оплатить картой (490 ₽)
                         <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                      </>
-                    )}
-                  </Button>
+                      </Button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.open(TRIBUTE_LINKS.TG_APP_CHECKOUT, '_blank', 'noopener,noreferrer');
+                        }}
+                        className="w-full text-center text-xs font-semibold text-indigo-300 hover:text-white transition py-1 cursor-pointer flex items-center justify-center gap-1"
+                      >
+                        <span>✈️ Оплатить через Telegram / Stars</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <Button
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCheckout(plan);
+                      }}
+                      disabled={isProcessingPayment}
+                      className="w-full font-bold text-xs h-9 cursor-pointer transition shadow-md bg-slate-800 hover:bg-slate-700 text-white border border-slate-700"
+                    >
+                      {isProcessingPayment && selectedPlanId === plan.id ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                          Переход к оплате...
+                        </>
+                      ) : (
+                        <>
+                          <span>Выбрать Турбо-Старт (290 ₽)</span>
+                          <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                        </>
+                      )}
+                    </Button>
+                  )}
                 </div>
               </div>
             );
           })}
+        </div>
+
+        {/* Tribute Direct Checkout Buttons for PRO */}
+        <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-950/60 via-slate-900 to-slate-950 border border-indigo-500/30 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+            <span className="text-xs font-bold text-indigo-300 uppercase tracking-wider flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+              Тариф PRO (на 30 дней): 490 ₽
+            </span>
+            <span className="text-[11px] text-emerald-400 font-semibold">
+              Мгновенная выдача доступа
+            </span>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-2.5">
+            <button
+              type="button"
+              onClick={() => window.open(TRIBUTE_LINKS.WEB_CHECKOUT, '_blank', 'noopener,noreferrer')}
+              className="flex-1 py-3 px-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-emerald-500/20 hover:shadow-indigo-500/30 transition-all flex items-center justify-center gap-2 cursor-pointer text-center"
+            >
+              <span>💳 Оплатить картой в браузере (МИР / СБП / Visa / Mastercard)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => window.open(TRIBUTE_LINKS.TG_APP_CHECKOUT, '_blank', 'noopener,noreferrer')}
+              className="py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 border border-indigo-500/40 hover:border-indigo-400 text-indigo-200 hover:text-white font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0 text-center"
+            >
+              <span>✈️ Оплатить через Telegram / Stars</span>
+            </button>
+          </div>
         </div>
 
         {/* Promo code & Owner Secret Key activation */}

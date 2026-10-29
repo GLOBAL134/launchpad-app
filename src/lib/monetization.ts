@@ -1,6 +1,6 @@
 export const TRIBUTE_LINKS = {
-  WEB_CHECKOUT: 'https://web.tribute.tg/s/1aEM',
-  TG_APP_CHECKOUT: 'https://t.me/tribute/app?startapp=s1aEM',
+  WEB_CHECKOUT: 'https://web.tribute.tg/p/ICg',
+  TG_APP_CHECKOUT: 'https://t.me/tribute/app?startapp=pICg',
   // Direct payment link (ЮMoney / Банковская карта РФ / СБП)
   YOOMONEY_CHECKOUT: 'https://yoomoney.ru/to/4100118580210283',
 };
@@ -47,8 +47,8 @@ export const MONETIZATION_PLANS: PlanOption[] = [
     name: 'Оффер под ключ (30 дней PRO)',
     tagline: 'Хит продаж — полный арсенал для быстрого выхода на оффер',
     badge: '🔥 Хит продаж',
-    priceRub: 690,
-    oldPriceRub: 1290,
+    priceRub: 490,
+    oldPriceRub: 990,
     periodLabel: '30 дней полного безлимита',
     recommended: true,
     features: [
