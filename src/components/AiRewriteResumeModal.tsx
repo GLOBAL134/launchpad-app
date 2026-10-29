@@ -26,6 +26,8 @@ import {
 } from "lucide-react";
 import { callAI } from "@/lib/ai-client";
 import AiSettingsModal from "@/components/AiSettingsModal";
+import { useApp } from "@/context/AppContext";
+import { injectUserProfileIntoResume } from "@/lib/profile-utils";
 
 export type LifeSituation = "standard" | "switch" | "gap" | "junior";
 
@@ -50,6 +52,7 @@ export default function AiRewriteResumeModal({
   initialLifeSituation = "standard",
   onApplyRewritten,
 }: Props) {
+  const { userProfile } = useApp();
   const [rewrittenText, setRewrittenText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [viewTab, setViewTab] = useState<"side_by_side" | "improved">("side_by_side");
@@ -98,10 +101,12 @@ ${jobDescription.slice(0, 1000)}
 ЦЕЛЕВЫЕ НАВЫКИ ДЛЯ ИНТЕГРАЦИИ В ОПЫТ:
 ${missingSkills.slice(0, 10).join(", ") || "Ключевые профильные навыки вакансии"}
 
+ФИО СОИСКАТЕЛЯ: СТРОГО «${userProfile?.name || "Сохрани имя из резюме"}»
+
 ТЕКУЩЕЕ РЕЗЮМЕ КАНДИДАТА (БЫЛО):
 ${currentResume}
 
-Перепиши резюме целиком в эталонный Harvard ATS стандарт, оцифруй результаты по формуле X-Y-Z и органично вплети все недостающие навыки внутрь опыта работы. Без звездочек (**) и решеток (#).`;
+Перепиши резюме целиком в эталонный Harvard ATS стандарт, оцифруй результаты по формуле X-Y-Z и органично вплети все недостающие навыки внутрь опыта работы. Без звездочек (**) и решеток (#). Сохраняй реальное ФИО кандидата «${userProfile?.name || ""}»!`;
 
       let groqKey = "";
       if (typeof window !== "undefined") {
@@ -119,13 +124,17 @@ ${currentResume}
           resumeText: currentResume,
           vacancyText: jobDescription,
           missingSkills,
+          candidateName: userProfile?.name,
+          candidateEmail: userProfile?.email,
+          candidatePhone: userProfile?.phone,
           userApiKey: groqKey.trim(),
         }),
       });
 
       const data = await res.json();
       if (res.ok && data.rewrittenResume) {
-        setRewrittenText(data.rewrittenResume);
+        const enriched = injectUserProfileIntoResume(data.rewrittenResume, userProfile);
+        setRewrittenText(enriched);
       } else {
         const fallbackRes = await callAI({
           systemPrompt,
@@ -133,7 +142,8 @@ ${currentResume}
           temperature: 0.3,
           mode: "resume_rewrite",
         });
-        setRewrittenText(fallbackRes.text.trim());
+        const enriched = injectUserProfileIntoResume(fallbackRes.text.trim(), userProfile);
+        setRewrittenText(enriched);
       }
     } catch (err) {
       console.error(err);
@@ -151,7 +161,8 @@ ${currentResume}
 
   const handleApply = () => {
     if (!rewrittenText.trim()) return;
-    onApplyRewritten(rewrittenText.trim());
+    const finalResume = injectUserProfileIntoResume(rewrittenText.trim(), userProfile);
+    onApplyRewritten(finalResume);
     onClose();
   };
 

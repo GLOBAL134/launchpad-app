@@ -335,7 +335,10 @@ function rearchitectCandidateResume(userPrompt: string): string {
   let contacts = "+7 (999) 000-00-00 | email@domain.ru | Москва";
   let detectedRole = "Ведущий специалист";
 
-  if (
+  const explicitNameMatch = userPrompt.match(/(?:ФИО СОИСКАТЕЛЯ|ФИО КАНДИДАТА|ИМЯ КАНДИДАТА|КАНДИДАТ)[:\s]+[«"]?([^«»"\n]+)[»"]?/i);
+  if (explicitNameMatch && explicitNameMatch[1].trim() && !explicitNameMatch[1].includes("Сохрани")) {
+    name = explicitNameMatch[1].trim();
+  } else if (
     lines.length > 0 &&
     !lines[0].toUpperCase().includes("РЕЗЮМЕ") &&
     !lines[0].includes("|") &&

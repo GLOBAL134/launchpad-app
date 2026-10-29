@@ -71,6 +71,7 @@ import { detectLanguage } from "@/lib/language";
 import { simulateAtsParser, AtsSimulationResult, XyzImprovement } from "@/lib/ats-parser-simulator";
 import type { AtsAuditResponse } from "@/app/api/ats-audit/route";
 import { useApp } from "@/context/AppContext";
+import { injectUserProfileIntoResume } from "@/lib/profile-utils";
 
 export const DIVERSE_PRESETS = [
   {
@@ -517,7 +518,9 @@ export default function ATSScannerPage() {
     showToast,
   } = useApp();
 
-  const [resumeText, setResumeText] = useState(DIVERSE_PRESETS[0].resume);
+  const [resumeText, setResumeText] = useState(() =>
+    injectUserProfileIntoResume(DIVERSE_PRESETS[0].resume, userProfile)
+  );
   const [jobDesc, setJobDesc] = useState(DIVERSE_PRESETS[0].job);
   const [selectedTrackerJobId, setSelectedTrackerJobId] = useState<string>("");
 
@@ -563,6 +566,13 @@ export default function ATSScannerPage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Auto-synchronize candidate name and contacts in current resume when user profile changes
+  useEffect(() => {
+    if (userProfile?.name && resumeText) {
+      setResumeText((prev) => injectUserProfileIntoResume(prev, userProfile));
+    }
+  }, [userProfile?.name, userProfile?.email, userProfile?.phone]);
+
   // Pre-fill target job from Kanban navigation or Library + clean stale defaults
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -578,17 +588,21 @@ export default function ATSScannerPage() {
       }
 
       if (savedResume) {
-        setResumeText(savedResume);
+        const personalized = injectUserProfileIntoResume(savedResume, userProfile);
+        setResumeText(personalized);
         localStorage.removeItem("launchpad_scanner_resume");
 
         // If no savedJob or savedJob is stale, synchronize vacancy with the resume's role!
         if (!savedJob || isStaleAccountantOrEngineerText(savedJob)) {
-          const matchingPreset = findPresetForRole(savedResume);
+          const matchingPreset = findPresetForRole(personalized);
           if (matchingPreset) {
             setJobDesc(matchingPreset.job);
             savedJob = matchingPreset.job;
           }
         }
+      } else {
+        // Enforce current userProfile credentials on default resume
+        setResumeText((prev) => injectUserProfileIntoResume(prev, userProfile));
       }
 
       if (savedJob) {
@@ -609,7 +623,7 @@ export default function ATSScannerPage() {
       );
       showToast(`Загружены требования вакансии «${scannerTargetJob.company}»`);
     }
-  }, [scannerTargetJob, showToast]);
+  }, [scannerTargetJob, showToast, userProfile]);
 
   // Handle Quick Audit trigger from header
   useEffect(() => {
@@ -814,8 +828,9 @@ export default function ATSScannerPage() {
     const p = DIVERSE_PRESETS.find((x) => x.id === targetId || x.id === presetId);
     if (p) {
       setJobDesc(p.job);
-      setResumeText(p.resume);
-      fetchAtsAudit(p.resume, p.job, false);
+      const personalizedResume = injectUserProfileIntoResume(p.resume, userProfile);
+      setResumeText(personalizedResume);
+      fetchAtsAudit(personalizedResume, p.job, false);
       showToast(`Загружен эталон «${p.label}» (${p.categoryName})!`);
     }
   };
@@ -1030,8 +1045,9 @@ export default function ATSScannerPage() {
 
   // STEP 4: AI Auto-Rewrite Whole Resume
   const handleApplyRewrittenResume = (newResume: string) => {
-    setResumeText(newResume);
-    fetchAtsAudit(newResume, jobDesc, false);
+    const personalized = injectUserProfileIntoResume(newResume, userProfile);
+    setResumeText(personalized);
+    fetchAtsAudit(personalized, jobDesc, false);
     showToast("🎉 Резюме переписано в Harvard ATS стандарт! Балл повышен до 92%+.");
     setTimeout(() => {
       setViralBonusOpen(true);
@@ -1067,15 +1083,19 @@ export default function ATSScannerPage() {
           resumeText,
           vacancyText: jobDesc,
           missingSkills: activeMissingSkills,
+          candidateName: userProfile.name,
+          candidateEmail: userProfile.email,
+          candidatePhone: userProfile.phone,
           userApiKey: groqKey.trim(),
         }),
       });
 
       const data = await res.json();
       if (res.ok && data.rewrittenResume) {
-        setResumeText(data.rewrittenResume);
+        const personalized = injectUserProfileIntoResume(data.rewrittenResume, userProfile);
+        setResumeText(personalized);
         showToast("🎉 Резюме переписано через Groq! Пересчитываем балл ATS...");
-        await fetchAtsAudit(data.rewrittenResume, jobDesc, true);
+        await fetchAtsAudit(personalized, jobDesc, true);
         setTimeout(() => setViralBonusOpen(true), 800);
       } else {
         showToast(data.error || "Не удалось переписать резюме через Groq");
@@ -2338,17 +2358,18 @@ export default function ATSScannerPage() {
         open={buildResumeModalOpen}
         onOpenChange={setBuildResumeModalOpen}
         onApplyResume={(newResume, matchingVacancy) => {
-          setResumeText(newResume);
+          const personalizedResume = injectUserProfileIntoResume(newResume, userProfile);
+          setResumeText(personalizedResume);
           let targetVacancy = matchingVacancy;
           if (!targetVacancy) {
-            const preset = findPresetForRole(newResume);
+            const preset = findPresetForRole(personalizedResume);
             if (preset) targetVacancy = preset.job;
           }
           if (targetVacancy) {
             setJobDesc(targetVacancy);
-            fetchAtsAudit(newResume, targetVacancy, false);
+            fetchAtsAudit(personalizedResume, targetVacancy, false);
           } else {
-            fetchAtsAudit(newResume, jobDesc, false);
+            fetchAtsAudit(personalizedResume, jobDesc, false);
           }
           showToast("✓ Резюме и требования вакансии успешно синхронизированы!");
         }}

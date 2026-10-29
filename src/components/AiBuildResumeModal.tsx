@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sparkles, Check, Loader2, ArrowRight, Wand2, FileText, UserCheck, Briefcase } from "lucide-react";
 import {
   Dialog,
@@ -13,6 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { callAI } from "@/lib/ai-client";
+import { useApp } from "@/context/AppContext";
+import { injectUserProfileIntoResume } from "@/lib/profile-utils";
 
 interface AiBuildResumeModalProps {
   open: boolean;
@@ -27,15 +29,31 @@ export function AiBuildResumeModal({
   onApplyResume,
   defaultRole = "",
 }: AiBuildResumeModalProps) {
+  const { userProfile, authSession } = useApp();
+
+  const realCandidateName = (userProfile?.name || authSession?.name || "").trim() || "Алексей Медведев";
+  const realCandidateEmail = (userProfile?.email || authSession?.email || "").trim() || "alexey@email.ru";
+  const realCandidatePhone = (userProfile?.phone || authSession?.phone || "").trim() || "+7 (999) 123-45-67";
+
+  const [candidateName, setCandidateName] = useState(realCandidateName);
   const [role, setRole] = useState(defaultRole);
   const [experience, setExperience] = useState("");
   const [skills, setSkills] = useState("");
   const [educationCity, setEducationCity] = useState("Москва | Высшее профильное образование");
-  const [contacts, setContacts] = useState("+7 (999) 000-00-00 | candidate@email.ru");
+  const [contacts, setContacts] = useState(`${realCandidatePhone} | ${realCandidateEmail}`);
 
   const [isLoading, setIsLoading] = useState(false);
   const [generatedResume, setGeneratedResume] = useState<string | null>(null);
   const [matchingVacancy, setMatchingVacancy] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (userProfile?.name) {
+      setCandidateName(userProfile.name);
+    }
+    if (userProfile?.email || userProfile?.phone) {
+      setContacts(`${userProfile.phone || "+7 (999) 123-45-67"} | ${userProfile.email || "alexey@email.ru"}`);
+    }
+  }, [userProfile, open]);
 
   const handleGenerate = async () => {
     if (!role.trim()) return;
@@ -43,6 +61,9 @@ export function AiBuildResumeModal({
     setIsLoading(true);
     setGeneratedResume(null);
     setMatchingVacancy(null);
+
+    const activeName = candidateName.trim() || realCandidateName;
+    const activeContacts = contacts.trim() || `${realCandidatePhone} | ${realCandidateEmail}`;
 
     // Concurrently generate matching vacancy requirements so Field 1 and Field 2 are strictly synchronized
     const vacancyPromise = fetch("/api/parse-job", {
@@ -56,44 +77,53 @@ export function AiBuildResumeModal({
         return null;
       });
 
-    const userPrompt = `Создай полноценное профессиональное резюме по гарвардскому одноколоночному стандарту ATS (на 90%+ скора) для человека любой сферы.
+    const userPrompt = `Создай полноценное профессиональное резюме по гарвардскому одноколоночному стандарту ATS (на 90%+ скора) для реального соискателя.
     
 ДАННЫЕ СОИСКАТЕЛЯ:
+- ФИО соискателя: СТРОГО «${activeName}» (КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО выдумывать чужие имена и фамилии вроде Морозов, Смирнова, Иванов!).
 - Желаемая должность: ${role.trim()}
 - Предыдущий опыт (своими словами): ${experience.trim() || "Опыт работы по профилю более 3-х лет, решение ключевых операционных задач и выполнение плановых показателей."}
 - Что умеет лучше всего / ключевые навыки: ${skills.trim() || "Профессиональные стандарты, современные отраслевые инструменты, ведение отчетности, оптимизация рабочих циклов."}
 - Образование и город: ${educationCity.trim()}
-- Контакты: ${contacts.trim()}
+- Контакты: ${activeContacts}
 
 СТРОГИЕ ТРЕБОВАНИЯ:
-1. Одноколоночная чистая структура:
-   Имя Фамилия (придумай солидное имя, например Алексей Морозов / Анна Смирнова)
-   Должность | Контакты
-   О СЕБЕ (Summary) — 3-4 сильных предложения с оцифрованными фактами.
-   ОПЫТ РАБОТЫ — 2 места работы с четкими буллетами по формуле X-Y-Z (Что сделано + Какой инструмент/метод применен + Измеримый результат в %, рублях, днях).
-   КЛЮЧЕВЫЕ НАВЫКИ — список через запятую.
-   ОБРАЗОВАНИЕ
-2. Пиши обычным человеческим текстом БЕЗ символов **, без ###, без ---.`;
+1. Первая строка резюме СТРОГО ФИО: ${activeName}
+2. Вторая строка резюме СТРОГО: ${role.trim()} | ${activeContacts} | ${educationCity.split("|")[0].trim()}
+3. О СЕБЕ (Summary) — 3-4 сильных предложения с оцифрованными фактами.
+4. ОПЫТ РАБОТЫ — 2 места работы с четкими буллетами по формуле Google X-Y-Z (Что сделано + Какой инструмент/метод применен + Измеримый результат в %, рублях, днях).
+5. КЛЮЧЕВЫЕ НАВЫКИ — список через запятую.
+6. ОБРАЗОВАНИЕ — ${educationCity.trim()}
+7. Пиши обычным человеческим текстом БЕЗ символов **, без ###, без ---.`;
 
     try {
       const res = await callAI({
         systemPrompt:
-          "Ты элитный международный HR-директор и эксперт ATS-систем. Пиши профессиональный русский текст резюме без markdown-звёздочек и решёток.",
+          "Ты элитный международный HR-директор и эксперт ATS-систем. Создай профессиональное резюме с точным ФИО кандидата без вымышленных фамилий, без markdown-звёздочек и решёток.",
         userPrompt,
-        temperature: 0.3,
+        temperature: 0.2,
         mode: "text",
       });
 
       if (res.text && res.text.length > 100) {
-        setGeneratedResume(res.text);
+        const enriched = injectUserProfileIntoResume(res.text, {
+          name: activeName,
+          email: activeContacts.includes("@")
+            ? activeContacts.split("|").find((p) => p.includes("@"))?.trim()
+            : realCandidateEmail,
+          phone: activeContacts.includes("+")
+            ? activeContacts.split("|").find((p) => p.includes("+"))?.trim()
+            : realCandidatePhone,
+        });
+        setGeneratedResume(enriched);
       } else {
         throw new Error("Недостаточный объем текста");
       }
     } catch (err) {
       console.warn("AI resume generation failed, synthesizing fallback:", err);
-      // Deterministic high-scoring fallback resume
-      const fallback = `${role.toUpperCase()}
-Иван Иванов | ${contacts} | ${educationCity.split("|")[0].trim()}
+      // Deterministic high-scoring fallback resume with real user profile credentials
+      const fallback = `${activeName}
+${role.trim()} | ${activeContacts} | ${educationCity.split("|")[0].trim()}
 
 О СЕБЕ
 Квалифицированный специалист в области «${role}» с опытом успешной работы более 4 лет. Ориентирован на измеримый результат, оптимизацию ключевых рабочих процессов и выполнение плановых показателей на 110-125%. Отличаюсь системным подходом, вниманием к деталям и высокой ответственностью.
@@ -149,7 +179,7 @@ ${educationCity.trim()}`;
                 Создать идеальное ATS-резюме с нуля
               </DialogTitle>
               <DialogDescription className="text-[11px] sm:text-xs text-muted-foreground">
-                Ответьте на 4 вопроса — нейросеть оформит их в эталонное резюме Harvard Standard
+                Ответьте на вопросы — нейросеть оформит их в эталонное резюме Harvard Standard под вашим именем
               </DialogDescription>
             </div>
           </div>
@@ -158,17 +188,32 @@ ${educationCity.trim()}`;
         <div className="flex-1 overflow-y-auto space-y-4 py-2 pr-1">
           {!generatedResume ? (
             <div className="space-y-4 text-xs">
-              <div>
-                <label className="font-semibold text-foreground flex items-center gap-1.5 mb-1.5">
-                  <Briefcase className="w-3.5 h-3.5 text-primary" />
-                  1. Кем хотите работать (целевая должность)? *
-                </label>
-                <Input
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  placeholder="Например: Главный бухгалтер, Менеджер по продажам B2B, Юрист, Маркетолог..."
-                  className="text-xs"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="font-semibold text-foreground flex items-center gap-1.5 mb-1.5">
+                    <UserCheck className="w-3.5 h-3.5 text-primary" />
+                    Ваше ФИО (из профиля) *
+                  </label>
+                  <Input
+                    value={candidateName}
+                    onChange={(e) => setCandidateName(e.target.value)}
+                    placeholder="Например: Алексей Медведев"
+                    className="text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-semibold text-foreground flex items-center gap-1.5 mb-1.5">
+                    <Briefcase className="w-3.5 h-3.5 text-primary" />
+                    1. Кем хотите работать? *
+                  </label>
+                  <Input
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    placeholder="Например: Главный бухгалтер, Актер..."
+                    className="text-xs"
+                  />
+                </div>
               </div>
 
               <div>
@@ -206,7 +251,7 @@ ${educationCity.trim()}`;
                   <Input
                     value={educationCity}
                     onChange={(e) => setEducationCity(e.target.value)}
-                    placeholder="Москва | Высшее экономическое"
+                    placeholder="Москва | Высшее профильное образование"
                     className="text-xs"
                   />
                 </div>
@@ -228,7 +273,7 @@ ${educationCity.trim()}`;
               <div className="flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 px-3 py-2 rounded-xl text-xs text-emerald-400">
                 <span className="flex items-center gap-1.5 font-semibold">
                   <Check className="w-4 h-4 text-emerald-400" />
-                  Резюме успешно сгенерировано нейросетью!
+                  Резюме успешно сгенерировано для «{candidateName.trim() || realCandidateName}»!
                 </span>
                 <span className="text-[11px] bg-emerald-500/20 px-2 py-0.5 rounded-full font-bold">
                   Прогноз ATS: 90%+
