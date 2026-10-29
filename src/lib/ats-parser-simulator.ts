@@ -220,6 +220,47 @@ const DOMAIN_KNOWLEDGE_BASE: DomainKnowledge[] = [
       { name: "Автоматизированное тестирование", synonyms: ["unit testing", "jest", "pytest", "тестирование", "e2e"] },
     ],
   },
+
+  // 8. Industrial & Civil Engineering
+  {
+    domain: "engineer",
+    labelRu: "Строительство и проектирование",
+    labelEn: "Civil & Industrial Engineering",
+    detectPatterns: [
+      "инженер", "гип", "гап", "проектиров", "сапр", "autocad", "компас-3d", "компас",
+      "solidworks", "revit", "ескд", "спдс", "гост", "снип", "главгосэкспертиз",
+      "мосгосэкспертиз", "пск", "авторский надзор", "пто", "ппр", "конструктор"
+    ],
+    skills: [
+      { name: "AutoCAD и Компас-3D", synonyms: ["autocad", "компас-3d", "компас", "сапр", "чертежи"] },
+      { name: "Проектирование по ЕСКД и СПДС", synonyms: ["ескд", "спдс", "стандарты проектирования", "рабочая документация"] },
+      { name: "Прохождение Главгосэкспертизы", synonyms: ["главгосэкспертиза", "госэкспертиза", "экспертиза проектов", "мосгосэкспертиза"] },
+      { name: "3D-моделирование (SolidWorks / Revit)", synonyms: ["solidworks", "revit", "3d", "bim", "информационное моделирование"] },
+      { name: "Соблюдение норм ГОСТ и СНиП", synonyms: ["гост", "снип", "нормы безопасности", "техрегламент"] },
+      { name: "Авторский надзор на объектах", synonyms: ["авторский надзор", "контроль пнр", "надзор", "сдача объекта"] },
+      { name: "Разделы проекта (ТХ, АТХ, КМ, КЖ)", synonyms: ["тх", "атх", "км", "кж", "разделы проекта", "проектная документация"] },
+      { name: "Согласование сметной документации", synonyms: ["сметная документация", "сметы", "кс-2", "кс-3", "проектно-сметная"] },
+    ],
+  },
+
+  // 9. Executive & C-Level Management
+  {
+    domain: "executive",
+    labelRu: "Топ-менеджмент и Руководство",
+    labelEn: "Executive & Operations",
+    detectPatterns: [
+      "директор", "генеральный", "операционный директор", "coo", "ceo", "управляющий",
+      "руководитель предприятия", "p&l", "ebitda", "lean", "kaizen", "six sigma", "топ-менедж"
+    ],
+    skills: [
+      { name: "Управление P&L и бюджетирование", synonyms: ["p&l", "бюджетирование", "финансовый результат", "доходы и расходы"] },
+      { name: "Оптимизация бизнес-процессов (Lean / Kaizen)", synonyms: ["lean", "kaizen", "бережливое производство", "six sigma", "оптимизация процессов"] },
+      { name: "Внедрение ERP-систем (1С:ERP, SAP)", synonyms: ["1с:erp", "erp", "sap", "автоматизация предприятия"] },
+      { name: "Повышение операционной рентабельности (EBITDA)", synonyms: ["ebitda", "рентабельность", "сокращение издержек", "маржинальность"] },
+      { name: "Разработка сквозных KPI подразделений", synonyms: ["kpi", "система мотивации", "показатели эффективности"] },
+      { name: "Стратегическое планирование и масштабирование", synonyms: ["стратегическое планирование", "масштабирование", "стратегия развития"] },
+    ],
+  },
 ];
 
 const UNIVERSAL_SOFT_SKILLS = [
@@ -243,7 +284,7 @@ export function extractDynamicJobRequirements(jobDesc: string): {
 
   // 1. Detect matching domain from knowledge base
   let bestDomain = DOMAIN_KNOWLEDGE_BASE[0];
-  let maxScore = -1;
+  let maxScore = 0;
 
   for (const d of DOMAIN_KNOWLEDGE_BASE) {
     let score = 0;
@@ -256,6 +297,18 @@ export function extractDynamicJobRequirements(jobDesc: string): {
       maxScore = score;
       bestDomain = d;
     }
+  }
+
+  // If no predefined domain matched, derive dynamic domain from vacancy text
+  if (maxScore === 0) {
+    const firstLine = jobDesc.split("\n")[0]?.replace(/^[^\wа-яё]+/i, "").trim() || "Профильная специальность";
+    bestDomain = {
+      domain: "custom",
+      labelRu: firstLine.length > 35 ? firstLine.slice(0, 35) + "..." : firstLine,
+      labelEn: firstLine.length > 35 ? firstLine.slice(0, 35) + "..." : firstLine,
+      detectPatterns: [],
+      skills: [],
+    };
   }
 
   // 2. Extract domain-matched predefined skills
@@ -471,7 +524,7 @@ export function simulateAtsParser(
   }
 
   layoutScore = Math.max(4, Math.min(15, layoutScore));
-  const totalScore = Math.min(98, Math.max(38, hardSkillsScore + metricsScore + softSkillsScore + layoutScore));
+  const totalScore = Math.min(98, Math.max(10, hardSkillsScore + metricsScore + softSkillsScore + layoutScore));
 
   // 5. Universal Profession-Aware XYZ Improvements
   const xyzImprovements: XyzImprovement[] = generateUniversalXyzSuggestions(resumeText, domain, language);

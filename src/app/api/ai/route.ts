@@ -277,6 +277,20 @@ ${batch.channels.creative.content}`;
   return `• Успешно внедрил лучшие отраслевые практики, увеличив операционную эффективность на 30% и обеспечив своевременное выполнение целевых KPI.`;
 }
 
+function isGarbageSkill(s: string): boolean {
+  if (!s || s.trim().length < 2 || s.trim().length > 60) return true;
+  const lower = s.toLowerCase();
+  return (
+    lower.includes("встраиван") ||
+    lower.includes("резюме") ||
+    lower.includes("навык") ||
+    lower.includes("интеграц") ||
+    lower.includes("целев") ||
+    lower.includes("требован") ||
+    lower.includes("контекст")
+  );
+}
+
 /**
  * Re-architects the candidate's ACTUAL resume:
  * Preserves real identity, contacts, company names, and dates.
@@ -291,12 +305,7 @@ function rearchitectCandidateResume(userPrompt: string): string {
     missingSkills = skillsMatch[1]
       .split(/[,;]/)
       .map((s) => s.replace(/[«»":]/g, "").trim())
-      .filter(
-        (s) =>
-          s.length > 1 &&
-          !s.toLowerCase().includes("встраивания") &&
-          !s.toLowerCase().includes("навыки")
-      );
+      .filter((s) => !isGarbageSkill(s));
   }
 
   if (missingSkills.length === 0) {
@@ -305,7 +314,7 @@ function rearchitectCandidateResume(userPrompt: string): string {
       missingSkills = fallbackMatch[1]
         .split(/[,;]/)
         .map((s) => s.replace(/[«»":]/g, "").trim())
-        .filter((s) => s.length > 1 && !s.toLowerCase().includes("встраивания"));
+        .filter((s) => !isGarbageSkill(s));
     }
   }
 
@@ -488,7 +497,8 @@ ${
 }
 
 /** Generates a tailored, natural bullet for a missing skill based on context */
-function generateTailoredSkillBullet(skill: string, role: string): string {
+function generateTailoredSkillBullet(rawSkill: string, role: string): string {
+  const skill = isGarbageSkill(rawSkill) ? "профильные отраслевые стандарты" : rawSkill.replace(/[«»":]/g, "").trim();
   const sLower = skill.toLowerCase();
   const rLower = role.toLowerCase();
 
@@ -504,6 +514,11 @@ function generateTailoredSkillBullet(skill: string, role: string): string {
       return `• Сопровождала внешнеэкономические контракты (ВЭД) и валютный контроль, исключив риски штрафов и сократив срок оформления таможенных деклараций на 30%.`;
     }
     return `• Успешно стандартизировала учетные процессы с применением инструментов «${skill}», сократив время закрытия отчетного периода на 35% и исключив налоговые риски.`;
+  }
+
+  // Engineering & Construction
+  if (rLower.includes("инженер") || rLower.includes("проект") || sLower.includes("autocad") || sLower.includes("гост") || sLower.includes("снип") || sLower.includes("сапр")) {
+    return `• Спроектировал и успешно защитил проектные решения с применением «${skill}», обеспечив 100% соответствие требованиям нормативной документации и снизив сметные затраты на 14%.`;
   }
 
   // Sales / Commercial
@@ -527,14 +542,18 @@ function generateTailoredSkillBullet(skill: string, role: string): string {
 
 /** Generates 1-2 bullets for a single embedded skill */
 function generateSkillEmbeddedBullets(userPrompt: string): string {
-  const skillMatch = userPrompt.match(/навык[а-я]*[:\s«"]+([^»"\n,]+)/i);
-  let skill = "Профильный навык";
+  const quoteMatch = userPrompt.match(/[«"]([^»"]+)[»"]/);
+  let skill = quoteMatch ? quoteMatch[1].trim() : "";
 
-  if (skillMatch) {
-    const rawSkill = skillMatch[1].trim();
-    if (!rawSkill.toLowerCase().includes("встраивания")) {
-      skill = rawSkill;
+  if (isGarbageSkill(skill)) {
+    const skillMatch = userPrompt.match(/навык[а-я]*[:\s]+([^\n,]+)/i);
+    if (skillMatch) {
+      skill = skillMatch[1].replace(/[«»":]/g, "").trim();
     }
+  }
+
+  if (isGarbageSkill(skill)) {
+    skill = "Профильные стандарты и инструменты";
   }
 
   return `• Успешно интегрировал методологию и инструменты «${skill}» в регулярные рабочие процессы, оптимизировав время выполнения операций на 30% и обеспечив 100% точность соблюдения стандартов.

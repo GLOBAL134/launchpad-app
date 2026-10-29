@@ -69,6 +69,7 @@ import { exportResumeToDocx, exportResumeToPdf } from "@/lib/export-resume";
 import { cleanAIMarkdownArtifacts } from "@/lib/monetization";
 import { detectLanguage } from "@/lib/language";
 import { simulateAtsParser, AtsSimulationResult, XyzImprovement } from "@/lib/ats-parser-simulator";
+import type { AtsAuditResponse } from "@/app/api/ats-audit/route";
 import { useApp } from "@/context/AppContext";
 
 export const DIVERSE_PRESETS = [
@@ -479,6 +480,11 @@ export default function ATSScannerPage() {
     }
   }, []);
 
+  // Real ATS Audit API State
+  const [auditResult, setAuditResult] = useState<AtsAuditResponse | null>(null);
+  const [isAuditing, setIsAuditing] = useState(false);
+  const auditAbortControllerRef = useRef<AbortController | null>(null);
+
   // Dynamic Language Detection (Russian vs English)
   const language = useMemo(() => {
     return detectLanguage(`${resumeText} ${jobDesc}`);
@@ -489,17 +495,102 @@ export default function ATSScannerPage() {
     return simulateAtsParser(resumeText, jobDesc, language);
   }, [resumeText, jobDesc, language]);
 
+  // Real LLM / API ATS Audit invoker
+  const fetchAtsAudit = useCallback(
+    async (resume: string, vacancy: string, manual = false) => {
+      const cleanResume = (resume || "").trim();
+      const cleanVacancy = (vacancy || "").trim();
+      if (!cleanResume && !cleanVacancy) return;
+
+      if (auditAbortControllerRef.current) {
+        auditAbortControllerRef.current.abort();
+      }
+      const controller = new AbortController();
+      auditAbortControllerRef.current = controller;
+
+      setIsAuditing(true);
+      if (manual) setIsScanning(true);
+
+      try {
+        let groqKey = "";
+        let geminiKey = "";
+        if (typeof window !== "undefined") {
+          groqKey = localStorage.getItem("lp_groq_api_key") || "";
+          geminiKey = localStorage.getItem("lp_gemini_api_key") || "";
+        }
+
+        const res = await fetch("/api/ats-audit", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-groq-key": groqKey.trim(),
+            "x-gemini-key": geminiKey.trim(),
+          },
+          body: JSON.stringify({
+            resumeText: cleanResume,
+            vacancyText: cleanVacancy,
+            userApiKey: (groqKey || geminiKey).trim(),
+          }),
+          signal: controller.signal,
+        });
+
+        if (res.ok) {
+          const data: AtsAuditResponse = await res.json();
+          setAuditResult(data);
+          if (manual) {
+            consumeScan();
+            showToast(`✓ ATS-аудит завершён! Сфера: «${data.detectedIndustry}», Match: ${data.totalScore}%`);
+          }
+        }
+      } catch (err: any) {
+        if (err.name !== "AbortError") {
+          console.error("[ATS Audit Request Failed]:", err);
+        }
+      } finally {
+        setIsAuditing(false);
+        if (manual) setIsScanning(false);
+      }
+    },
+    [consumeScan, showToast]
+  );
+
+  // Auto-debounce audit on text changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchAtsAudit(resumeText, jobDesc, false);
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, [resumeText, jobDesc, fetchAtsAudit]);
+
+  // Active dynamic values (strictly bound to real API audit with resilient fallback)
+  const activeScore = auditResult ? auditResult.totalScore : simulation.score.total;
+  const activeIndustry = auditResult?.detectedIndustry || simulation.domainName;
+  const activeHardSkills = auditResult ? auditResult.breakdown.hardSkills : simulation.score.hardSkills;
+  const activeMetrics = auditResult ? auditResult.breakdown.metrics : simulation.score.metrics;
+  const activeSoftSkills = auditResult ? auditResult.breakdown.softSkills : simulation.score.softSkills;
+  const activeFormatting = auditResult ? auditResult.breakdown.formatting : simulation.score.layout;
+  const activeMissingSkills = auditResult ? auditResult.missingHardSkills : simulation.missingSkills;
+  const activeMatchingSkills = auditResult ? auditResult.matchingSkills : simulation.verifiedSkills.map((v) => v.name);
+  const activeCritique = auditResult?.critique || (
+    activeScore >= 80
+      ? `Отличный результат! Резюме проходит автоматические фильтры ATS для сферы «${activeIndustry}».`
+      : activeScore >= 65
+      ? `Средний балл. Добавьте подтверждения в буллеты опыта и устраните сиротские навыки.`
+      : `Высокий риск отсева. Нажмите «✨ Улучшить резюме с ИИ», чтобы поднять балл до 90%+.`
+  );
+
   // Handle selecting job from Kanban tracker
   const handleSelectTrackerJob = (jobId: string | null) => {
     if (!jobId) return;
     setSelectedTrackerJobId(jobId);
     const job = applications.find((a) => a.id === jobId);
     if (job) {
-      setJobDesc(
-        `${job.position} в компании ${job.company}\n\n${
-          job.job_description || "Требования: опыт работы, выполнение KPI, метрики эффективности."
-        }`
-      );
+      const newJobDesc = `${job.position} в компании ${job.company}\n\n${
+        job.job_description || "Требования: опыт работы, выполнение KPI, метрики эффективности."
+      }`;
+      setJobDesc(newJobDesc);
+      fetchAtsAudit(resumeText, newJobDesc, false);
       showToast(`Выбрана вакансия «${job.company}» из Канбан-трекера`);
     }
   };
@@ -526,6 +617,7 @@ export default function ATSScannerPage() {
     if (p) {
       setJobDesc(p.job);
       setResumeText(p.resume);
+      fetchAtsAudit(p.resume, p.job, false);
       showToast(`Загружен эталон «${p.label}» (${p.categoryName})!`);
     }
   };
@@ -558,6 +650,7 @@ export default function ATSScannerPage() {
         const data = await res.json();
         if (data.text) {
           setResumeText(data.text);
+          fetchAtsAudit(data.text, jobDesc, false);
           showToast(`✓ Резюме «${file.name}» (${data.fileType || "DOC"}) успешно извлечено без искажений!`);
           setIsParsingFile(false);
           return;
@@ -569,7 +662,9 @@ export default function ATSScannerPage() {
       reader.onload = (event) => {
         const text = event.target?.result as string;
         if (text && text.trim().length > 30) {
-          setResumeText(cleanAIMarkdownArtifacts(text));
+          const cleaned = cleanAIMarkdownArtifacts(text);
+          setResumeText(cleaned);
+          fetchAtsAudit(cleaned, jobDesc, false);
           showToast(`Файл «${file.name}» загружен.`);
         }
       };
@@ -595,6 +690,7 @@ export default function ATSScannerPage() {
       const data = await res.json();
       if (data.success && data.jobDesc) {
         setJobDesc(data.jobDesc);
+        fetchAtsAudit(resumeText, data.jobDesc, false);
         showToast(`✓ Вакансия «${data.position}» (${data.company}) успешно загружена!`);
         setJobUrlInput("");
       } else if (data.antiBot) {
@@ -622,6 +718,7 @@ export default function ATSScannerPage() {
       const data = await res.json();
       if (data.success && data.jobDesc) {
         setJobDesc(data.jobDesc);
+        fetchAtsAudit(resumeText, data.jobDesc, false);
         showToast(`✓ Требования рынка для «${jobRoleInput}» успешно сгенерированы!`);
         setJobRoleInput("");
       } else {
@@ -667,6 +764,7 @@ export default function ATSScannerPage() {
   };
 
   const handleApplyEmbeddedBullet = (bullet: string) => {
+    let updatedResume = "";
     setResumeText((prev) => {
       const lines = prev.split("\n");
       let inserted = false;
@@ -689,16 +787,24 @@ export default function ATSScannerPage() {
         }
       }
 
-      if (inserted) return newLines.join("\n");
-      return `${prev}\n\nОПЫТ РАБОТЫ\n${bullet}`;
+      if (inserted) {
+        updatedResume = newLines.join("\n");
+        return updatedResume;
+      }
+      updatedResume = `${prev}\n\nОПЫТ РАБОТЫ\n${bullet}`;
+      return updatedResume;
     });
 
+    if (updatedResume) {
+      fetchAtsAudit(updatedResume, jobDesc, false);
+    }
     showToast(`✓ Навык «${skillToEmbed}» оцифрован и подтвержден в опыте! Балл Hard Skills вырос.`);
   };
 
   // STEP 4: AI Auto-Rewrite Whole Resume
   const handleApplyRewrittenResume = (newResume: string) => {
     setResumeText(newResume);
+    fetchAtsAudit(newResume, jobDesc, false);
     showToast("🎉 Резюме переписано в Harvard ATS стандарт! Балл повышен до 92%+.");
     setTimeout(() => {
       setViralBonusOpen(true);
@@ -707,12 +813,18 @@ export default function ATSScannerPage() {
 
   // 1-Click apply XYZ bullet improvement
   const handleApplyXyz = (item: XyzImprovement) => {
+    let updatedResume = "";
     setResumeText((prev) => {
       if (prev.includes(item.original)) {
-        return prev.replace(item.original, item.improved);
+        updatedResume = prev.replace(item.original, item.improved);
+        return updatedResume;
       }
-      return `${prev}\n• ${item.improved}`;
+      updatedResume = `${prev}\n• ${item.improved}`;
+      return updatedResume;
     });
+    if (updatedResume) {
+      fetchAtsAudit(updatedResume, jobDesc, false);
+    }
     showToast(`✨ Буллет улучшен по формуле XYZ! +${item.scoreBoost}% к итоговому баллу ATS.`);
   };
 
@@ -723,12 +835,7 @@ export default function ATSScannerPage() {
       return;
     }
 
-    setIsScanning(true);
-    setTimeout(() => {
-      setIsScanning(false);
-      consumeScan();
-      showToast("✓ ATS-аудит резюме завершён по стандарту 55/15/15/15!");
-    }, 600);
+    fetchAtsAudit(resumeText, jobDesc, true);
   };
 
   const copyToClipboard = (text: string, sectionId: string) => {
@@ -742,11 +849,11 @@ export default function ATSScannerPage() {
     "https://launchpad-app-ashy.vercel.app"
   )}&text=${encodeURIComponent(
     language === "en"
-      ? `My resume scored ${simulation.score.total}% on the LaunchPad AI PRO ATS Audit! Check yours:`
-      : `Моё резюме набрало ${simulation.score.total}% в ATS-сканере LaunchPad AI PRO! Проверь своё:`
+      ? `My resume scored ${activeScore}% on the LaunchPad AI PRO ATS Audit! Check yours:`
+      : `Моё резюме набрало ${activeScore}% в ATS-сканере LaunchPad AI PRO! Проверь своё:`
   )}`;
 
-  const targetRoleTitle = scannerTargetJob ? `${scannerTargetJob.position} (${scannerTargetJob.company})` : simulation.domainName;
+  const targetRoleTitle = scannerTargetJob ? `${scannerTargetJob.position} (${scannerTargetJob.company})` : activeIndustry;
 
   return (
     <div className="space-y-6">
@@ -1023,7 +1130,7 @@ export default function ATSScannerPage() {
                   <span>2. Требования вакансии</span>
                 </CardTitle>
                 <Badge variant="outline" className="text-[10px] text-primary border-primary/30 bg-primary/10">
-                  {simulation.domainName}
+                  {activeIndustry}
                 </Badge>
               </div>
 
@@ -1147,10 +1254,10 @@ export default function ATSScannerPage() {
               <div className="flex items-center gap-2">
                 <Button
                   onClick={handleStartScan}
-                  disabled={isScanning}
+                  disabled={isScanning || isAuditing}
                   className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-xs shadow-md shadow-primary/20 cursor-pointer h-9"
                 >
-                  {isScanning ? (
+                  {isScanning || isAuditing ? (
                     <>
                       <RefreshCw className="w-3.5 h-3.5 mr-1.5 animate-spin" />
                       Сканирование алгоритмами ATS...
@@ -1158,7 +1265,7 @@ export default function ATSScannerPage() {
                   ) : (
                     <>
                       <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-                      Пересчитать ATS Match ({simulation.domainName})
+                      Пересчитать ATS Match ({activeIndustry})
                     </>
                   )}
                 </Button>
@@ -1186,39 +1293,62 @@ export default function ATSScannerPage() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <div className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1 flex items-center gap-1.5">
-                    <span>Индекс соответствия ({simulation.domainName})</span>
+                    <span>Индекс соответствия ({activeIndustry})</span>
                     <Badge variant="outline" className="text-[9px] text-primary border-primary/30 bg-primary/10">
                       Стандарт 55/15/15/15
                     </Badge>
                   </div>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-4xl sm:text-5xl font-black tracking-tight text-foreground">
-                      {simulation.score.total}%
-                    </span>
-                    <span className="text-muted-foreground text-sm font-medium">/ 100%</span>
-                  </div>
+                  {isAuditing || isScanning ? (
+                    <div className="flex items-center gap-2 py-1">
+                      <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                      <div className="flex flex-col">
+                        <span className="text-xl sm:text-2xl font-black text-primary animate-pulse">
+                          Анализ нейросетью...
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">Формула ATS 55/15/15/15</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl sm:text-5xl font-black tracking-tight text-foreground">
+                        {activeScore}%
+                      </span>
+                      <span className="text-muted-foreground text-sm font-medium">/ 100%</span>
+                    </div>
+                  )}
                   <p className="text-xs text-muted-foreground mt-1 max-w-md">
-                    {simulation.score.total >= 80
-                      ? `Отличный результат! Резюме проходит автоматические фильтры ATS для сферы «${simulation.domainName}».`
-                      : simulation.score.total >= 65
-                      ? `Средний балл. Добавьте подтверждения в буллеты опыта и устраните сиротские навыки.`
-                      : `Высокий риск отсева. Нажмите «✨ Улучшить резюме с ИИ», чтобы поднять балл до 90%+.`}
+                    {isAuditing || isScanning ? (
+                      <span className="animate-pulse">Нейросеть сопоставляет навыки, метрики и структуру резюме с вакансией...</span>
+                    ) : (
+                      activeCritique
+                    )}
                   </p>
                 </div>
 
                 {/* Circular indicator */}
                 <div className="relative w-24 h-24 rounded-full border-4 border-muted flex items-center justify-center shrink-0">
                   <div
-                    className="absolute inset-0 rounded-full border-4 border-primary transition-all duration-500"
+                    className={`absolute inset-0 rounded-full border-4 border-primary transition-all duration-500 ${
+                      isAuditing || isScanning ? "animate-spin border-t-transparent" : ""
+                    }`}
                     style={{
-                      clipPath: `polygon(50% 50%, 50% 0%, ${simulation.score.total >= 25 ? "100% 0%," : ""}${
-                        simulation.score.total >= 50 ? "100% 100%," : ""
-                      }${simulation.score.total >= 75 ? "0% 100%," : ""}0% 0%)`,
+                      clipPath:
+                        isAuditing || isScanning
+                          ? undefined
+                          : `polygon(50% 50%, 50% 0%, ${activeScore >= 25 ? "100% 0%," : ""}${
+                              activeScore >= 50 ? "100% 100%," : ""
+                            }${activeScore >= 75 ? "0% 100%," : ""}0% 0%)`,
                     }}
                   />
                   <div className="text-center">
-                    <span className="text-base font-black">{simulation.score.total}%</span>
-                    <span className="block text-[9px] uppercase tracking-wider text-muted-foreground">match</span>
+                    {isAuditing || isScanning ? (
+                      <Sparkles className="w-5 h-5 text-primary animate-pulse mx-auto" />
+                    ) : (
+                      <>
+                        <span className="text-base font-black">{activeScore}%</span>
+                        <span className="block text-[9px] uppercase tracking-wider text-muted-foreground">match</span>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1228,36 +1358,36 @@ export default function ATSScannerPage() {
                 <div className="space-y-1">
                   <div className="flex items-center justify-between text-[11px]">
                     <span className="text-muted-foreground">Hard Skills</span>
-                    <span className="font-bold text-indigo-400">{simulation.score.hardSkills}/55</span>
+                    <span className="font-bold text-indigo-400">{activeHardSkills}/55</span>
                   </div>
-                  <Progress value={(simulation.score.hardSkills / 55) * 100} className="h-1.5" />
+                  <Progress value={(activeHardSkills / 55) * 100} className="h-1.5" />
                   <span className="text-[10px] text-muted-foreground block truncate">Цитаты в опыте</span>
                 </div>
 
                 <div className="space-y-1">
                   <div className="flex items-center justify-between text-[11px]">
                     <span className="text-muted-foreground">Метрики</span>
-                    <span className="font-bold text-emerald-400">{simulation.score.metrics}/15</span>
+                    <span className="font-bold text-emerald-400">{activeMetrics}/15</span>
                   </div>
-                  <Progress value={(simulation.score.metrics / 15) * 100} className="h-1.5" />
+                  <Progress value={(activeMetrics / 15) * 100} className="h-1.5" />
                   <span className="text-[10px] text-muted-foreground block truncate">%, руб, млн, время</span>
                 </div>
 
                 <div className="space-y-1">
                   <div className="flex items-center justify-between text-[11px]">
                     <span className="text-muted-foreground">Soft Skills</span>
-                    <span className="font-bold text-sky-400">{simulation.score.softSkills}/15</span>
+                    <span className="font-bold text-sky-400">{activeSoftSkills}/15</span>
                   </div>
-                  <Progress value={(simulation.score.softSkills / 15) * 100} className="h-1.5" />
+                  <Progress value={(activeSoftSkills / 15) * 100} className="h-1.5" />
                   <span className="text-[10px] text-muted-foreground block truncate">Лидерство, процесс</span>
                 </div>
 
                 <div className="space-y-1">
                   <div className="flex items-center justify-between text-[11px]">
                     <span className="text-muted-foreground">Вёрстка</span>
-                    <span className="font-bold text-amber-400">{simulation.score.layout}/15</span>
+                    <span className="font-bold text-amber-400">{activeFormatting}/15</span>
                   </div>
-                  <Progress value={(simulation.score.layout / 15) * 100} className="h-1.5" />
+                  <Progress value={(activeFormatting / 15) * 100} className="h-1.5" />
                   <span className="text-[10px] text-muted-foreground block truncate">1 колонка Harvard</span>
                 </div>
               </div>
@@ -1428,7 +1558,7 @@ export default function ATSScannerPage() {
               {activeResultsTab === "overview" && (
                 <div className="space-y-6">
                   {/* Viral Reward Loop Banner for 80%+ ATS Score */}
-                  {simulation.score.total >= 80 && (
+                  {activeScore >= 80 && (
                     <div className="p-3.5 sm:p-4 rounded-xl border border-emerald-500/40 bg-gradient-to-r from-emerald-950/30 via-card to-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md animate-in fade-in">
                       <div className="flex items-center gap-2.5">
                         <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0 shadow-sm">
@@ -1440,7 +1570,7 @@ export default function ATSScannerPage() {
                               Разблокировать +3 PRO-проверки бесплатно
                             </span>
                             <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-[9px] font-bold">
-                              {simulation.score.total}% ATS
+                              {activeScore}% ATS
                             </Badge>
                           </div>
                           <p className="text-[11px] text-muted-foreground leading-snug">
@@ -1464,18 +1594,23 @@ export default function ATSScannerPage() {
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="text-xs font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
                         <AlertCircle className="w-3.5 h-3.5" />
-                        Отсутствующие навыки в вакансии ({simulation.missingSkills.length})
+                        Отсутствующие навыки в вакансии ({activeMissingSkills.length})
                       </h3>
                       <span className="text-[10px] text-muted-foreground">Нажмите, чтобы встроить в опыт с ИИ</span>
                     </div>
 
                     <div className="flex flex-wrap gap-1.5">
-                      {simulation.missingSkills.length === 0 ? (
+                      {isAuditing && activeMissingSkills.length === 0 ? (
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground py-1">
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+                          <span>Извлечение отсутствующих навыков...</span>
+                        </div>
+                      ) : activeMissingSkills.length === 0 ? (
                         <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
                           <CheckCircle2 className="w-3.5 h-3.5" /> Все ключевые навыки вакансии найдены и подтверждены в опыте!
                         </span>
                       ) : (
-                        simulation.missingSkills.map((kw, idx) => (
+                        activeMissingSkills.map((kw, idx) => (
                           <button
                             key={idx}
                             onClick={() => handleOpenEmbedSkill(kw)}
@@ -1496,21 +1631,26 @@ export default function ATSScannerPage() {
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
                         <CheckCircle2 className="w-3.5 h-3.5" />
-                        Подтвержденные навыки с цитатами ({simulation.verifiedSkills.length})
+                        Подтвержденные навыки ({activeMatchingSkills.length})
                       </h3>
                       <span className="text-[10px] text-muted-foreground">Формула 55/15/15/15: начислены баллы</span>
                     </div>
 
                     <div className="flex flex-wrap gap-1.5">
-                      {simulation.verifiedSkills.map((item, idx) => (
-                        <span
-                          key={idx}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-medium"
-                          title={item.quote}
-                        >
-                          ✓ {item.name}
+                      {activeMatchingSkills.length === 0 ? (
+                        <span className="text-xs text-muted-foreground italic">
+                          Пока нет прямых совпадений с требованиями
                         </span>
-                      ))}
+                      ) : (
+                        activeMatchingSkills.map((item, idx) => (
+                          <span
+                            key={idx}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-medium"
+                          >
+                            ✓ {item}
+                          </span>
+                        ))
+                      )}
                     </div>
                   </div>
 
@@ -1714,7 +1854,7 @@ export default function ATSScannerPage() {
                   <JobRedFlagsCard
                     jobText={jobDesc}
                     companyName="Работодатель"
-                    positionName={simulation.domainName || targetRoleTitle}
+                    positionName={activeIndustry}
                     onToast={showToast}
                   />
                 </div>
@@ -1729,7 +1869,7 @@ export default function ATSScannerPage() {
         isOpen={embedSkillModalOpen}
         onClose={() => setEmbedSkillModalOpen(false)}
         skillName={skillToEmbed}
-        jobTitle={targetRoleTitle}
+        jobTitle={activeIndustry}
         resumeText={resumeText}
         onApplyBullet={handleApplyEmbeddedBullet}
       />
@@ -1740,8 +1880,8 @@ export default function ATSScannerPage() {
         onClose={() => setRewriteModalOpen(false)}
         currentResume={resumeText}
         jobDescription={jobDesc}
-        currentScore={simulation.score.total}
-        missingSkills={simulation.missingSkills}
+        currentScore={activeScore}
+        missingSkills={activeMissingSkills}
         initialLifeSituation={lifeSituation}
         onApplyRewritten={handleApplyRewrittenResume}
       />
@@ -1752,7 +1892,7 @@ export default function ATSScannerPage() {
         onClose={() => setSaveKanbanModalOpen(false)}
         resumeText={resumeText}
         jobDescription={jobDesc}
-        atsScore={simulation.score.total}
+        atsScore={activeScore}
       />
 
       {/* Module 2: Viral ATS Score Card Modal (Canvas) */}
@@ -1761,7 +1901,7 @@ export default function ATSScannerPage() {
         onClose={() => setIsScoreCardOpen(false)}
         simulation={simulation}
         candidateName={userProfile.name}
-        targetRole={targetRoleTitle}
+        targetRole={activeIndustry}
         language={language}
       />
 
@@ -1773,7 +1913,7 @@ export default function ATSScannerPage() {
         candidateName={userProfile.name}
         candidateEmail={userProfile.email}
         candidatePhone={userProfile.phone}
-        targetRole={targetRoleTitle}
+        targetRole={activeIndustry}
         language={language}
       />
 
@@ -1783,9 +1923,10 @@ export default function ATSScannerPage() {
         onOpenChange={setBuildResumeModalOpen}
         onApplyResume={(newResume) => {
           setResumeText(newResume);
+          fetchAtsAudit(newResume, jobDesc, false);
           showToast("✓ Резюме успешно сгенерировано с ИИ и помещено в сканер!");
         }}
-        defaultRole={targetRoleTitle}
+        defaultRole={activeIndustry}
       />
 
       {/* Module 3: Smart Copy for HeadHunter */}
@@ -1800,7 +1941,7 @@ export default function ATSScannerPage() {
         open={interviewPrepModalOpen}
         onOpenChange={setInterviewPrepModalOpen}
         company={scannerTargetJob?.company || "Целевая компания"}
-        position={scannerTargetJob?.position || simulation.domainName}
+        position={scannerTargetJob?.position || activeIndustry}
         resumeText={resumeText}
         jobDesc={jobDesc}
       />
@@ -1818,7 +1959,7 @@ export default function ATSScannerPage() {
       <SalaryNegotiatorModal
         open={salaryModalOpen}
         onOpenChange={setSalaryModalOpen}
-        positionName={simulation.domainName || targetRoleTitle}
+        positionName={activeIndustry}
         companyName={scannerTargetJob?.company || "Работодатель"}
         resumeText={resumeText}
         defaultOfferedSalary="180 000 ₽"
@@ -1830,8 +1971,8 @@ export default function ATSScannerPage() {
         isOpen={viralBonusOpen}
         onClose={() => setViralBonusOpen(false)}
         beforeScore={62}
-        afterScore={simulation.score.total >= 85 ? simulation.score.total : 94}
-        targetRole={simulation.domainName || targetRoleTitle}
+        afterScore={activeScore >= 85 ? activeScore : 94}
+        targetRole={activeIndustry}
       />
 
       {/* Free AI Provider Settings (Groq / Gemini) */}
