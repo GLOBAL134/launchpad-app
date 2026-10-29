@@ -554,6 +554,10 @@ export default function ATSScannerPage() {
   const [hhCopyModalOpen, setHhCopyModalOpen] = useState(false);
   const [interviewPrepModalOpen, setInterviewPrepModalOpen] = useState(false);
 
+  // HH.ru import state & banner
+  const [hhImportBadge, setHhImportBadge] = useState<{ company: string; count: number } | null>(null);
+  const [importedHhJob, setImportedHhJob] = useState<{ company: string; position: string; salary?: string; count: number } | null>(null);
+
   // File parsing & Job import states
   const [isParsingFile, setIsParsingFile] = useState(false);
   const [isImportingJob, setIsImportingJob] = useState(false);
@@ -906,20 +910,58 @@ export default function ATSScannerPage() {
     }
   };
 
-  // Module 2: Import Job Vacancy by URL (HH.ru official API + Generic)
+  // Module 2: Import Job Vacancy by URL (HH.ru official public API + Generic fallback)
   const handleImportJobUrl = async () => {
-    if (!jobUrlInput.trim()) return;
+    const rawUrl = jobUrlInput.trim();
+    if (!rawUrl) return;
     setIsImportingJob(true);
     try {
+      const isHhLink = /hh\.ru|headhunter|vacancy\/\d+/i.test(rawUrl);
+
+      if (isHhLink) {
+        const hhRes = await fetch("/api/hh-parse", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: rawUrl }),
+        });
+
+        const hhData = await hhRes.json();
+        if (hhRes.ok && hhData.success && hhData.fullJobText) {
+          setJobDesc(hhData.fullJobText);
+          const skillsCount = Array.isArray(hhData.keySkills) ? hhData.keySkills.length : 0;
+          setHhImportBadge({
+            company: hhData.company || "Компания",
+            count: skillsCount,
+          });
+          setImportedHhJob({
+            company: hhData.company || "Компания",
+            position: hhData.position || "Специалист",
+            salary: hhData.salary,
+            count: skillsCount,
+          });
+          // Immediately trigger real ATS-audit with the loaded vacancy!
+          fetchAtsAudit(resumeText, hhData.fullJobText, true);
+          showToast(
+            `✅ Вакансия загружена напрямую из базы HH.ru: ${hhData.company} — извлечено ${skillsCount} скрытых ключевых тегов фильтра HR`
+          );
+          setJobUrlInput("");
+          return;
+        } else if (hhData.error) {
+          showToast(`HH.ru: ${hhData.error}`);
+        }
+      }
+
+      // Generic URL fallback
       const res = await fetch("/api/parse-job", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: jobUrlInput.trim() }),
+        body: JSON.stringify({ url: rawUrl }),
       });
       const data = await res.json();
       if (data.success && data.jobDesc) {
         setJobDesc(data.jobDesc);
-        fetchAtsAudit(resumeText, data.jobDesc, false);
+        setHhImportBadge(null);
+        fetchAtsAudit(resumeText, data.jobDesc, true);
         showToast(`✓ Вакансия «${data.position}» (${data.company}) успешно загружена!`);
         setJobUrlInput("");
       } else if (data.antiBot) {
@@ -1542,6 +1584,29 @@ export default function ATSScannerPage() {
             </CardHeader>
 
             <CardContent className="space-y-3">
+              {hhImportBadge && (
+                <div className="p-3 rounded-xl border border-emerald-500/40 bg-emerald-500/10 flex items-center justify-between gap-2.5 animate-in fade-in">
+                  <div className="flex items-center gap-2 text-xs text-emerald-200">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                    <div>
+                      <p className="font-bold text-emerald-300">
+                        ✅ Вакансия загружена напрямую из базы HH.ru: {hhImportBadge.company}
+                      </p>
+                      <p className="text-[11px] text-emerald-200/80 mt-0.5">
+                        Извлечено {hhImportBadge.count} скрытых ключевых тегов фильтра HR
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setHhImportBadge(null)}
+                    className="text-emerald-400 hover:text-emerald-200 text-xs px-2 py-0.5 rounded hover:bg-emerald-500/20 cursor-pointer"
+                    title="Скрыть уведомление"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
               {roleMismatchInfo.isMismatch && (
                 <div className="p-3 rounded-xl border border-amber-500/40 bg-amber-500/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 animate-in fade-in">
                   <div className="flex items-start gap-2 text-xs text-amber-200">
@@ -2375,8 +2440,8 @@ export default function ATSScannerPage() {
       <AiInterviewPrepModal
         open={interviewPrepModalOpen}
         onOpenChange={setInterviewPrepModalOpen}
-        company={scannerTargetJob?.company || "Целевая компания"}
-        position={scannerTargetJob?.position || activeIndustry}
+        company={importedHhJob?.company || scannerTargetJob?.company || "Целевая компания"}
+        position={importedHhJob?.position || scannerTargetJob?.position || activeIndustry}
         resumeText={resumeText}
         jobDesc={jobDesc}
       />
@@ -2394,10 +2459,10 @@ export default function ATSScannerPage() {
       <SalaryNegotiatorModal
         open={salaryModalOpen}
         onOpenChange={setSalaryModalOpen}
-        positionName={activeIndustry}
-        companyName={scannerTargetJob?.company || "Работодатель"}
+        positionName={importedHhJob?.position || scannerTargetJob?.position || activeIndustry}
+        companyName={importedHhJob?.company || scannerTargetJob?.company || "Работодатель"}
         resumeText={resumeText}
-        defaultOfferedSalary="180 000 ₽"
+        defaultOfferedSalary={importedHhJob?.salary || "180 000 ₽"}
         onToast={showToast}
       />
 
