@@ -301,15 +301,6 @@ ${currentResume}
 
             <div className="flex items-center gap-1.5 sm:gap-2">
               <button
-                type="button"
-                onClick={() => setIsSettingsOpen(true)}
-                className="text-[11px] sm:text-xs text-muted-foreground hover:text-cyan-400 flex items-center gap-1 cursor-pointer px-1.5 sm:px-2 py-1 rounded hover:bg-muted/50 transition"
-                title="Настроить бесплатный API ключ Groq или Gemini"
-              >
-                <KeyRound className="w-3.5 h-3.5 text-cyan-400" />
-                <span className="hidden sm:inline">Ключи ИИ</span>
-              </button>
-              <button
                 onClick={() => handleRewrite()}
                 disabled={isLoading}
                 className="text-[11px] sm:text-xs text-primary hover:underline flex items-center gap-1 cursor-pointer disabled:opacity-50"
@@ -423,11 +414,6 @@ ${currentResume}
             </Button>
           </div>
         </DialogFooter>
-
-        <AiSettingsModal
-          isOpen={isSettingsOpen}
-          onClose={() => setIsSettingsOpen(false)}
-        />
       </DialogContent>
     </Dialog>
   );

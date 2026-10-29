@@ -276,19 +276,6 @@ PROMO CODE: START30 (30% скидка на PRO)
         </div>
 
         <div className="flex items-center gap-2">
-          {/* AI Settings Button */}
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setIsAiSettingsOpen(true)}
-            className="text-xs border-cyan-500/40 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20 cursor-pointer"
-            title="Настроить бесплатный ключ Groq (Llama 3.3) или Gemini"
-          >
-            <KeyRound className="w-3.5 h-3.5 mr-1 text-cyan-400" />
-            <span className="hidden sm:inline">Ключи ИИ (Groq / Gemini)</span>
-            <span className="sm:hidden">Ключи ИИ</span>
-          </Button>
-
           <Badge
             variant="outline"
             className="border-emerald-500/40 bg-emerald-500/10 text-emerald-400 text-xs font-mono hidden md:inline-flex items-center gap-1.5"
@@ -339,7 +326,7 @@ PROMO CODE: START30 (30% скидка на PRO)
               {hasCustomKey ? (
                 <span className="text-[11px] text-emerald-400 font-medium flex items-center gap-1">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  Groq / Gemini подключен
+                  ИИ-движок подключен
                 </span>
               ) : (
                 <span className="text-[11px] text-cyan-400 font-medium flex items-center gap-1">
@@ -668,12 +655,6 @@ PROMO CODE: START30 (30% скидка на PRO)
           <span>Консольный генератор в терминале: <code>npm run pr-wave</code></span>
         </p>
       </footer>
-
-      {/* AI Key Settings Modal */}
-      <AiSettingsModal
-        isOpen={isAiSettingsOpen}
-        onClose={() => setIsAiSettingsOpen(false)}
-      />
     </div>
   );
 }

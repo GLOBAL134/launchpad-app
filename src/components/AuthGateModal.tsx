@@ -130,7 +130,7 @@ export default function AuthGateModal({
     <Dialog open={effectiveOpen} onOpenChange={(open) => !open && handleDismiss()}>
       <DialogContent
         showCloseButton={false}
-        className="w-[calc(100vw-24px)] max-w-md mx-auto p-0 overflow-hidden bg-card/95 border border-border/80 shadow-2xl backdrop-blur-2xl text-foreground"
+        className="w-[calc(100vw-24px)] sm:max-w-md p-0 overflow-hidden bg-card/95 border border-border/80 shadow-2xl backdrop-blur-2xl text-foreground"
       >
         {/* Header Ambient Glow & Brand */}
         <div className="relative p-4 sm:p-6 pb-3 sm:pb-4 bg-gradient-to-b from-primary/15 via-primary/5 to-transparent border-b border-border/50">

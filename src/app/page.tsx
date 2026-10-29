@@ -121,10 +121,10 @@ export default function LandingPage() {
 
       {/* Top Navbar */}
       <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2 sm:gap-4">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 shrink-0 hover:opacity-90 transition group">
-            <div className="w-9 h-9 rounded-xl overflow-hidden shadow-lg shadow-indigo-500/25 shrink-0 border border-white/10 group-hover:border-primary/50 transition">
+          <Link href="/" className="flex items-center gap-2 sm:gap-2.5 shrink-0 hover:opacity-90 transition group">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl overflow-hidden shadow-lg shadow-indigo-500/25 shrink-0 border border-white/10 group-hover:border-primary/50 transition">
               <Image
                 src="/logo.png"
                 alt="LaunchPad AI PRO"
@@ -134,11 +134,11 @@ export default function LandingPage() {
                 priority
               />
             </div>
-            <div className="flex items-center gap-1.5 whitespace-nowrap">
-              <span className="font-bold text-lg tracking-tight bg-gradient-to-r from-white via-white/90 to-white/60 bg-clip-text text-transparent">
+            <div className="flex items-center gap-1 sm:gap-1.5 whitespace-nowrap">
+              <span className="font-bold text-base sm:text-lg tracking-tight bg-gradient-to-r from-white via-white/90 to-white/60 bg-clip-text text-transparent">
                 LaunchPad
               </span>
-              <span className="text-[10px] uppercase font-semibold text-primary px-1.5 py-0.5 rounded bg-primary/10 border border-primary/20">
+              <span className="text-[9px] sm:text-[10px] uppercase font-semibold text-primary px-1 sm:px-1.5 py-0.5 rounded bg-primary/10 border border-primary/20">
                 AI Pro
               </span>
             </div>

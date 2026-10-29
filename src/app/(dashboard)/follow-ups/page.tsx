@@ -21,6 +21,7 @@ import {
   Globe,
   Loader2,
   MessageSquare,
+  Trash2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -55,7 +56,10 @@ export default function FollowUpsPage() {
     activeFollowUpsCount,
     applications,
     showToast,
+    clearAllApplications,
   } = useApp();
+
+  const hasDemoFollowUps = followUps.some((f) => f.id.startsWith("fu-") && f.id.length < 8);
 
   const [selectedItem, setSelectedItem] = useState<FollowUpItem | null>(null);
   const [selectedScenario, setSelectedScenario] = useState<FollowUpScenario | null>(null);
@@ -240,6 +244,28 @@ export default function FollowUpsPage() {
         </div>
       </div>
 
+      {/* Demo Notice Banner */}
+      {hasDemoFollowUps && (
+        <div className="p-3 sm:px-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 text-left">
+            <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold text-[10px] uppercase border border-amber-500/30 shrink-0">
+              Демо-режим
+            </span>
+            <span className="text-[11px] sm:text-xs text-slate-200">
+              Сейчас показаны демонстрационные напоминания для наглядности работы центра дожимов.
+            </span>
+          </div>
+          <Button
+            size="sm"
+            onClick={clearAllApplications}
+            className="w-full sm:w-auto h-7 text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/40 cursor-pointer font-semibold shrink-0"
+          >
+            <Trash2 className="w-3.5 h-3.5 mr-1 text-amber-400" />
+            🗑 Очистить примеры и начать с чистого листа
+          </Button>
+        </div>
+      )}
+
       {/* Overdue/Stale applications alert banner (Module 4) */}
       {staleApplications.length > 0 && (
         <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -343,9 +369,16 @@ export default function FollowUpsPage() {
                         {item.company.slice(0, 2).toUpperCase()}
                       </div>
                       <div>
-                        <CardTitle className="text-sm font-bold truncate max-w-[150px]">
-                          {item.company}
-                        </CardTitle>
+                        <div className="flex items-center gap-1.5">
+                          <CardTitle className="text-sm font-bold truncate max-w-[150px]">
+                            {item.company}
+                          </CardTitle>
+                          {item.id.startsWith("fu-") && item.id.length < 8 && (
+                            <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-500/15 text-amber-400 border border-amber-500/30 shrink-0">
+                              ПРИМЕР
+                            </span>
+                          )}
+                        </div>
                         <CardDescription className="text-xs truncate max-w-[150px]">
                           {item.position}
                         </CardDescription>

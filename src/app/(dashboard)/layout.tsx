@@ -19,7 +19,7 @@ import {
   LogOut,
   User,
   Trash2,
-  KeyRound,
+  GraduationCap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,7 +27,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/co
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import UpgradeProModal from "@/components/UpgradeProModal";
 import AuthGateModal from "@/components/AuthGateModal";
-import AiSettingsModal from "@/components/AiSettingsModal";
+import OnboardingTourModal from "@/components/OnboardingTourModal";
 import { useApp } from "@/context/AppContext";
 
 export default function DashboardLayout({
@@ -38,7 +38,6 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [isAiSettingsOpen, setIsAiSettingsOpen] = useState(false);
 
   const {
     authSession,
@@ -58,6 +57,7 @@ export default function DashboardLayout({
     setTriggerQuickAudit,
     toastMessage,
     activateWithKey,
+    openOnboarding,
   } = useApp();
 
   const navItems = [
@@ -206,6 +206,18 @@ export default function DashboardLayout({
             </div>
             <ChevronRight className="w-3.5 h-3.5 opacity-50" />
           </Link>
+
+          <button
+            type="button"
+            onClick={openOnboarding}
+            className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-indigo-300 hover:text-white bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 transition-all cursor-pointer mt-1"
+          >
+            <div className="flex items-center gap-2.5">
+              <GraduationCap className="w-4 h-4 text-indigo-400" />
+              <span>🎓 Обучение / Инструкция</span>
+            </div>
+            <ChevronRight className="w-3 h-3 opacity-60" />
+          </button>
         </nav>
 
         {/* Pro Banner Card */}
@@ -342,7 +354,24 @@ export default function DashboardLayout({
                       );
                     })}
 
-                    <div className="pt-2 border-t border-border/60">
+                    <div className="pt-2 border-t border-border/60 space-y-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false);
+                          openOnboarding();
+                        }}
+                        className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium text-indigo-300 hover:bg-indigo-500/10 cursor-pointer"
+                      >
+                        <div className="flex items-center gap-3">
+                          <GraduationCap className="w-4 h-4 text-indigo-400" />
+                          <span>🎓 Обучение и инструкция</span>
+                        </div>
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300">
+                          ГИД
+                        </span>
+                      </button>
+
                       <Link
                         href="/pr-studio"
                         onClick={() => setMobileOpen(false)}
@@ -411,16 +440,16 @@ export default function DashboardLayout({
               </button>
             )}
 
-            {/* AI Settings Button */}
+            {/* Onboarding Tour Button */}
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setIsAiSettingsOpen(true)}
-              className="hidden md:flex text-xs font-medium border-cyan-500/40 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20 cursor-pointer"
-              title="Настроить бесплатные API ключи Groq (Llama 3.3) или Gemini Flash"
+              onClick={openOnboarding}
+              className="hidden md:flex text-xs font-medium border-indigo-500/30 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20 cursor-pointer"
+              title="Интерактивное обучение и инструкция по работе с LaunchPad"
             >
-              <KeyRound className="w-3.5 h-3.5 mr-1.5 text-cyan-400" />
-              Ключи ИИ
+              <GraduationCap className="w-3.5 h-3.5 mr-1.5 text-indigo-400" />
+              🎓 Обучение
             </Button>
 
             {/* Быстрый аудит (переводит на /scanner и запускает свежий расчет) */}
@@ -515,11 +544,8 @@ export default function DashboardLayout({
         }}
       />
 
-      {/* Free AI Provider Settings (Groq / Gemini) */}
-      <AiSettingsModal
-        isOpen={isAiSettingsOpen}
-        onClose={() => setIsAiSettingsOpen(false)}
-      />
+      {/* Interactive Onboarding Tour Modal */}
+      <OnboardingTourModal />
     </div>
   );
 }

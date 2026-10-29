@@ -122,6 +122,11 @@ interface AppContextType {
   // Language & Localization
   lang: "ru" | "en";
   setLang: (lang: "ru" | "en") => void;
+
+  // Onboarding Tour
+  isOnboardingOpen: boolean;
+  setIsOnboardingOpen: (open: boolean) => void;
+  openOnboarding: () => void;
 }
 
 const AUTH_SESSION_KEY = "launchpad_auth_session_v1";
@@ -133,10 +138,10 @@ const STORAGE_KEYS = {
 };
 
 const DEFAULT_PROFILE: UserProfile = {
-  name: "Алексей Морозов",
-  email: "alex.morozov@email.ru",
+  name: "Алексей Медведев",
+  email: "alexey.medvedev@company.ru",
   phone: "+7 (999) 123-45-67",
-  title: "Senior Product Manager",
+  title: "Специалист / Руководитель",
 };
 
 const INITIAL_FOLLOW_UPS: FollowUpItem[] = [
@@ -221,6 +226,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [coverLetterTargetJob, setCoverLetterTargetJob] = useState<{ company: string; position: string } | null>(null);
   const [triggerQuickAudit, setTriggerQuickAudit] = useState(false);
   const [lang, setLangState] = useState<"ru" | "en">("ru");
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
+
+  const openOnboarding = useCallback(() => {
+    setIsOnboardingOpen(true);
+  }, []);
 
   const setLang = useCallback((newLang: "ru" | "en") => {
     setLangState(newLang);
@@ -526,7 +536,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
 
     setApplicationsState((prev) => {
-      const next = [newApp, ...prev];
+      // If current list only contained demo cards, replace them with the user's real application!
+      const isOnlyDemo = prev.length > 0 && prev.every((a) => a.user_id === "demo");
+      const next = isOnlyDemo ? [newApp] : [newApp, ...prev];
       try {
         localStorage.setItem(STORAGE_KEYS.APPLICATIONS, JSON.stringify(next));
       } catch (err) {
@@ -552,7 +564,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       };
 
       setFollowUpsState((prev) => {
-        const next = [newFollowUp, ...prev];
+        // If only demo follow-ups existed, clean them out
+        const isOnlyDemoFu = prev.length > 0 && prev.every((f) => f.id.startsWith("fu-") && f.id.length < 8);
+        const next = isOnlyDemoFu ? [newFollowUp] : [newFollowUp, ...prev];
         try {
           localStorage.setItem(STORAGE_KEYS.FOLLOW_UPS, JSON.stringify(next));
         } catch (err) {
@@ -775,6 +789,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         importBackupData,
         lang,
         setLang,
+        isOnboardingOpen,
+        setIsOnboardingOpen,
+        openOnboarding,
       }}
     >
       {children}

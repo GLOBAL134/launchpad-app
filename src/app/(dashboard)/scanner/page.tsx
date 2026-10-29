@@ -1064,7 +1064,7 @@ export default function ATSScannerPage() {
     }
 
     setIsRewriting(true);
-    showToast("🤖 Groq AI переписывает опыт по формуле Google X-Y-Z...");
+    showToast("🤖 ИИ переписывает опыт по формуле Google X-Y-Z...");
 
     try {
       let groqKey = "";
@@ -1094,25 +1094,25 @@ export default function ATSScannerPage() {
       if (res.ok && data.rewrittenResume) {
         const personalized = injectUserProfileIntoResume(data.rewrittenResume, userProfile);
         setResumeText(personalized);
-        showToast("🎉 Резюме переписано через Groq! Пересчитываем балл ATS...");
+        showToast("🎉 Резюме успешно улучшено! Пересчитываем балл ATS...");
         await fetchAtsAudit(personalized, jobDesc, true);
         setTimeout(() => setViralBonusOpen(true), 800);
       } else {
-        showToast(data.error || "Не удалось переписать резюме через Groq");
+        showToast(data.error || "Не удалось улучшить резюме");
       }
     } catch (err: any) {
       console.error("AI rewrite error:", err);
-      showToast("Ошибка при обращении к Groq AI");
+      showToast("Ошибка при обращении к ИИ");
     } finally {
       setIsRewriting(false);
     }
   };
 
-  // Real Groq 1-Click Skill Embedding
+  // Real 1-Click Skill Embedding
   const handleQuickEmbedSkill = async (skill: string) => {
     if (embeddingSkill) return;
     setEmbeddingSkill(skill);
-    showToast(`🤖 Groq AI внедряет «${skill}» в опыт работы...`);
+    showToast(`🤖 ИИ внедряет «${skill}» в опыт работы...`);
 
     try {
       let groqKey = "";
@@ -1173,11 +1173,11 @@ export default function ATSScannerPage() {
         showToast(`✓ Навык «${skill}» внедрён в опыт! Пересчитываем балл...`);
         await fetchAtsAudit(targetResume, jobDesc, true);
       } else {
-        showToast(data.error || "Не удалось внедрить навык через Groq");
+        showToast(data.error || "Не удалось внедрить навык");
       }
     } catch (err: any) {
       console.error("Embed skill error:", err);
-      showToast("Ошибка при обращении к Groq AI");
+      showToast("Ошибка при обращении к ИИ");
     } finally {
       setEmbeddingSkill(null);
     }
@@ -1252,7 +1252,7 @@ export default function ATSScannerPage() {
             {isRewriting ? (
               <>
                 <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                <span>Groq улучшает резюме...</span>
+                <span>Проводится анализ и улучшение...</span>
               </>
             ) : (
               <>
@@ -1303,18 +1303,6 @@ export default function ATSScannerPage() {
           >
             <Gift className="w-3.5 h-3.5 text-amber-400 shrink-0" />
             <span>🎁 +3 проверки</span>
-          </Button>
-
-          {/* AI Provider Settings Button */}
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setAiSettingsOpen(true)}
-            className="col-span-2 sm:col-span-1 text-xs border-cyan-500/40 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20 flex items-center justify-center gap-1.5 cursor-pointer h-8 sm:h-9"
-            title="Подключить бесплатные ключи Groq (Llama 3.3) или Google Gemini Flash"
-          >
-            <KeyRound className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-            <span>⚡ Ключи ИИ (Groq / Gemini)</span>
           </Button>
         </div>
       </div>
@@ -1687,7 +1675,7 @@ export default function ATSScannerPage() {
                   disabled={isRewriting}
                   variant="outline"
                   className="border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 text-xs font-bold h-9 cursor-pointer"
-                  title="Переписать резюме под эту вакансию с Groq ИИ"
+                  title="Переписать резюме под эту вакансию с помощью ИИ"
                 >
                   {isRewriting ? (
                     <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -1825,7 +1813,7 @@ export default function ATSScannerPage() {
                       {isRewriting ? (
                         <>
                           <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                          <span>Groq переписывает...</span>
+                          <span>Проводится анализ и улучшение...</span>
                         </>
                       ) : (
                         <>
@@ -2044,7 +2032,7 @@ export default function ATSScannerPage() {
                             key={idx}
                             onClick={() => handleQuickEmbedSkill(kw)}
                             disabled={embeddingSkill === kw}
-                            title={`Нажмите, чтобы через Groq внедрить «${kw}» в опыт и поднять балл`}
+                            title={`Нажмите, чтобы внедрить «${kw}» в опыт и поднять балл`}
                             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-rose-500/10 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 hover:text-white text-xs font-medium transition cursor-pointer disabled:opacity-60"
                           >
                             {embeddingSkill === kw ? (
@@ -2420,12 +2408,6 @@ export default function ATSScannerPage() {
         beforeScore={62}
         afterScore={activeScore >= 85 ? activeScore : 94}
         targetRole={activeIndustry}
-      />
-
-      {/* Free AI Provider Settings (Groq / Gemini) */}
-      <AiSettingsModal
-        isOpen={aiSettingsOpen}
-        onClose={() => setAiSettingsOpen(false)}
       />
     </div>
   );

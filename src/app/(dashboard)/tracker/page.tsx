@@ -90,6 +90,7 @@ export default function TrackerPage() {
   };
 
   // Filtered applications
+  const hasDemoApps = applications.some((a) => a.user_id === "demo");
   const filteredApps = applications.filter((app) => {
     const query = searchQuery.toLowerCase();
     return (
@@ -197,6 +198,28 @@ export default function TrackerPage() {
         </div>
       </div>
 
+      {/* Demo Mode Notice Banner */}
+      {hasDemoApps && (
+        <div className="p-3 sm:px-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 text-left">
+            <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold text-[10px] uppercase border border-amber-500/30 shrink-0">
+              Демо-режим
+            </span>
+            <span className="text-[11px] sm:text-xs text-slate-200">
+              Сейчас показаны демонстрационные примеры для наглядности работы пайплайна.
+            </span>
+          </div>
+          <Button
+            size="sm"
+            onClick={clearAllApplications}
+            className="w-full sm:w-auto h-7 text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/40 cursor-pointer font-semibold shrink-0"
+          >
+            <Trash2 className="w-3.5 h-3.5 mr-1 text-amber-400" />
+            🗑 Очистить примеры и начать с чистого листа
+          </Button>
+        </div>
+      )}
+
       {/* Kanban Board Container (horizontally scrollable) */}
       <div className="overflow-x-auto pb-6">
         <div className="flex gap-4 min-w-[1280px]">
@@ -245,9 +268,16 @@ export default function TrackerPage() {
                               {app.company[0]}
                             </div>
                             <div>
-                              <h4 className="font-semibold text-xs text-foreground group-hover:text-primary transition-colors">
-                                {app.company}
-                              </h4>
+                              <div className="flex items-center gap-1.5">
+                                <h4 className="font-semibold text-xs text-foreground group-hover:text-primary transition-colors">
+                                  {app.company}
+                                </h4>
+                                {app.user_id === "demo" && (
+                                  <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-500/15 text-amber-400 border border-amber-500/30 shrink-0">
+                                    ПРИМЕР
+                                  </span>
+                                )}
+                              </div>
                               <p className="text-[11px] text-muted-foreground line-clamp-1">
                                 {app.position}
                               </p>
