@@ -12,7 +12,7 @@ export interface AICallOptions {
   systemPrompt?: string;
   userPrompt: string;
   temperature?: number;
-  mode?: "text" | "json" | "resume_rewrite" | "embed_skill" | "cover_letter" | "follow_up" | "interview_prep" | "salary_negotiator" | "ping";
+  mode?: "text" | "json" | "resume_rewrite" | "embed_skill" | "cover_letter" | "follow_up" | "interview_prep" | "salary_negotiator" | "pr_studio" | "ping";
 }
 
 export interface AICallResponse {
@@ -31,6 +31,8 @@ export async function callAI(options: AICallOptions): Promise<AICallResponse> {
     geminiKey = localStorage.getItem("lp_gemini_api_key") || "";
   }
 
+  const timeoutMs = mode === "pr_studio" ? 25000 : 12000;
+
   try {
     const res = await fetch("/api/ai", {
       method: "POST",
@@ -45,7 +47,7 @@ export async function callAI(options: AICallOptions): Promise<AICallResponse> {
         temperature,
         mode,
       }),
-      signal: AbortSignal.timeout(10000),
+      signal: AbortSignal.timeout(timeoutMs),
     });
 
     if (res.ok) {

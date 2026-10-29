@@ -22,6 +22,9 @@ import {
   ArrowLeft,
   Sliders,
   Award,
+  KeyRound,
+  Download,
+  Terminal,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -35,6 +38,7 @@ import {
   PrChannelContent,
 } from "@/lib/pr-generator";
 import { callAI } from "@/lib/ai-client";
+import { AiSettingsModal } from "@/components/AiSettingsModal";
 
 function PrStudioContent() {
   const [selectedRole, setSelectedRole] = useState(PR_TARGET_ROLES[0].id);
@@ -48,6 +52,9 @@ function PrStudioContent() {
   const [copiedAll, setCopiedAll] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("all");
   const [editableChannels, setEditableChannels] = useState<Record<string, string>>({});
+  const [providerBadge, setProviderBadge] = useState<string>("LaunchPad AI Engine");
+  const [isAiSettingsOpen, setIsAiSettingsOpen] = useState(false);
+  const [hasCustomKey, setHasCustomKey] = useState(false);
 
   // Get active role title
   const activeRoleLabel =
@@ -55,9 +62,18 @@ function PrStudioContent() {
     PR_TARGET_ROLES.find((r) => r.id === selectedRole)?.label ||
     "Специалист";
 
+  // Check saved keys in localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const g = localStorage.getItem("lp_groq_api_key");
+      const gem = localStorage.getItem("lp_gemini_api_key");
+      setHasCustomKey(Boolean(g?.trim() || gem?.trim()));
+    }
+  }, [isAiSettingsOpen]);
+
   // Initial generation on load
   useEffect(() => {
-    const initialBatch = buildPrBatchWave(activeRoleLabel, selectedFeature);
+    const initialBatch = buildPrBatchWave(activeRoleLabel, selectedFeature, undefined, tone);
     setBatchResult(initialBatch);
     const initialTexts: Record<string, string> = {};
     Object.entries(initialBatch.channels).forEach(([k, v]) => {
@@ -65,6 +81,42 @@ function PrStudioContent() {
     });
     setEditableChannels(initialTexts);
   }, []);
+
+  const handleSelectRole = (roleId: string) => {
+    setSelectedRole(roleId);
+    setCustomRole("");
+    const roleObj = PR_TARGET_ROLES.find((r) => r.id === roleId);
+    const label = roleObj?.label || "Специалист";
+    const freshBatch = buildPrBatchWave(label, selectedFeature, undefined, tone);
+    setBatchResult(freshBatch);
+    const newTexts: Record<string, string> = {};
+    Object.entries(freshBatch.channels).forEach(([k, v]) => {
+      newTexts[k] = v.content;
+    });
+    setEditableChannels(newTexts);
+  };
+
+  const handleSelectFeature = (featId: string) => {
+    setSelectedFeature(featId);
+    const freshBatch = buildPrBatchWave(activeRoleLabel, featId, undefined, tone);
+    setBatchResult(freshBatch);
+    const newTexts: Record<string, string> = {};
+    Object.entries(freshBatch.channels).forEach(([k, v]) => {
+      newTexts[k] = v.content;
+    });
+    setEditableChannels(newTexts);
+  };
+
+  const handleSelectTone = (t: "viral" | "case_study" | "guide") => {
+    setTone(t);
+    const freshBatch = buildPrBatchWave(activeRoleLabel, selectedFeature, undefined, t);
+    setBatchResult(freshBatch);
+    const newTexts: Record<string, string> = {};
+    Object.entries(freshBatch.channels).forEach(([k, v]) => {
+      newTexts[k] = v.content;
+    });
+    setEditableChannels(newTexts);
+  };
 
   const handleGenerateWave = async () => {
     setIsLoading(true);
@@ -100,10 +152,15 @@ PROMO CODE: START30 (30% скидка на PRO)
       const res = await callAI({
         systemPrompt,
         userPrompt,
-        temperature: 0.6,
+        temperature: 0.7,
+        mode: "pr_studio",
       });
 
-      const newBatch = buildPrBatchWave(activeRoleLabel, selectedFeature, res.text);
+      if (res.provider) {
+        setProviderBadge(res.provider);
+      }
+
+      const newBatch = buildPrBatchWave(activeRoleLabel, selectedFeature, res.text, tone);
       setBatchResult(newBatch);
       const newTexts: Record<string, string> = {};
       Object.entries(newBatch.channels).forEach(([k, v]) => {
@@ -111,9 +168,10 @@ PROMO CODE: START30 (30% скидка на PRO)
       });
       setEditableChannels(newTexts);
     } catch (err) {
-      console.warn("Failed to generate AI wave, using fallback generator:", err);
-      const fallback = buildPrBatchWave(activeRoleLabel, selectedFeature);
+      console.warn("Using localized PR engine wave:", err);
+      const fallback = buildPrBatchWave(activeRoleLabel, selectedFeature, undefined, tone);
       setBatchResult(fallback);
+      setProviderBadge("LaunchPad Local Synthesizer");
       const newTexts: Record<string, string> = {};
       Object.entries(fallback.channels).forEach(([k, v]) => {
         newTexts[k] = v.content;
@@ -142,6 +200,24 @@ PROMO CODE: START30 (30% скидка на PRO)
     navigator.clipboard.writeText(fullMarkdown);
     setCopiedAll(true);
     setTimeout(() => setCopiedAll(false), 3000);
+  };
+
+  const handleDownloadMarkdown = () => {
+    if (!batchResult) return;
+    const fullMarkdown = Object.entries(batchResult.channels)
+      .map(([id, ch]) => {
+        const text = editableChannels[id] || ch.content;
+        return `## ${ch.platformName} (${ch.badge})\n\n${text}\n\n---\n`;
+      })
+      .join("\n");
+
+    const blob = new Blob([fullMarkdown], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `pr-wave-${batchResult.roleName.toLowerCase().replace(/[^a-zа-я0-9]/gi, "-")}.md`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   const getPlatformExternalUrl = (id: string): string => {
@@ -200,6 +276,19 @@ PROMO CODE: START30 (30% скидка на PRO)
         </div>
 
         <div className="flex items-center gap-2">
+          {/* AI Settings Button */}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setIsAiSettingsOpen(true)}
+            className="text-xs border-cyan-500/40 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20 cursor-pointer"
+            title="Настроить бесплатный ключ Groq (Llama 3.3) или Gemini"
+          >
+            <KeyRound className="w-3.5 h-3.5 mr-1 text-cyan-400" />
+            <span className="hidden sm:inline">Ключи ИИ (Groq / Gemini)</span>
+            <span className="sm:hidden">Ключи ИИ</span>
+          </Button>
+
           <Badge
             variant="outline"
             className="border-emerald-500/40 bg-emerald-500/10 text-emerald-400 text-xs font-mono hidden md:inline-flex items-center gap-1.5"
@@ -246,9 +335,18 @@ PROMO CODE: START30 (30% скидка на PRO)
               <Sliders className="w-4 h-4 text-primary" />
               <h2 className="text-sm font-bold text-foreground">Параметры контент-волны</h2>
             </div>
-            <span className="text-[11px] text-muted-foreground font-mono">
-              7 платформ • 1 клик
-            </span>
+            <div className="flex items-center gap-2">
+              {hasCustomKey ? (
+                <span className="text-[11px] text-emerald-400 font-medium flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  Groq / Gemini подключен
+                </span>
+              ) : (
+                <span className="text-[11px] text-cyan-400 font-medium flex items-center gap-1">
+                  ⚡ Движок LaunchPad AI PRO
+                </span>
+              )}
+            </div>
           </div>
 
           {/* 1. Target Profession Selector */}
@@ -263,10 +361,7 @@ PROMO CODE: START30 (30% скидка на PRO)
               {PR_TARGET_ROLES.map((role) => (
                 <button
                   key={role.id}
-                  onClick={() => {
-                    setSelectedRole(role.id);
-                    setCustomRole("");
-                  }}
+                  onClick={() => handleSelectRole(role.id)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition cursor-pointer whitespace-nowrap shrink-0 ${
                     selectedRole === role.id && !customRole
                       ? "bg-primary text-primary-foreground border-primary font-bold shadow-md shadow-primary/20"
@@ -283,7 +378,18 @@ PROMO CODE: START30 (30% скидка на PRO)
               <Input
                 placeholder="Или введите свою профессию (например: Финансовый директор, Врач, Шеф-повар, Дизайнер интерьеров)..."
                 value={customRole}
-                onChange={(e) => setCustomRole(e.target.value)}
+                onChange={(e) => {
+                  setCustomRole(e.target.value);
+                  if (e.target.value.trim().length > 2) {
+                    const freshBatch = buildPrBatchWave(e.target.value.trim(), selectedFeature, undefined, tone);
+                    setBatchResult(freshBatch);
+                    const newTexts: Record<string, string> = {};
+                    Object.entries(freshBatch.channels).forEach(([k, v]) => {
+                      newTexts[k] = v.content;
+                    });
+                    setEditableChannels(newTexts);
+                  }
+                }}
                 className="text-xs bg-background/60 border-border/80 h-9"
               />
             </div>
@@ -300,7 +406,7 @@ PROMO CODE: START30 (30% скидка на PRO)
                 return (
                   <div
                     key={feat.id}
-                    onClick={() => setSelectedFeature(feat.id)}
+                    onClick={() => handleSelectFeature(feat.id)}
                     className={`p-3 rounded-xl border transition cursor-pointer flex flex-col justify-between ${
                       isSelected
                         ? "bg-primary/10 border-primary ring-1 ring-primary/40 shadow-sm"
@@ -325,7 +431,7 @@ PROMO CODE: START30 (30% скидка на PRO)
                 Тон:
               </span>
               <button
-                onClick={() => setTone("viral")}
+                onClick={() => handleSelectTone("viral")}
                 className={`px-2.5 py-1 rounded-lg font-medium transition cursor-pointer ${
                   tone === "viral"
                     ? "bg-purple-600 text-white font-bold"
@@ -335,7 +441,7 @@ PROMO CODE: START30 (30% скидка на PRO)
                 🔥 Вирусный
               </button>
               <button
-                onClick={() => setTone("case_study")}
+                onClick={() => handleSelectTone("case_study")}
                 className={`px-2.5 py-1 rounded-lg font-medium transition cursor-pointer ${
                   tone === "case_study"
                     ? "bg-purple-600 text-white font-bold"
@@ -345,7 +451,7 @@ PROMO CODE: START30 (30% скидка на PRO)
                 📊 Кейс с цифрами
               </button>
               <button
-                onClick={() => setTone("guide")}
+                onClick={() => handleSelectTone("guide")}
                 className={`px-2.5 py-1 rounded-lg font-medium transition cursor-pointer ${
                   tone === "guide"
                     ? "bg-purple-600 text-white font-bold"
@@ -390,7 +496,7 @@ PROMO CODE: START30 (30% скидка на PRO)
                   {batchResult.roleName}
                 </Badge>
                 <span className="text-[11px] text-muted-foreground hidden md:inline">
-                  • {batchResult.createdAt}
+                  • {providerBadge}
                 </span>
               </div>
 
@@ -401,7 +507,18 @@ PROMO CODE: START30 (30% скидка на PRO)
                   className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold shadow-md shadow-primary/20 cursor-pointer flex-1 sm:flex-none"
                 >
                   {copiedAll ? <Check className="w-3.5 h-3.5 mr-1" /> : <Copy className="w-3.5 h-3.5 mr-1" />}
-                  <span>{copiedAll ? "Скопированы все 7 постов!" : "Скопировать ВСЕ 7 постов (Markdown)"}</span>
+                  <span>{copiedAll ? "Скопированы все 7 постов!" : "Скопировать ВСЕ (Markdown)"}</span>
+                </Button>
+
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleDownloadMarkdown}
+                  className="text-xs border-border/80 cursor-pointer flex items-center gap-1"
+                  title="Скачать все посты единым .md файлом"
+                >
+                  <Download className="w-3.5 h-3.5 text-purple-400" />
+                  <span className="hidden sm:inline">Скачать .md</span>
                 </Button>
 
                 <Button
@@ -542,11 +659,21 @@ PROMO CODE: START30 (30% скидка на PRO)
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border/60 py-6 text-center text-xs text-muted-foreground bg-card/40 mt-12">
+      <footer className="border-t border-border/60 py-6 text-center text-xs text-muted-foreground bg-card/40 mt-12 flex flex-col items-center gap-2">
         <p>
           LaunchPad AI PRO Growth Engine • Внутренний закрытый инструмент основателя (?admin=pr)
         </p>
+        <p className="text-[11px] text-muted-foreground/70 flex items-center gap-1 font-mono">
+          <Terminal className="w-3 h-3 text-primary" />
+          <span>Консольный генератор в терминале: <code>npm run pr-wave</code></span>
+        </p>
       </footer>
+
+      {/* AI Key Settings Modal */}
+      <AiSettingsModal
+        isOpen={isAiSettingsOpen}
+        onClose={() => setIsAiSettingsOpen(false)}
+      />
     </div>
   );
 }

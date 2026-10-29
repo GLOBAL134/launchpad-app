@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cleanAIMarkdownArtifacts } from "@/lib/monetization";
+import { buildPrBatchWave } from "@/lib/pr-generator";
 
 export const maxDuration = 30;
 
@@ -43,6 +44,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Dynamic timeout based on mode
+    const timeoutDuration = mode === "pr_studio" ? 22000 : 8000;
+
     // 1. Try Groq API (Custom key from header or server .env)
     const groqKey =
       req.headers.get("x-groq-key") ||
@@ -65,7 +69,7 @@ export async function POST(req: NextRequest) {
             ],
             temperature,
           }),
-          signal: AbortSignal.timeout(6000),
+          signal: AbortSignal.timeout(timeoutDuration),
         });
 
         if (groqRes.ok) {
@@ -104,7 +108,7 @@ export async function POST(req: NextRequest) {
             ],
             generationConfig: { temperature },
           }),
-          signal: AbortSignal.timeout(6000),
+          signal: AbortSignal.timeout(timeoutDuration),
         });
 
         if (geminiRes.ok) {
@@ -234,6 +238,40 @@ function synthesizeCareerIntelligence(
   // PRIORITY 6: Salary Negotiator
   if (mode === "salary_negotiator" || pLower.includes("зарплат") || pLower.includes("оффер")) {
     return generateUniversalSalaryNegotiation(userPrompt);
+  }
+
+  // PRIORITY 7: PR Studio Content Wave
+  if (
+    mode === "pr_studio" ||
+    pLower.includes("контент-пачк") ||
+    pLower.includes("===pikabu===") ||
+    pLower.includes("pikabu")
+  ) {
+    const roleMatch = userPrompt.match(/TARGET ROLE:\s*([^\n]+)/i);
+    const featureMatch = userPrompt.match(/FEATURE FOCUS:\s*([^\n]+)/i);
+    const role = roleMatch ? roleMatch[1].trim() : "Специалист";
+    const feat = featureMatch ? featureMatch[1].trim() : "ats_55";
+    const batch = buildPrBatchWave(role, feat);
+    return `===PIKABU===
+${batch.channels.pikabu.content}
+
+===TENCHAT===
+${batch.channels.tenchat.content}
+
+===LINKEDIN===
+${batch.channels.linkedin.content}
+
+===VC===
+${batch.channels.vc.content}
+
+===HASHNODE===
+${batch.channels.hashnode.content}
+
+===INDIEHACKERS===
+${batch.channels.indiehackers.content}
+
+===CREATIVE===
+${batch.channels.creative.content}`;
   }
 
   return `• Успешно внедрил лучшие отраслевые практики, увеличив операционную эффективность на 30% и обеспечив своевременное выполнение целевых KPI.`;
