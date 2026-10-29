@@ -26,24 +26,21 @@ export async function POST(req: NextRequest) {
 
     if (fileExt === "pdf" || file.type === "application/pdf") {
       try {
-        const { PDFParse } = await import("pdf-parse");
-        const parser = new PDFParse({ data: buffer });
-        const pdfResult = await parser.getText();
-        if (pdfResult && Array.isArray(pdfResult.pages) && pdfResult.pages.length > 0) {
-          extractedText = pdfResult.pages.map((p: any) => p.text || "").join("\n\n");
-        } else if (typeof pdfResult === "string") {
-          extractedText = pdfResult;
-        } else {
-          extractedText = pdfResult?.text || "";
-        }
+        const { extractText } = await import("unpdf");
+        const { text } = await extractText(new Uint8Array(buffer));
+        extractedText = Array.isArray(text) ? text.join("\n\n") : text || "";
       } catch (pdfErr) {
-        console.error("PDFParse error:", pdfErr);
-        // Fallback: simple text stream extraction from buffer
-        const raw = buffer.toString("utf-8");
-        const matches = raw.match(/\(([^()]+)\)/g);
-        if (matches && matches.length > 20) {
-          extractedText = matches.map((m) => m.slice(1, -1)).join(" ");
-        } else {
+        console.error("unpdf error, trying pdf-parse fallback:", pdfErr);
+        try {
+          const { PDFParse } = await import("pdf-parse");
+          const parser = new PDFParse({ data: buffer });
+          const pdfResult = await parser.getText();
+          if (pdfResult && Array.isArray(pdfResult.pages) && pdfResult.pages.length > 0) {
+            extractedText = pdfResult.pages.map((p: any) => p.text || "").join("\n\n");
+          } else {
+            extractedText = typeof pdfResult === "string" ? pdfResult : pdfResult?.text || "";
+          }
+        } catch {
           return NextResponse.json(
             {
               error:
