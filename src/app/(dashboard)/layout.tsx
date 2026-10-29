@@ -288,6 +288,17 @@ export default function DashboardLayout({
               <LogOut className="w-4 h-4" />
             </button>
           </div>
+
+          {/* Legal Links (152-ФЗ РФ) */}
+          <div className="mt-2 pt-2 border-t border-border/40 flex items-center justify-between text-[10px] text-muted-foreground/60 px-1">
+            <Link href="/privacy" className="hover:text-primary transition-colors underline">
+              Политика (152-ФЗ)
+            </Link>
+            <span>•</span>
+            <Link href="/terms" className="hover:text-primary transition-colors underline">
+              Оферта
+            </Link>
+          </div>
         </div>
       </aside>
 

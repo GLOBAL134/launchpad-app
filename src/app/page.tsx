@@ -563,11 +563,15 @@ export default function LandingPage() {
             </div>
             <span>LaunchPad © 2026. Все права защищены. Интеллектуальный помощник для поиска работы.</span>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center gap-4 sm:gap-5">
+            <Link href="/privacy" className="text-xs text-muted-foreground hover:text-primary transition-colors underline">
+              Политика конфиденциальности (152-ФЗ)
+            </Link>
+            <Link href="/terms" className="text-xs text-muted-foreground hover:text-primary transition-colors underline">
+              Пользовательское соглашение
+            </Link>
             <Link href="/examples" className="text-primary hover:underline font-semibold">Примеры 95% ATS</Link>
-            <Link href="/pr-studio" className="text-purple-400 hover:text-purple-300 font-semibold transition-colors">PR-Студия (?admin=pr)</Link>
             <Link href="/dashboard" className="hover:text-foreground transition-colors">Дашборд</Link>
-            <Link href="/tracker" className="hover:text-foreground transition-colors">Канбан-трекер</Link>
             <Link href="/scanner" className="hover:text-foreground transition-colors">ATS-сканер</Link>
             <Link href="/cover-letter" className="hover:text-foreground transition-colors">Генератор писем</Link>
           </div>

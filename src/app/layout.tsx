@@ -6,6 +6,7 @@ import { AppProvider } from "@/context/AppContext";
 import UserProfileModal from "@/components/UserProfileModal";
 import AddJobModal from "@/components/AddJobModal";
 import AuthGateModal from "@/components/AuthGateModal";
+import CookieConsentBanner from "@/components/CookieConsentBanner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -157,6 +158,7 @@ export default function RootLayout({
           <UserProfileModal />
           <AddJobModal />
           <AuthGateModal />
+          <CookieConsentBanner />
         </AppProvider>
         <Analytics />
       </body>

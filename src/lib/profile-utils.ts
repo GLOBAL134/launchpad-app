@@ -105,3 +105,6 @@ export function extractCandidateName(resumeText: string): string {
   }
   return "";
 }
+
+export { anonymizePII, restorePII } from "./privacy-utils";
+

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cleanAIMarkdownArtifacts } from "@/lib/monetization";
 import { createGroqClient, GROQ_MODELS } from "@/lib/server-ai-keys";
 import { injectUserProfileIntoResume, extractCandidateName } from "@/lib/profile-utils";
+import { anonymizePII, restorePII } from "@/lib/privacy-utils";
 
 export const maxDuration = 30;
 
@@ -37,6 +38,14 @@ export async function POST(req: NextRequest) {
 
     const groq = createGroqClient(userApiKey);
 
+    // 152-ФЗ РФ: Обезличивание ПДн перед обращением к внешним нейросетям (Groq)
+    const { anonymizedText: anonymizedResume } = anonymizePII(
+      resumeText,
+      candidateName,
+      candidateEmail,
+      candidatePhone
+    );
+
     // MODE 1: Single Skill Embedding
     if (action === "embed_skill") {
       if (!skillToEmbed) {
@@ -59,8 +68,8 @@ STRICT RULES:
 Целевая вакансия:
 ${vacancyText.slice(0, 1000) || "Профильная позиция"}
 
-Контекст резюме кандидата (${candidateName || "Соискатель"}):
-${resumeText.slice(0, 1200)}
+Контекст резюме кандидата (обезличено по 152-ФЗ РФ):
+${anonymizedResume.slice(0, 1200)}
 
 Сгенерируй 1-2 мощных буллета для блока «Опыт работы», доказывающих практическое применение навыка «${skillToEmbed}» с оцифрованным бизнес-результатом по формуле X-Y-Z.`;
 
@@ -110,8 +119,8 @@ Your task is to completely rewrite and elevate the candidate's resume for the ta
 STRICT RULES:
 1. Output plain human Russian text only. NEVER use Markdown asterisks (**), hashtags (#), or code fences.
 2. Structure in clean Harvard ATS single-column layout:
-   - Первая строка: СТРОГО ФИО кандидата «${candidateName || "Сохрани имя из резюме"}» (КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО выдумывать чужие имена!)
-   - Вторая строка: Должность и Контактная информация
+   - Первая строка: СТРОГО токен [ФИО КАНДИДАТА] (КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО выдумывать чужие имена!)
+   - Вторая строка: Должность и Контактная информация: [ТЕЛЕФОН] | [EMAIL]
    - ПРОФЕССИОНАЛЬНОЕ РЕЗЮМЕ / SUMMARY (3-4 high-impact lines with metrics)
    - ОПЫТ РАБОТЫ / EXPERIENCE (Keep real companies/dates intact; rewrite all bullets using Google X-Y-Z formula with quantified %, $, руб, млн, time metrics)
    - КЛЮЧЕВЫЕ КОМПЕТЕНЦИИ И НАВЫКИ / SKILLS (organically include: ${skillsListStr})
@@ -125,12 +134,12 @@ ${vacancyText.slice(0, 2500) || "Профильная позиция"}
 ОТСУТСТВУЮЩИЕ НАВЫКИ ДЛЯ ОРГАНИЧНОЙ ИНТЕГРАЦИИ В ОПЫТ:
 ${skillsListStr}
 
-ФИО КАНДИДАТА: СТРОГО «${candidateName || "Сохрани имя из первой строки"}»
+ФИО КАНДИДАТА: СТРОГО токен [ФИО КАНДИДАТА]
 
-ТЕКУЩЕЕ РЕЗЮМЕ КАНДИДАТА:
-${resumeText.slice(0, 3500)}
+ТЕКУЩЕЕ РЕЗЮМЕ КАНДИДАТА (Обезличено по 152-ФЗ РФ):
+${anonymizedResume.slice(0, 3500)}
 
-Перепиши резюме целиком в эталонный Harvard ATS стандарт, оцифруй результаты по формуле Google X-Y-Z и органично вплети все недостающие навыки внутрь опыта работы. Без звездочек (**) и решеток (#). Сохраняй точное ФИО кандидата!`;
+Перепиши резюме целиком в эталонный Harvard ATS стандарт, оцифруй результаты по формуле Google X-Y-Z и органично вплети все недостающие навыки внутрь опыта работы. Без звездочек (**) и решеток (#). Сохраняй токен [ФИО КАНДИДАТА] в первой строке!`;
 
     for (const model of GROQ_MODELS) {
       try {
@@ -146,13 +155,12 @@ ${resumeText.slice(0, 3500)}
         const text = resp.choices?.[0]?.message?.content?.trim();
         if (text && text.length > 100) {
           let cleaned = cleanAIMarkdownArtifacts(text);
-          if (candidateName) {
-            cleaned = injectUserProfileIntoResume(cleaned, {
-              name: candidateName,
-              email: candidateEmail,
-              phone: candidatePhone,
-            });
-          }
+          // Restore candidate's real PII tokens securely before sending to client
+          cleaned = restorePII(cleaned, {
+            name: candidateName,
+            email: candidateEmail,
+            phone: candidatePhone,
+          });
           return NextResponse.json({
             success: true,
             rewrittenResume: cleaned,

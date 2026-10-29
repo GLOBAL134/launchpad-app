@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Mail, Phone, Briefcase, Download, Upload, ShieldCheck } from "lucide-react";
+import { User, Mail, Phone, Briefcase, Download, Upload, ShieldCheck, Trash2, Scale } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 
 export default function UserProfileModal() {
@@ -16,6 +17,7 @@ export default function UserProfileModal() {
     setIsProfileModalOpen,
     exportBackupData,
     importBackupData,
+    showToast,
   } = useApp();
 
   const [name, setName] = useState(userProfile.name);
@@ -49,12 +51,33 @@ export default function UserProfileModal() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateUserProfile({
-      name: name.trim() || "Алексей Морозов",
-      email: email.trim() || "alex@launchpad.ru",
+      name: name.trim() || "Алексей Медведев",
+      email: email.trim() || "alexey.medvedev@company.ru",
       phone: phone.trim() || "+7 (999) 123-45-67",
-      title: title.trim() || "Product Manager",
+      title: title.trim() || "Специалист / Руководитель",
     });
     setIsProfileModalOpen(false);
+  };
+
+  const handleWipeAllData = () => {
+    const confirmed = window.confirm(
+      "ВНИМАНИЕ: Вы действительно хотите удалить ВСЕ данные?\n\nЭто действие безвозвратно удалит ваше резюме, профиль, карточки Канбана и историю откликов из локального хранилища браузера на этом устройстве в соответствии со ст. 21 152-ФЗ РФ."
+    );
+    if (!confirmed) return;
+
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch (err) {
+        console.error("Wipe error:", err);
+      }
+      setIsProfileModalOpen(false);
+      showToast("✓ Все персональные данные, резюме и отклики удалены с устройства");
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 500);
+    }
   };
 
   return (
@@ -175,6 +198,40 @@ export default function UserProfileModal() {
                   className="hidden"
                 />
               </div>
+            </div>
+
+            {/* Legal Notice & Full Data Wipe (152-ФЗ РФ) */}
+            <div className="pt-4 border-t border-border/80 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-foreground flex items-center gap-1.5">
+                  <Scale className="w-3.5 h-3.5 text-primary" />
+                  <span>Защита данных (152-ФЗ РФ)</span>
+                </span>
+                <div className="flex items-center gap-2 text-[10px]">
+                  <Link href="/privacy" target="_blank" className="text-primary underline hover:text-primary/80">
+                    Политика
+                  </Link>
+                  <span className="text-muted-foreground">•</span>
+                  <Link href="/terms" target="_blank" className="text-primary underline hover:text-primary/80">
+                    Оферта
+                  </Link>
+                </div>
+              </div>
+
+              <p className="text-[11px] text-muted-foreground leading-tight">
+                Архитектура Local-First: все данные хранятся только в вашем браузере. Вы можете в 1 клик удалить все записи (право на забвение по ст. 21 152-ФЗ):
+              </p>
+
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                onClick={handleWipeAllData}
+                className="w-full text-xs h-8 cursor-pointer bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 flex items-center justify-center gap-1.5"
+              >
+                <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                <span>🗑 Удалить все мои данные с устройства</span>
+              </Button>
             </div>
           </div>
 

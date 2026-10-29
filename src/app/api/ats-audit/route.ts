@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cleanAIMarkdownArtifacts } from "@/lib/monetization";
 import { createGroqClient, GROQ_MODELS } from "@/lib/server-ai-keys";
+import { anonymizePII } from "@/lib/privacy-utils";
 
 export const maxDuration = 30;
 
@@ -75,10 +76,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // 152-ФЗ РФ: Полное обезличивание ПДн перед отправкой во внешний LLM-провайдер
+    const { anonymizedText: anonymizedResume } = anonymizePII(resumeText);
+
     const groq = createGroqClient(userApiKey);
     let lastError: any = null;
 
-    // Send strictly to Groq LLM using model cascade
+    // Send strictly to Groq LLM using model cascade with masked PII
     for (const model of GROQ_MODELS) {
       try {
         const chatCompletion = await groq.chat.completions.create({
@@ -87,7 +91,7 @@ export async function POST(req: NextRequest) {
             { role: "system", content: ATS_SYSTEM_PROMPT },
             {
               role: "user",
-              content: `ЦЕЛЕВАЯ ВАКАНСИЯ:\n${vacancyText.slice(0, 4000)}\n\nРЕЗЮМЕ КАНДИДАТА:\n${resumeText.slice(0, 4000)}`,
+              content: `ЦЕЛЕВАЯ ВАКАНСИЯ:\n${vacancyText.slice(0, 4000)}\n\nРЕЗЮМЕ КАНДИДАТА (Обезличено по 152-ФЗ РФ):\n${anonymizedResume.slice(0, 4000)}`,
             },
           ],
           response_format: { type: "json_object" },

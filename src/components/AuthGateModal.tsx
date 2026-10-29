@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -62,6 +63,7 @@ export default function AuthGateModal({
   const [title, setTitle] = useState("Product Manager / IT-специалист");
   const [password, setPassword] = useState("");
   const [seedDemoJobs, setSeedDemoJobs] = useState(true);
+  const [legalAgreed, setLegalAgreed] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleTabChange = (tab: "register" | "login") => {
@@ -72,6 +74,11 @@ export default function AuthGateModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+
+    if (!legalAgreed) {
+      setErrorMessage("Необходимо согласиться с Политикой конфиденциальности и Пользовательским соглашением");
+      return;
+    }
 
     const trimmedEmail = email.trim();
     if (!trimmedEmail || !trimmedEmail.includes("@")) {
@@ -314,6 +321,39 @@ export default function AuthGateModal({
             </div>
           )}
 
+          {/* 152-ФЗ Consent Checkbox */}
+          <div className="pt-0.5">
+            <label className="flex items-start gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={legalAgreed}
+                onChange={(e) => setLegalAgreed(e.target.checked)}
+                className="mt-0.5 rounded border-border text-primary focus:ring-primary w-4 h-4 cursor-pointer shrink-0"
+                required
+              />
+              <span className="text-[10px] sm:text-[11px] text-muted-foreground leading-snug">
+                Соглашаюсь с{" "}
+                <Link
+                  href="/privacy"
+                  target="_blank"
+                  className="text-primary underline hover:text-primary/80"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Политикой конфиденциальности (152-ФЗ)
+                </Link>{" "}
+                и{" "}
+                <Link
+                  href="/terms"
+                  target="_blank"
+                  className="text-primary underline hover:text-primary/80"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Пользовательским соглашением
+                </Link>
+              </span>
+            </label>
+          </div>
+
           {/* Primary Submit Button */}
           <Button
             type="submit"
@@ -346,8 +386,12 @@ export default function AuthGateModal({
         </form>
 
         {/* Footer Guarantee */}
-        <div className="px-4 sm:px-6 py-2.5 sm:py-3 bg-muted/20 border-t border-border/40 text-[9px] sm:text-[10px] text-muted-foreground text-center">
-          Данные хранятся локально в вашем браузере • Безопасный изолированный контекст
+        <div className="px-4 sm:px-6 py-2.5 sm:py-3 bg-muted/20 border-t border-border/40 text-[9px] sm:text-[10px] text-muted-foreground text-center flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+          <span>Локальное хранение на вашем устройстве (152-ФЗ РФ)</span>
+          <span>•</span>
+          <Link href="/privacy" target="_blank" className="underline hover:text-foreground">Политика</Link>
+          <span>•</span>
+          <Link href="/terms" target="_blank" className="underline hover:text-foreground">Оферта</Link>
         </div>
       </DialogContent>
     </Dialog>

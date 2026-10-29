@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cleanAIMarkdownArtifacts } from "@/lib/monetization";
 import { buildPrBatchWave } from "@/lib/pr-generator";
 import { getEffectiveGroqKey, GROQ_MODELS } from "@/lib/server-ai-keys";
+import { anonymizePII, restorePII } from "@/lib/privacy-utils";
 
 export const maxDuration = 30;
 
@@ -45,6 +46,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // 152-ФЗ РФ: Обезличивание персональных данных перед передачей во внешние API
+    const {
+      anonymizedText: safeUserPrompt,
+      detectedName,
+      detectedEmail,
+      detectedPhone,
+    } = anonymizePII(userPrompt);
+
     // Dynamic timeout based on mode
     const timeoutDuration = mode === "pr_studio" ? 22000 : 8000;
 
@@ -65,7 +74,7 @@ export async function POST(req: NextRequest) {
               model,
               messages: [
                 { role: "system", content: systemPrompt },
-                { role: "user", content: userPrompt },
+                { role: "user", content: safeUserPrompt },
               ],
               temperature,
             }),
@@ -76,8 +85,13 @@ export async function POST(req: NextRequest) {
             const data = await groqRes.json();
             const raw = data.choices?.[0]?.message?.content || "";
             if (raw.trim()) {
+              const restored = restorePII(cleanAIMarkdownArtifacts(raw), {
+                name: detectedName,
+                email: detectedEmail,
+                phone: detectedPhone,
+              });
               return NextResponse.json({
-                text: cleanAIMarkdownArtifacts(raw),
+                text: restored,
                 provider: `groq (${model})`,
               });
             }
@@ -104,7 +118,7 @@ export async function POST(req: NextRequest) {
             contents: [
               {
                 role: "user",
-                parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }],
+                parts: [{ text: `${systemPrompt}\n\n${safeUserPrompt}` }],
               },
             ],
             generationConfig: { temperature },
@@ -116,8 +130,13 @@ export async function POST(req: NextRequest) {
           const data = await geminiRes.json();
           const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
           if (raw.trim()) {
+            const restored = restorePII(cleanAIMarkdownArtifacts(raw), {
+              name: detectedName,
+              email: detectedEmail,
+              phone: detectedPhone,
+            });
             return NextResponse.json({
-              text: cleanAIMarkdownArtifacts(raw),
+              text: restored,
               provider: "gemini (1.5 Flash)",
             });
           }
@@ -138,7 +157,7 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({
           messages: [
             { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt },
+            { role: "user", content: safeUserPrompt },
           ],
           model: "openai",
           temperature,
@@ -155,8 +174,13 @@ export async function POST(req: NextRequest) {
           !raw.includes("SERVICE_UNAVAILABLE") &&
           !raw.includes("budget")
         ) {
+          const restored = restorePII(cleanAIMarkdownArtifacts(raw), {
+            name: detectedName,
+            email: detectedEmail,
+            phone: detectedPhone,
+          });
           return NextResponse.json({
-            text: cleanAIMarkdownArtifacts(raw),
+            text: restored,
             provider: "pollinations_ai",
           });
         }
@@ -167,9 +191,14 @@ export async function POST(req: NextRequest) {
 
     // 4. Guaranteed High-Precision Career Synthesizer
     // Accurately parses and improves the candidate's ACTUAL resume with 0% downtime
-    const synthesized = synthesizeCareerIntelligence(systemPrompt, userPrompt, mode);
+    const synthesized = synthesizeCareerIntelligence(systemPrompt, safeUserPrompt, mode);
+    const restored = restorePII(cleanAIMarkdownArtifacts(synthesized), {
+      name: detectedName,
+      email: detectedEmail,
+      phone: detectedPhone,
+    });
     return NextResponse.json({
-      text: cleanAIMarkdownArtifacts(synthesized),
+      text: restored,
       provider: "launchpad_career_engine",
     });
   } catch (error) {
