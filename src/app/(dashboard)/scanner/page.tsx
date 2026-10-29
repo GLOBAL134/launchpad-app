@@ -20,6 +20,14 @@ import {
   Send,
   Plus,
   Briefcase,
+  Award,
+  Layers,
+  Code2,
+  Terminal,
+  Wand2,
+  Eye,
+  Sliders,
+  TrendingUp,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,8 +36,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import UpgradeProModal from "@/components/UpgradeProModal";
+import AtsScoreCardModal from "@/components/AtsScoreCardModal";
+import AtsCleanResumeModal from "@/components/AtsCleanResumeModal";
 import { cleanAIMarkdownArtifacts } from "@/lib/monetization";
 import { detectLanguage } from "@/lib/language";
+import { simulateAtsParser, AtsSimulationResult, XyzImprovement } from "@/lib/ats-parser-simulator";
 import { useApp } from "@/context/AppContext";
 
 const DEFAULT_RESUME = `Алексей Морозов
@@ -51,7 +62,7 @@ Product Manager — FinTech Инновации (2019 — 2022)
 
 ОБРАЗОВАНИЕ И НАВЫКИ
 МГТУ им. Н.Э. Баумана, Информационные системы и технологии
-Навыки: Product Management, Product Strategy, Roadmap Planning, CustDev, Scrum, PRD, Unit-экономика, A/B-тестирование, CI/CD.`;
+Навыки: Product Management, Product Strategy, Roadmap Planning, CustDev, Scrum, PRD, Unit-экономика, A/B-тестирование, CI/CD, SQL, Docker, Kubernetes.`;
 
 const DEFAULT_JOB_DESC = `Senior Product Manager (AI & Cloud Services)
 Компания: Яндекс
@@ -64,39 +75,14 @@ const DEFAULT_JOB_DESC = `Senior Product Manager (AI & Cloud Services)
 • 5+ лет в управлении продуктом в технологических компаниях.
 • Опыт работы с Agile, Scrum, CI/CD, A/B-тестированием и метриками (Retention, LTV, Unit-экономика).
 • Умение проектировать Product Strategy, формировать Roadmap и составлять PRD.
-• Опыт взаимодействия с инженерами: Microservices, REST API, Cloud Infrastructure.
+• Опыт взаимодействия с инженерами: Microservices, REST API, Cloud Infrastructure, Docker, SQL.
 • Сильные навыки работы со стейкхолдерами: Stakeholder Management и Cross-functional лидерство.`;
-
-const CORE_KEYWORD_TAXONOMY = [
-  { display: "CI/CD", synonyms: ["ci/cd", "cicd", "ci-cd", "непрерывная интеграция"] },
-  { display: "A/B-тестирование", synonyms: ["a/b", "ab-тест", "ab тест", "a/b-тест", "a/b test"] },
-  { display: "Agile", synonyms: ["agile", "эджайл", "эджайле"] },
-  { display: "Scrum", synonyms: ["scrum", "скрам", "спринт"] },
-  { display: "Product Strategy", synonyms: ["product strategy", "продуктовая стратегия", "стратеги"] },
-  { display: "Roadmap", synonyms: ["roadmap", "роадмап", "дорожная карта"] },
-  { display: "PRD", synonyms: ["prd", "технические требования", "спецификаци"] },
-  { display: "CustDev", synonyms: ["custdev", "исследования пользователей", "интервью с клиентами"] },
-  { display: "Unit-экономика", synonyms: ["unit-экономика", "юнит-экономика", "unit economics"] },
-  { display: "Retention", synonyms: ["retention", "удержание пользователей"] },
-  { display: "REST API", synonyms: ["rest api", "rest", "api"] },
-  { display: "Microservices", synonyms: ["microservices", "микросервис", "микросервисная"] },
-  { display: "Cross-functional", synonyms: ["cross-functional", "кросс-функциональн"] },
-  { display: "Stakeholder Management", synonyms: ["stakeholder", "стейкхолдер", "управление ожиданиями"] },
-  { display: "TypeScript", synonyms: ["typescript", "тайпскрипт", "ts"] },
-  { display: "React", synonyms: ["react", "реакт"] },
-  { display: "Next.js", synonyms: ["next.js", "nextjs", "некст"] },
-  { display: "Python", synonyms: ["python", "питон"] },
-  { display: "SQL", synonyms: ["sql", "postgresql", "mysql"] },
-  { display: "Docker", synonyms: ["docker", "докер"] },
-  { display: "Kubernetes", synonyms: ["kubernetes", "k8s", "кубернетес"] },
-];
 
 export default function ATSScannerPage() {
   const {
     userProfile,
     applications,
     scannerTargetJob,
-    setScannerTargetJob,
     triggerQuickAudit,
     setTriggerQuickAudit,
     isPro,
@@ -119,6 +105,13 @@ export default function ATSScannerPage() {
 
   const [isScanning, setIsScanning] = useState(false);
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
+  const [activeResultsTab, setActiveResultsTab] = useState<"overview" | "raw_ats" | "xyz_diff">("overview");
+  const [rawViewMode, setRawViewMode] = useState<"text" | "json">("text");
+
+  // Modals for Module 2 & Module 3
+  const [isScoreCardOpen, setIsScoreCardOpen] = useState(false);
+  const [isCleanResumeOpen, setIsCleanResumeOpen] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Pre-fill target job from Kanban navigation
@@ -150,118 +143,10 @@ export default function ATSScannerPage() {
     return detectLanguage(`${resumeText} ${jobDesc}`);
   }, [resumeText, jobDesc]);
 
-  // Pure dynamic keyword matching and score calculation (ZERO contradictions)
-  const analysis = useMemo(() => {
-    const normResume = resumeText.toLowerCase();
-    const normJob = jobDesc.toLowerCase();
-
-    // 1. Determine relevant skills required by the job
-    const activeSkills = CORE_KEYWORD_TAXONOMY.filter((skill) => {
-      return (
-        normJob.includes(skill.display.toLowerCase()) ||
-        skill.synonyms.some((syn) => normJob.includes(syn))
-      );
-    });
-
-    // Default pool if job description is very short
-    const effectivePool = activeSkills.length >= 4 ? activeSkills : CORE_KEYWORD_TAXONOMY.slice(0, 10);
-
-    const present: string[] = [];
-    const missing: string[] = [];
-
-    effectivePool.forEach((skill) => {
-      const isPresentInResume =
-        normResume.includes(skill.display.toLowerCase()) ||
-        skill.synonyms.some((syn) => normResume.includes(syn));
-
-      if (isPresentInResume) {
-        present.push(skill.display);
-      } else {
-        missing.push(skill.display);
-      }
-    });
-
-    // 2. Score Calculation Formula:
-    // - 65% keywords match
-    // - 20% quantified metrics (numbers, %, млн, etc.)
-    // - 15% section completeness (contacts, experience, skills)
-    const kwRatio = effectivePool.length > 0 ? present.length / effectivePool.length : 0.7;
-    const kwScore = kwRatio * 65;
-
-    const metricMatches = resumeText.match(/\b(\d+%\s*|\d+\s*(млн|тыс|руб|\$|k|x|ч|дн|users|dau|mau))\b/gi) || [];
-    const metricScore = metricMatches.length >= 3 ? 20 : metricMatches.length >= 1 ? 12 : 5;
-
-    let sectionScore = 0;
-    if (/@|\+7|\d{10}/.test(resumeText)) sectionScore += 5;
-    if (/опыт|experience/i.test(resumeText)) sectionScore += 5;
-    if (/навыки|skills|обо мне|о себе/i.test(resumeText)) sectionScore += 5;
-
-    const totalScore = Math.min(98, Math.max(35, Math.round(kwScore + metricScore + sectionScore)));
-
-    // 3. Dynamic warnings and recommendations
-    const formatIssues: string[] = [];
-    if (metricScore < 15) {
-      formatIssues.push(
-        language === "en"
-          ? "Low metric density: add at least 3 quantified metrics (%, revenue, RPS, time reduction)"
-          : "Мало оцифрованных результатов: добавьте конкретные числа и проценты роста"
-      );
-    }
-    if (missing.length > 0) {
-      formatIssues.push(
-        language === "en"
-          ? `Missing critical keywords detected in job description: ${missing.slice(0, 3).join(", ")}`
-          : `В тексте резюме не найдены важные навыки: ${missing.slice(0, 3).join(", ")}`
-      );
-    }
-    if (resumeText.length < 400) {
-      formatIssues.push(
-        language === "en"
-          ? "Resume text is too brief for multi-tier ATS parsing algorithms"
-          : "Текст резюме слишком короткий для многоуровневого парсинга ATS"
-      );
-    }
-
-    const suggestions: string[] = [
-      language === "en"
-        ? `Incorporate missing keywords (${missing.slice(0, 4).join(", ") || "Agile, CI/CD"}) directly into bullet points`
-        : `Добавьте отсутствующие ключевые слова (${missing.slice(0, 4).join(", ") || "Agile, CI/CD"}) в описание опыта`,
-      language === "en"
-        ? "Formulate accomplishments using the XYZ formula: Accomplished [X], measured by [Y], by doing [Z]"
-        : "Перепишите достижения по формуле XYZ: Достиг [X], измерив [Y], сделав [Z]",
-      language === "en"
-        ? "Ensure consistent reverse-chronological order and standard single-column text layout"
-        : "Используйте стандартную одноколоночную структуру текста для 100% совместимости с ATS",
-    ];
-
-    const optimizedSummary =
-      language === "en"
-        ? `Accomplished specialist with extensive experience in ${present.slice(0, 4).join(", ") || "modern technology and agile delivery"}. Proven track record of improving key business metrics, driving cross-functional collaboration, and shipping reliable solutions.`
-        : `Опытный специалист с практической экспертизой в ${present.slice(0, 4).join(", ") || "современных технологиях и процессах разработки"}. Доказанный опыт оцифровки результатов, слаженного кросс-функционального взаимодействия и запуска масштабных сервисов.`;
-
-    const optimizedSkills = [...present, ...missing.slice(0, 4)].join(", ");
-
-    return {
-      score: totalScore,
-      present,
-      missing,
-      formatIssues: formatIssues.map(cleanAIMarkdownArtifacts),
-      suggestions: suggestions.map(cleanAIMarkdownArtifacts),
-      summary: cleanAIMarkdownArtifacts(optimizedSummary),
-      skills: cleanAIMarkdownArtifacts(optimizedSkills),
-    };
+  // Deterministic 55/15/15/15 ATS Simulator
+  const simulation: AtsSimulationResult = useMemo(() => {
+    return simulateAtsParser(resumeText, jobDesc, language);
   }, [resumeText, jobDesc, language]);
-
-  // Click on missing skill chip -> Automatically appends to resume and moves to present!
-  const handleAddMissingSkill = (skill: string) => {
-    setResumeText((prev) => {
-      if (prev.includes("Навыки:") || prev.includes("НАВЫКИ")) {
-        return prev.replace(/(Навыки:.*?)([\n\r]|$)/i, `$1, ${skill}$2`);
-      }
-      return `${prev}\n• Ключевой навык: ${skill}`;
-    });
-    showToast(`✓ Навык «${skill}» добавлен в резюме! Балл ATS увеличен.`);
-  };
 
   // Handle selecting job from Kanban tracker
   const handleSelectTrackerJob = (jobId: string | null) => {
@@ -271,7 +156,7 @@ export default function ATSScannerPage() {
     if (job) {
       setJobDesc(
         `${job.position} в компании ${job.company}\n\n${
-          job.job_description || "Требования к роли: знание современных технологий, Agile, CI/CD, метрики эффективности."
+          job.job_description || "Требования: знание современных технологий, Agile, CI/CD, метрики эффективности."
         }`
       );
       showToast(`Выбрана вакансия «${job.company}» из Канбан-трекера`);
@@ -283,35 +168,54 @@ export default function ATSScannerPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const fileSizeStr = (file.size / 1024).toFixed(1) + " KB";
+    setUploadedFile({ name: file.name, size: fileSizeStr });
+
     const reader = new FileReader();
-    reader.onload = () => {
-      const text = String(reader.result || "");
-      const cleaned = text.replace(/[^\x20-\x7Eа-яА-ЯёЁ\n\r\t.,:;!?()[\]{}@#$%^&*+=_\-|/\\<>"'`~]/g, " ");
-      if (cleaned.trim().length > 30) {
-        setResumeText(cleaned);
-        setUploadedFile({
-          name: file.name,
-          size: `${(file.size / 1024).toFixed(1)} KB`,
-        });
-        showToast(`Файл «${file.name}» загружен и проанализирован!`);
+    reader.onload = (event) => {
+      const text = event.target?.result as string;
+      if (text && text.trim().length > 50) {
+        setResumeText(cleanAIMarkdownArtifacts(text));
+        showToast(`Файл «${file.name}» успешно загружен и обработан!`);
       } else {
-        showToast("Не удалось извлечь текст из файла. Пожалуйста, вставьте текст вручную.");
+        showToast("Файл прочитан. Проверьте содержимое в поле ввода.");
       }
     };
     reader.readAsText(file);
   };
 
-  const removeFile = () => {
+  const handleClearFile = () => {
     setUploadedFile(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
-  // Run audit with quota check
-  const handleRunAudit = () => {
+  // Click on missing skill chip -> Automatically appends to resume
+  const handleAddMissingSkill = (skill: string) => {
+    setResumeText((prev) => {
+      if (prev.includes("Навыки:") || prev.includes("НАВЫКИ")) {
+        return prev.replace(/(Навыки:.*?)([\n\r]|$)/i, `$1, ${skill}$2`);
+      }
+      return `${prev}\n• Ключевой навык: ${skill}`;
+    });
+    showToast(`✓ Навык «${skill}» добавлен в резюме! Балл ATS увеличен.`);
+  };
+
+  // 1-Click apply XYZ bullet improvement
+  const handleApplyXyz = (item: XyzImprovement) => {
+    setResumeText((prev) => {
+      if (prev.includes(item.original)) {
+        return prev.replace(item.original, item.improved);
+      }
+      return `${prev}\n• ${item.improved}`;
+    });
+    showToast(`✨ Буллет улучшен по формуле XYZ! +${item.scoreBoost}% к итоговому баллу ATS.`);
+  };
+
+  const handleStartScan = () => {
     if (!isPro && remainingScans <= 0) {
-      setUpgradeReason(
-        "Вы использовали 2 из 2 бесплатных ATS-проверок. Активируйте LaunchPad AI PRO для безлимитного анализа резюме и генерации писем!"
-      );
+      setUpgradeReason("Бесплатные проверки исчерпаны. Перейдите на тариф Pro для безлимитного ATS-сканера!");
       setIsUpgradeModalOpen(true);
       return;
     }
@@ -320,166 +224,140 @@ export default function ATSScannerPage() {
     setTimeout(() => {
       setIsScanning(false);
       consumeScan();
-      showToast("✨ ATS-аудит успешно пересчитан в реальном времени!");
+      showToast("✓ ATS-аудит резюме завершён по стандарту 55/15/15/15!");
     }, 600);
   };
 
-  const copyToClipboard = (text: string, id: string) => {
+  const copyToClipboard = (text: string, sectionId: string) => {
     navigator.clipboard.writeText(cleanAIMarkdownArtifacts(text));
-    setCopiedSection(id);
-    showToast("Скопировано в буфер обмена!");
+    setCopiedSection(sectionId);
+    showToast("Текст скопирован в буфер обмена!");
     setTimeout(() => setCopiedSection(null), 2000);
   };
 
   const telegramShareUrl = `https://t.me/share/url?url=${encodeURIComponent(
-    "https://launchpad-app-ashy.vercel.app/"
+    "https://launchpad-app-ashy.vercel.app"
   )}&text=${encodeURIComponent(
-    `Моё резюме прошло ATS-аудит в LaunchPad AI на ${analysis.score}% совпадения! Проверь своё резюме онлайн:`
+    language === "en"
+      ? `My resume scored ${simulation.score.total}% on the LaunchPad AI PRO ATS Audit! Check yours:`
+      : `Моё резюме набрало ${simulation.score.total}% в ATS-сканере LaunchPad AI PRO! Проверь своё:`
   )}`;
+
+  const targetRoleTitle = scannerTargetJob ? `${scannerTargetJob.position} (${scannerTargetJob.company})` : "Senior Product Manager";
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Top Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
-              <ScanSearch className="w-6 h-6 text-primary" />
-              <span>AI ATS Resume Audit</span>
-            </h1>
-            <Badge variant="outline" className="text-[10px] text-emerald-400 border-emerald-500/30 bg-emerald-500/10 font-bold">
-              {language === "en" ? "English" : "Русский"}
-            </Badge>
-          </div>
+          <h1 className="text-2xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
+            <ScanSearch className="w-6 h-6 text-primary" />
+            <span>AI ATS-сканер резюме (Deterministic 55/15/15/15 Standard)</span>
+          </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Загрузите файл или вставьте текст — реальный расчёт совпадения резюме с вакансией по алгоритмам роботов ATS.
+            Проверьте резюме алгоритмами корпоративных ATS (Workday, Taleo, Greenhouse, E-Staff) без склейки и противоречий.
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
-          {isPro ? (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold shadow-sm">
-              <Sparkles className="w-3.5 h-3.5" />
-              ✨ PRO Активен
-            </div>
-          ) : (
-            <button
-              onClick={() => {
-                setUpgradeReason(undefined);
-                setIsUpgradeModalOpen(true);
-              }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-indigo-500/40 bg-indigo-500/10 text-indigo-300 hover:text-white hover:bg-indigo-500/20 text-xs font-semibold shadow-sm transition cursor-pointer"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-              💎 Тариф Pro (Бесплатно: {remainingScans}/2)
-            </button>
-          )}
-
+        <div className="flex items-center gap-2">
+          {/* Module 2: Score Card Button */}
           <Button
-            onClick={handleRunAudit}
-            disabled={isScanning}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold shadow-md shadow-primary/25 cursor-pointer"
+            size="sm"
+            variant="outline"
+            onClick={() => setIsScoreCardOpen(true)}
+            className="text-xs border-border/80 hover:bg-muted/80 flex items-center gap-1.5 cursor-pointer"
           >
-            {isScanning ? (
-              <>
-                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                Расчёт совпадений...
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-4 h-4 mr-2" />
-                Запустить аудит
-              </>
-            )}
+            <Award className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Сертификат ATS</span>
+          </Button>
+
+          {/* Module 3: Clean Single-Column Resume Button */}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setIsCleanResumeOpen(true)}
+            className="text-xs border-border/80 hover:bg-muted/80 flex items-center gap-1.5 cursor-pointer"
+          >
+            <FileText className="w-3.5 h-3.5 text-primary" />
+            <span>Собрать ATS-резюме</span>
           </Button>
         </div>
       </div>
 
-      {/* Main Grid: Inputs vs Report */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Inputs (5 Cols) */}
         <div className="lg:col-span-5 space-y-4">
-          {/* Resume Source Card */}
-          <Card className="bg-card/70 border-border">
-            <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
-              <div>
+          {/* Card 1: Resume Input */}
+          <Card className="bg-card border-border">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
-                  <span>1. Резюме кандидата</span>
+                  <FileText className="w-4 h-4 text-primary" />
+                  <span>1. Текст вашего резюме</span>
                 </CardTitle>
-                <CardDescription className="text-xs">
-                  Текст резюме ({resumeText.length} симв.)
-                </CardDescription>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                    accept=".txt,.md,.pdf,.docx"
+                    className="hidden"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="h-7 text-xs border-dashed border-primary/50 text-primary hover:bg-primary/10 cursor-pointer"
+                  >
+                    <Upload className="w-3 h-3 mr-1" />
+                    Загрузить файл
+                  </Button>
+                </div>
               </div>
-
-              <div>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileUpload}
-                  accept=".txt,.md,.pdf,.docx"
-                  className="hidden"
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="text-xs h-8 border-dashed cursor-pointer"
-                >
-                  <Upload className="w-3.5 h-3.5 mr-1.5" />
-                  Загрузить PDF / DOCX
-                </Button>
-              </div>
+              <CardDescription className="text-xs">
+                Вставьте текст резюме или загрузите файл (.txt, .md, .docx, .pdf)
+              </CardDescription>
             </CardHeader>
+
             <CardContent className="space-y-3">
               {uploadedFile && (
-                <div className="p-3 rounded-xl border border-primary/30 bg-primary/5 flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
-                      <FileCheck className="w-3.5 h-3.5" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold text-foreground truncate max-w-[200px]">
-                        {uploadedFile.name}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground">{uploadedFile.size}</p>
-                    </div>
+                <div className="p-2.5 rounded-lg border border-primary/30 bg-primary/5 flex items-center justify-between text-xs animate-in fade-in">
+                  <div className="flex items-center gap-2 text-foreground font-medium truncate">
+                    <FileCheck className="w-4 h-4 text-primary shrink-0" />
+                    <span className="truncate">{uploadedFile.name}</span>
+                    <span className="text-muted-foreground text-[10px]">({uploadedFile.size})</span>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={removeFile}
-                    className="h-6 w-6 text-muted-foreground hover:text-rose-400 cursor-pointer"
+                  <button
+                    onClick={handleClearFile}
+                    className="text-muted-foreground hover:text-foreground p-1 transition cursor-pointer"
                   >
                     <X className="w-3.5 h-3.5" />
-                  </Button>
+                  </button>
                 </div>
               )}
 
               <Textarea
                 value={resumeText}
                 onChange={(e) => setResumeText(e.target.value)}
-                placeholder="Вставьте текст вашего резюме..."
-                rows={9}
+                placeholder="Вставьте сюда текст вашего резюме..."
+                rows={12}
                 className="font-mono text-xs resize-none bg-background/50 border-border"
               />
             </CardContent>
           </Card>
 
-          {/* Job Description Card with Kanban Integration */}
-          <Card className="bg-card/70 border-border">
-            <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
-              <div>
+          {/* Card 2: Job Description Input */}
+          <Card className="bg-card border-border">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
-                  <span>2. Целевая вакансия / Ключевые требования</span>
+                  <Briefcase className="w-4 h-4 text-primary" />
+                  <span>2. Целевая вакансия</span>
                 </CardTitle>
-                <CardDescription className="text-xs">
-                  Требования работодателя для сверки ключевых слов
-                </CardDescription>
               </div>
             </CardHeader>
 
             <CardContent className="space-y-3">
-              {/* Optional selector from Kanban tracker */}
               {applications.length > 0 && (
                 <div>
                   <div className="flex items-center justify-between mb-1">
@@ -510,6 +388,24 @@ export default function ATSScannerPage() {
                 rows={8}
                 className="font-mono text-xs resize-none bg-background/50 border-border"
               />
+
+              <Button
+                onClick={handleStartScan}
+                disabled={isScanning}
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-xs shadow-md shadow-primary/20 cursor-pointer h-9"
+              >
+                {isScanning ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                    Сканирование алгоритмами ATS...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                    Пересчитать ATS Match
+                  </>
+                )}
+              </Button>
             </CardContent>
           </Card>
         </div>
@@ -517,24 +413,28 @@ export default function ATSScannerPage() {
         {/* Right Column: ATS Report & Score (7 Cols) */}
         <div className="lg:col-span-7 space-y-4">
           <Card className="bg-card border-border overflow-hidden">
+            {/* Top Score Summary Banner */}
             <div className="p-5 sm:p-6 bg-gradient-to-r from-card via-card to-primary/10 border-b border-border/80">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <div className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1">
-                    Индекс соответствия (ATS Match Score)
+                  <div className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1 flex items-center gap-1.5">
+                    <span>Индекс соответствия (ATS Match Index)</span>
+                    <Badge variant="outline" className="text-[9px] text-primary border-primary/30 bg-primary/10">
+                      Стандарт 55/15/15/15
+                    </Badge>
                   </div>
                   <div className="flex items-baseline gap-2">
                     <span className="text-4xl sm:text-5xl font-black tracking-tight text-foreground">
-                      {analysis.score}%
+                      {simulation.score.total}%
                     </span>
                     <span className="text-muted-foreground text-sm font-medium">/ 100%</span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1 max-w-md">
-                    {analysis.score >= 80
+                    {simulation.score.total >= 80
                       ? "Отличный результат! Ваше резюме проходит автоматические фильтры большинства ATS."
-                      : analysis.score >= 65
-                      ? "Средний балл. Нажмите на красные теги ниже, чтобы добавить ключевые слова в резюме."
-                      : "Высокий риск отсева. Резюме не содержит более 50% ключевых навыков вакансии."}
+                      : simulation.score.total >= 65
+                      ? "Средний балл. Добавьте подтверждения в буллеты опыта и устраните сиротские навыки."
+                      : "Высокий риск отсева. Не хватает оцифрованных результатов и подтвержденных ключевых слов."}
                   </p>
                 </div>
 
@@ -543,34 +443,80 @@ export default function ATSScannerPage() {
                   <div
                     className="absolute inset-0 rounded-full border-4 border-primary transition-all duration-500"
                     style={{
-                      clipPath: `polygon(50% 50%, 50% 0%, ${analysis.score >= 25 ? "100% 0%," : ""}${
-                        analysis.score >= 50 ? "100% 100%," : ""
-                      }${analysis.score >= 75 ? "0% 100%," : ""}0% 0%)`,
+                      clipPath: `polygon(50% 50%, 50% 0%, ${simulation.score.total >= 25 ? "100% 0%," : ""}${
+                        simulation.score.total >= 50 ? "100% 100%," : ""
+                      }${simulation.score.total >= 75 ? "0% 100%," : ""}0% 0%)`,
                     }}
                   />
                   <div className="text-center">
-                    <span className="text-base font-black">{analysis.score}%</span>
+                    <span className="text-base font-black">{simulation.score.total}%</span>
                     <span className="block text-[9px] uppercase tracking-wider text-muted-foreground">match</span>
                   </div>
                 </div>
               </div>
 
-              {/* Progress bar */}
-              <div className="mt-4">
-                <Progress value={analysis.score} className="h-2 bg-muted/60" />
+              {/* 4 Formula Progress Bars (55 / 15 / 15 / 15) */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 pt-4 border-t border-border/60">
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-muted-foreground">Hard Skills</span>
+                    <span className="font-bold text-indigo-400">{simulation.score.hardSkills}/55</span>
+                  </div>
+                  <Progress value={(simulation.score.hardSkills / 55) * 100} className="h-1.5" />
+                  <span className="text-[10px] text-muted-foreground block truncate">Цитаты в опыте</span>
+                </div>
+
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-muted-foreground">Метрики</span>
+                    <span className="font-bold text-emerald-400">{simulation.score.metrics}/15</span>
+                  </div>
+                  <Progress value={(simulation.score.metrics / 15) * 100} className="h-1.5" />
+                  <span className="text-[10px] text-muted-foreground block truncate">%, $, x, время</span>
+                </div>
+
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-muted-foreground">Soft Skills</span>
+                    <span className="font-bold text-sky-400">{simulation.score.softSkills}/15</span>
+                  </div>
+                  <Progress value={(simulation.score.softSkills / 15) * 100} className="h-1.5" />
+                  <span className="text-[10px] text-muted-foreground block truncate">Agile, лидерство</span>
+                </div>
+
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-muted-foreground">Вёрстка</span>
+                    <span className="font-bold text-amber-400">{simulation.score.layout}/15</span>
+                  </div>
+                  <Progress value={(simulation.score.layout / 15) * 100} className="h-1.5" />
+                  <span className="text-[10px] text-muted-foreground block truncate">1 колонка, даты</span>
+                </div>
               </div>
 
               {/* Actions row under score */}
-              <div className="mt-4 pt-4 border-t border-border/60 flex flex-wrap items-center justify-between gap-3 text-xs">
-                <a
-                  href={telegramShareUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-muted text-xs font-medium transition cursor-pointer"
-                >
-                  <Send className="w-3.5 h-3.5 text-sky-400" />
-                  Поделиться в Telegram
-                </a>
+              <div className="mt-4 pt-3 border-t border-border/60 flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setIsScoreCardOpen(true)}
+                    className="h-7 text-xs border-border hover:bg-muted text-emerald-400 font-semibold cursor-pointer"
+                  >
+                    <Award className="w-3.5 h-3.5 mr-1" />
+                    Скачать сертификат ATS
+                  </Button>
+
+                  <a
+                    href={telegramShareUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-border bg-background hover:bg-muted text-xs font-medium transition cursor-pointer text-sky-400"
+                  >
+                    <Send className="w-3 h-3" />
+                    Поделиться в TG
+                  </a>
+                </div>
 
                 {!isPro && (
                   <button
@@ -587,153 +533,348 @@ export default function ATSScannerPage() {
               </div>
             </div>
 
+            {/* Tab Switcher for 3 Modes */}
+            <div className="px-5 pt-3 pb-2 border-b border-border/70 flex gap-2 overflow-x-auto">
+              <button
+                onClick={() => setActiveResultsTab("overview")}
+                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer flex items-center gap-1.5 ${
+                  activeResultsTab === "overview"
+                    ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                }`}
+              >
+                <Layers className="w-3.5 h-3.5" />
+                <span>Анализ и навыки</span>
+              </button>
+
+              <button
+                onClick={() => setActiveResultsTab("raw_ats")}
+                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer flex items-center gap-1.5 ${
+                  activeResultsTab === "raw_ats"
+                    ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                }`}
+              >
+                <Terminal className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Глазами робота ATS</span>
+                {simulation.layoutIssues.length > 0 && (
+                  <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse" />
+                )}
+              </button>
+
+              <button
+                onClick={() => setActiveResultsTab("xyz_diff")}
+                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer flex items-center gap-1.5 ${
+                  activeResultsTab === "xyz_diff"
+                    ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                }`}
+              >
+                <Wand2 className="w-3.5 h-3.5 text-amber-400" />
+                <span>X-Y-Z Улучшатель ({simulation.xyzImprovements.length})</span>
+              </button>
+            </div>
+
             <CardContent className="p-5 sm:p-6 space-y-6">
-              {/* Missing Keywords Box with Interactive Click-to-Add! */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
-                    <AlertCircle className="w-3.5 h-3.5" />
-                    Отсутствующие ключевые навыки ({analysis.missing.length})
-                  </h3>
-                  <span className="text-[10px] text-muted-foreground">Нажмите на тег, чтобы внедрить в резюме</span>
-                </div>
+              {/* TAB 1: OVERVIEW & SKILLS */}
+              {activeResultsTab === "overview" && (
+                <div className="space-y-6">
+                  {/* Missing Keywords Box with Interactive Click-to-Add */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
+                        <AlertCircle className="w-3.5 h-3.5" />
+                        Отсутствующие навыки в вакансии ({simulation.missingSkills.length})
+                      </h3>
+                      <span className="text-[10px] text-muted-foreground">Нажмите на тег, чтобы внедрить в резюме</span>
+                    </div>
 
-                <div className="flex flex-wrap gap-1.5">
-                  {analysis.missing.length === 0 ? (
-                    <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Все ключевые навыки вакансии успешно найдены в резюме!
-                    </span>
-                  ) : (
-                    analysis.missing.map((kw, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => handleAddMissingSkill(kw)}
-                        title={`Нажмите, чтобы добавить «${kw}» в резюме`}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 hover:text-white text-xs font-medium transition cursor-pointer"
-                      >
-                        <Plus className="w-3 h-3" />
-                        {kw}
-                      </button>
-                    ))
-                  )}
-                </div>
-              </div>
-
-              {/* Present Keywords Box (ZERO contradictions) */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    Успешно распознанные совпадения ({analysis.present.length})
-                  </h3>
-                  <span className="text-[10px] text-muted-foreground">Распознано алгоритмом</span>
-                </div>
-
-                <div className="flex flex-wrap gap-1.5">
-                  {analysis.present.map((kw, idx) => (
-                    <span
-                      key={idx}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-medium"
-                    >
-                      ✓ {kw}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Dynamic Format & ATS Warnings */}
-              {analysis.formatIssues.length > 0 && (
-                <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/5 space-y-2">
-                  <div className="flex items-center gap-2 text-xs font-bold text-amber-400">
-                    <AlertTriangle className="w-4 h-4" />
-                    <span>Предупреждения по верстке для роботов ATS</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {simulation.missingSkills.length === 0 ? (
+                        <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Все ключевые навыки вакансии найдены в резюме!
+                        </span>
+                      ) : (
+                        simulation.missingSkills.map((kw, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => handleAddMissingSkill(kw)}
+                            title={`Нажмите, чтобы добавить «${kw}» в резюме`}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 hover:text-white text-xs font-medium transition cursor-pointer"
+                          >
+                            <Plus className="w-3 h-3" />
+                            {kw}
+                          </button>
+                        ))
+                      )}
+                    </div>
                   </div>
-                  <ul className="text-xs text-muted-foreground space-y-1 pl-4 list-disc">
-                    {analysis.formatIssues.map((issue, idx) => (
-                      <li key={idx}>{issue}</li>
-                    ))}
-                  </ul>
+
+                  {/* Verified Keywords Box */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        Подтвержденные навыки с цитатами ({simulation.verifiedSkills.length})
+                      </h3>
+                      <span className="text-[10px] text-muted-foreground">Формула 55/15/15/15: начислены баллы</span>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1.5">
+                      {simulation.verifiedSkills.map((item, idx) => (
+                        <span
+                          key={idx}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-medium"
+                          title={item.quote}
+                        >
+                          ✓ {item.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Orphan Skills Warning */}
+                  {simulation.orphanSkills.length > 0 && (
+                    <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/5 space-y-2">
+                      <div className="flex items-center gap-2 text-xs font-bold text-amber-400">
+                        <AlertTriangle className="w-4 h-4" />
+                        <span>Сиротские навыки: указаны в списке, но дают 0 баллов</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        По формуле роботов ATS навыки, которые есть только в шапке/списке, но не имеют подтверждения в описании реального опыта, не засчитываются.
+                      </p>
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        {simulation.orphanSkills.map((o, idx) => (
+                          <span
+                            key={idx}
+                            className="text-[11px] px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20 font-mono"
+                          >
+                            ⚠️ {o.name} (0 б.)
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Actionable Steps */}
+                  <div className="space-y-3 pt-3 border-t border-border/80">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
+                      Рекомендации по оптимизации:
+                    </h3>
+                    <div className="space-y-2 text-xs">
+                      <div className="p-3 rounded-lg bg-muted/40 border border-border/60">
+                        1. Перенесите сиротские навыки в конкретные буллеты опыта с указанием контекста проекта.
+                      </div>
+                      <div className="p-3 rounded-lg bg-muted/40 border border-border/60">
+                        2. Оцифруйте достижения по формуле XYZ: Достиг [X], измерив [Y], сделав [Z].
+                      </div>
+                      <div className="p-3 rounded-lg bg-muted/40 border border-border/60">
+                        3. Используйте эталонную 1-колоночную верстку стандарта Harvard / BigTech.
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
 
-              {/* Concrete Actionable Steps */}
-              <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-foreground mb-3">
-                  Конкретные шаги по улучшению:
-                </h3>
-                <div className="space-y-2 text-xs">
-                  {analysis.suggestions.map((sug, idx) => (
-                    <div key={idx} className="flex items-start gap-2.5 p-2.5 rounded-lg bg-muted/40 border border-border/60">
-                      <span className="font-bold text-primary shrink-0">{idx + 1}.</span>
-                      <p className="text-foreground leading-relaxed">{sug}</p>
+              {/* TAB 2: RAW ATS PARSER VIEW */}
+              {activeResultsTab === "raw_ats" && (
+                <div className="space-y-5 animate-in fade-in">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl bg-background/60 border border-border">
+                    <div>
+                      <div className="text-xs font-bold text-foreground flex items-center gap-2">
+                        <Terminal className="w-4 h-4 text-emerald-400" />
+                        <span>Симулятор токенизации и AST-дерева робота ATS</span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        Показывает резюме точно так, как его видят парсеры Workday, Taleo и Greenhouse
+                      </p>
                     </div>
-                  ))}
-                </div>
-              </div>
 
-              {/* AI Optimized Sections Rewrite */}
-              <div className="space-y-3 pt-3 border-t border-border/80">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    AI-блоки для вставки в резюме
-                  </h3>
-                </div>
-
-                <div className="p-3.5 rounded-xl border border-border bg-background/60 space-y-2">
-                  <div className="flex items-center justify-between text-xs font-semibold">
-                    <span>Готовое введение (Executive Summary)</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => copyToClipboard(analysis.summary, "summary")}
-                      className="h-6 text-[10px] cursor-pointer"
-                    >
-                      {copiedSection === "summary" ? (
-                        <>
-                          <Check className="w-3 h-3 mr-1 text-emerald-400" /> Скопировано
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-3 h-3 mr-1" /> Копировать
-                        </>
-                      )}
-                    </Button>
+                    <div className="flex p-0.5 rounded-lg bg-background border border-border text-xs shrink-0">
+                      <button
+                        onClick={() => setRawViewMode("text")}
+                        className={`px-2.5 py-1 rounded-md transition cursor-pointer ${
+                          rawViewMode === "text"
+                            ? "bg-primary text-primary-foreground font-semibold"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        Сырой поток (OCR)
+                      </button>
+                      <button
+                        onClick={() => setRawViewMode("json")}
+                        className={`px-2.5 py-1 rounded-md transition cursor-pointer ${
+                          rawViewMode === "json"
+                            ? "bg-primary text-primary-foreground font-semibold"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        JSON AST
+                      </button>
+                    </div>
                   </div>
-                  <p className="text-xs font-mono text-muted-foreground leading-relaxed">
-                    {analysis.summary}
-                  </p>
-                </div>
 
-                <div className="p-3.5 rounded-xl border border-border bg-background/60 space-y-2">
-                  <div className="flex items-center justify-between text-xs font-semibold">
-                    <span>Список ключевых навыков для раздела «Skills»</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => copyToClipboard(analysis.skills, "skills")}
-                      className="h-6 text-[10px] cursor-pointer"
-                    >
-                      {copiedSection === "skills" ? (
-                        <>
-                          <Check className="w-3 h-3 mr-1 text-emerald-400" /> Скопировано
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-3 h-3 mr-1" /> Копировать
-                        </>
-                      )}
-                    </Button>
+                  {/* Red Layout Anomalies */}
+                  {simulation.layoutIssues.length > 0 && (
+                    <div className="p-4 rounded-xl border border-rose-500/40 bg-rose-500/10 space-y-2.5">
+                      <div className="text-xs font-bold text-rose-300 flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4 text-rose-400" />
+                        <span>Критические ошибки вёрстки и структуры для ATS ({simulation.layoutIssues.length}):</span>
+                      </div>
+                      <div className="space-y-2">
+                        {simulation.layoutIssues.map((issue) => (
+                          <div key={issue.id} className="p-2.5 rounded-lg bg-background/60 border border-rose-500/30 text-xs">
+                            <div className="font-semibold text-rose-200">{issue.title}</div>
+                            <p className="text-[11px] text-muted-foreground mt-0.5">{issue.description}</p>
+                            <span className="text-[10px] font-mono text-rose-400 block mt-1">Триггер: {issue.evidence}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Yellow Orphan Skills Alert */}
+                  {simulation.orphanSkills.length > 0 && (
+                    <div className="p-4 rounded-xl border border-amber-500/40 bg-amber-500/10 space-y-2">
+                      <div className="text-xs font-bold text-amber-300 flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4 text-amber-400" />
+                        <span>Сиротские навыки (0 баллов по формуле 55/15/15/15):</span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        Роботы ATS требуют доказательства практического применения каждого навыка в буллетах опыта. Навыки без цитат получают 0 баллов:
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                        {simulation.orphanSkills.map((item, idx) => (
+                          <div key={idx} className="p-2.5 rounded-lg bg-background/50 border border-amber-500/20 text-xs">
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-amber-200">{item.name}</span>
+                              <span className="text-[10px] text-amber-400 font-mono font-bold">0 баллов</span>
+                            </div>
+                            <span className="text-[10px] text-muted-foreground block mt-0.5">{item.reason}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Raw Stream Viewer */}
+                  <div className="rounded-xl border border-border bg-zinc-950 p-4 font-mono text-xs overflow-x-auto max-h-[380px]">
+                    <div className="flex items-center justify-between pb-2 mb-2 border-b border-zinc-800 text-[11px] text-zinc-400">
+                      <span>{rawViewMode === "text" ? "TOKENIZED RAW STREAM" : "ATS_AST_SCHEMA.json"}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => copyToClipboard(rawViewMode === "text" ? simulation.rawTextStream : JSON.stringify(simulation.parsedAstJson, null, 2), "raw")}
+                        className="h-6 text-[10px] hover:text-white"
+                      >
+                        {copiedSection === "raw" ? <Check className="w-3 h-3 text-emerald-400 mr-1" /> : <Copy className="w-3 h-3 mr-1" />}
+                        <span>Копировать</span>
+                      </Button>
+                    </div>
+
+                    <pre className="text-emerald-400 text-[11px] leading-relaxed whitespace-pre-wrap">
+                      {rawViewMode === "text"
+                        ? simulation.rawTextStream
+                        : JSON.stringify(simulation.parsedAstJson, null, 2)}
+                    </pre>
                   </div>
-                  <p className="text-xs font-mono text-muted-foreground leading-relaxed">
-                    {analysis.skills}
-                  </p>
                 </div>
-              </div>
+              )}
+
+              {/* TAB 3: X-Y-Z BULLET IMPROVER (BEFORE / AFTER DIFF) */}
+              {activeResultsTab === "xyz_diff" && (
+                <div className="space-y-4 animate-in fade-in">
+                  <div className="p-3.5 rounded-xl bg-gradient-to-r from-amber-500/10 via-card to-emerald-500/10 border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                    <div>
+                      <div className="font-bold text-foreground flex items-center gap-1.5">
+                        <Wand2 className="w-4 h-4 text-amber-400" />
+                        <span>X-Y-Z Улучшатель процессных формулировок</span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        Заменяет слабые фразы («отвечал за», «занимался») на оцифрованные результаты с ростом ATS-скора
+                      </p>
+                    </div>
+                    <Badge variant="outline" className="text-xs text-emerald-400 border-emerald-500/30 bg-emerald-500/10 shrink-0">
+                      До 60% → После 94%
+                    </Badge>
+                  </div>
+
+                  <div className="space-y-4">
+                    {simulation.xyzImprovements.map((item) => (
+                      <div key={item.id} className="p-4 rounded-xl border border-border bg-card/70 space-y-3">
+                        <div className="flex items-center justify-between text-xs font-semibold">
+                          <span className="text-muted-foreground flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-amber-400" />
+                            Слабый паттерн: <code className="text-amber-300 font-mono font-bold bg-background/80 px-1 py-0.5 rounded">{item.weakKeyword}</code>
+                          </span>
+                          <span className="text-emerald-400 font-bold font-mono">+{item.scoreBoost}% к ATS Score</span>
+                        </div>
+
+                        {/* Before / After Diff Visualizer */}
+                        <div className="space-y-2 text-xs font-mono">
+                          {/* Было */}
+                          <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 flex items-start gap-2">
+                            <span className="font-bold text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400 shrink-0">
+                              Было
+                            </span>
+                            <span className="line-through opacity-80">{item.original}</span>
+                          </div>
+
+                          {/* Стало */}
+                          <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 flex items-start gap-2">
+                            <span className="font-bold text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 shrink-0">
+                              Стало XYZ
+                            </span>
+                            <span className="font-medium">{item.improved}</span>
+                          </div>
+                        </div>
+
+                        {/* Action row */}
+                        <div className="flex items-center justify-between pt-1 text-xs">
+                          <span className="text-[11px] text-muted-foreground">
+                            Внедрены метрики: <strong className="text-emerald-400">{item.metricsAdded.join(", ")}</strong>
+                          </span>
+
+                          <Button
+                            size="sm"
+                            onClick={() => handleApplyXyz(item)}
+                            className="h-7 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-bold cursor-pointer shadow-sm shadow-emerald-500/20 flex items-center gap-1.5"
+                          >
+                            <Sparkles className="w-3.5 h-3.5" />
+                            <span>Применить в 1 клик</span>
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
       </div>
+
+      {/* Module 2: Viral ATS Score Card Modal (Canvas) */}
+      <AtsScoreCardModal
+        isOpen={isScoreCardOpen}
+        onClose={() => setIsScoreCardOpen(false)}
+        simulation={simulation}
+        candidateName={userProfile.name}
+        targetRole={targetRoleTitle}
+        language={language}
+      />
+
+      {/* Module 3: Clean Single-Column Harvard ATS Resume Modal */}
+      <AtsCleanResumeModal
+        isOpen={isCleanResumeOpen}
+        onClose={() => setIsCleanResumeOpen(false)}
+        rawResumeText={resumeText}
+        candidateName={userProfile.name}
+        candidateEmail={userProfile.email}
+        candidatePhone={userProfile.phone}
+        targetRole={targetRoleTitle}
+        language={language}
+      />
 
       {/* Upgrade Pro Modal (Tribute) */}
       <UpgradeProModal
