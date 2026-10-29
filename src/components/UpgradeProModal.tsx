@@ -63,10 +63,10 @@ export default function UpgradeProModal({
     if (discountCheck.valid && discountCheck.checkoutUrl) {
       setCodeSuccess(
         discountCheck.message ||
-          '🎉 Промокод START30 успешно применен! Скидка 30% активирована: 490 ₽ вместо 690 ₽. Перенаправляем к оплате...'
+          '🎉 Промокод START30 применен! Скидка 30% активирована (490 ₽ вместо 690 ₽). Переходим к оплате...'
       );
       setTimeout(() => {
-        window.open(discountCheck.checkoutUrl, '_blank', 'noopener,noreferrer');
+        window.location.href = discountCheck.checkoutUrl!;
       }, 1200);
       return;
     }
@@ -336,10 +336,15 @@ export default function UpgradeProModal({
             </div>
 
             {codeError && (
-              <p className="text-[11px] text-rose-400 animate-in fade-in">{codeError}</p>
+              <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-300 text-xs font-semibold leading-relaxed animate-in fade-in flex items-center gap-2">
+                <span>{codeError}</span>
+              </div>
             )}
             {codeSuccess && (
-              <p className="text-[11px] text-emerald-400 font-semibold animate-in fade-in">{codeSuccess}</p>
+              <div className="p-3 rounded-xl bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 text-xs font-bold leading-relaxed shadow-lg shadow-emerald-500/10 animate-in fade-in flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>{codeSuccess}</span>
+              </div>
             )}
           </form>
         </div>

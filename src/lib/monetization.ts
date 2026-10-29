@@ -25,7 +25,7 @@ export const DISCOUNT_PROMO_CODES: Record<
     code: 'START30',
     discountPercent: 30,
     message:
-      '🎉 Промокод START30 успешно применен! Скидка 30% активирована: 490 ₽ вместо 690 ₽. Перенаправляем к оплате...',
+      '🎉 Промокод START30 применен! Скидка 30% активирована (490 ₽ вместо 690 ₽). Переходим к оплате...',
     checkoutUrl: 'https://web.tribute.tg/p/ICg',
   },
 };
