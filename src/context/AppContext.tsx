@@ -113,6 +113,10 @@ interface AppContextType {
   toastMessage: string | null;
   showToast: (msg: string) => void;
 
+  // Backup & Restore
+  exportBackupData: () => void;
+  importBackupData: (jsonData: string) => boolean;
+
   // Language & Localization
   lang: "ru" | "en";
   setLang: (lang: "ru" | "en") => void;
@@ -646,6 +650,73 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setRemainingScans(getRemainingFreeScans());
   }, []);
 
+  const exportBackupData = useCallback(() => {
+    if (typeof window === "undefined") return;
+
+    const backupPayload = {
+      version: "2026.1",
+      exportedAt: new Date().toISOString(),
+      userProfile,
+      applications,
+      followUps,
+      savedResume: localStorage.getItem("launchpad_scanner_resume") || "",
+      savedJob: localStorage.getItem("launchpad_scanner_job") || "",
+    };
+
+    const blob = new Blob([JSON.stringify(backupPayload, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `launchpad_backup_${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    showToast("✓ Резервная копия (Backup JSON) успешно сохранена на диск!");
+  }, [userProfile, applications, followUps, showToast]);
+
+  const importBackupData = useCallback(
+    (jsonData: string): boolean => {
+      try {
+        const parsed = JSON.parse(jsonData);
+
+        if (parsed.userProfile && typeof parsed.userProfile === "object") {
+          setUserProfileState(parsed.userProfile);
+          localStorage.setItem(STORAGE_KEYS.USER_PROFILE, JSON.stringify(parsed.userProfile));
+        }
+
+        if (Array.isArray(parsed.applications)) {
+          setApplicationsState(parsed.applications);
+          localStorage.setItem(STORAGE_KEYS.APPLICATIONS, JSON.stringify(parsed.applications));
+        }
+
+        if (Array.isArray(parsed.followUps)) {
+          setFollowUpsState(parsed.followUps);
+          localStorage.setItem(STORAGE_KEYS.FOLLOW_UPS, JSON.stringify(parsed.followUps));
+        }
+
+        if (typeof parsed.savedResume === "string" && parsed.savedResume) {
+          localStorage.setItem("launchpad_scanner_resume", parsed.savedResume);
+        }
+
+        if (typeof parsed.savedJob === "string" && parsed.savedJob) {
+          localStorage.setItem("launchpad_scanner_job", parsed.savedJob);
+        }
+
+        showToast("✓ Все данные и карточки успешно восстановлены из бэкапа!");
+        return true;
+      } catch (err) {
+        console.error("Backup import error:", err);
+        showToast("Ошибка: поврежденный или неверный формат JSON файла резервной копии.");
+        return false;
+      }
+    },
+    [showToast]
+  );
+
   const activeFollowUpsCount = followUps.filter((f) => !f.sent).length;
 
   return (
@@ -691,6 +762,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setTriggerQuickAudit,
         toastMessage,
         showToast,
+        exportBackupData,
+        importBackupData,
         lang,
         setLang,
       }}

@@ -19,6 +19,8 @@ import {
   Briefcase,
   Layers,
   Globe,
+  Loader2,
+  MessageSquare,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -42,6 +44,7 @@ import {
   generateIcsCalendarFile,
 } from "@/lib/follow-up-templates";
 import { cleanAIMarkdownArtifacts } from "@/lib/monetization";
+import { callAI } from "@/lib/ai-client";
 
 export default function FollowUpsPage() {
   const {
@@ -59,12 +62,70 @@ export default function FollowUpsPage() {
   const [templateLanguage, setTemplateLanguage] = useState<"ru" | "en">("ru");
   const [editableText, setEditableText] = useState("");
   const [copied, setCopied] = useState(false);
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+
+  // Auto-detect applications with 5-7+ days without follow-up (Module 4)
+  const staleApplications = applications.filter((app) => {
+    if (app.stage !== "applied" && app.stage !== "screening") return false;
+    const appliedDate = app.applied_at ? new Date(app.applied_at) : new Date(app.created_at);
+    const diffDays = Math.floor((Date.now() - appliedDate.getTime()) / (1000 * 60 * 60 * 24));
+    return diffDays >= 5;
+  });
 
   // Selected application details
   const activeApp = applications.find((a) => a.id === selectedAppId) || applications[0] || {
     company: "Яндекс",
     position: "Senior Product Manager",
     applied_at: "2026-10-24T12:00:00Z",
+  };
+
+  const handleGenerateAiFollowUp = async (companyName?: string, positionName?: string) => {
+    const comp = companyName || activeApp.company;
+    const pos = positionName || activeApp.position;
+    setIsGeneratingAi(true);
+
+    const userPrompt = `Напиши идеальный короткий персональный Follow-Up рекрутеру от кандидата.
+Компания: ${comp}
+Должность: ${pos}
+Имя кандидата: ${userProfile.name}
+Контакты: ${userProfile.phone || userProfile.email}
+
+ТРЕБОВАНИЯ:
+- Вежливый, живой, ненавязчивый тон профессионала.
+- Напомнить об отправленном отклике неделю назад.
+- Кратко подчеркнуть ценность кандидата для компании ${comp}.
+- Спросить, удалось ли нанимающему менеджеру ознакомиться и нужны ли дополнительные материалы.
+- Без звездочек **, без решеток ###, без шаблонных штампов.`;
+
+    try {
+      const res = await callAI({
+        systemPrompt: "Ты карьерный стратег. Пиши живые естественные деловые сообщения без markdown-разметки.",
+        userPrompt,
+        temperature: 0.3,
+      });
+
+      if (res.text) {
+        setEditableText(res.text);
+        setSelectedItem(null);
+        setSelectedScenario({
+          id: "ai-custom",
+          titleRu: `ИИ Follow-Up: ${comp}`,
+          titleEn: `AI Follow-Up: ${comp}`,
+          badgeRu: "✨ Сгенерировано ИИ",
+          badgeEn: "✨ AI Generated",
+          subjectRu: `Уточнение статуса отклика: ${pos} в ${comp}`,
+          subjectEn: `Status update: ${pos} at ${comp}`,
+          templateRu: res.text,
+          templateEn: res.text,
+        });
+        showToast("✓ Персональный Follow-Up сгенерирован нейросетью!");
+      }
+    } catch (err) {
+      console.warn("AI Follow-up error:", err);
+      showToast("Не удалось подключиться к ИИ, открыт проверенный шаблон.");
+    } finally {
+      setIsGeneratingAi(false);
+    }
   };
 
   const openQueueModal = (item: FollowUpItem) => {
@@ -149,12 +210,48 @@ export default function FollowUpsPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            size="sm"
+            onClick={() => handleGenerateAiFollowUp()}
+            disabled={isGeneratingAi}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-bold shadow-md shadow-primary/20 cursor-pointer flex items-center gap-1.5"
+          >
+            {isGeneratingAi ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 text-amber-300" />}
+            <span>✨ Написать Follow-Up с ИИ</span>
+          </Button>
+
           <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-400 border-amber-500/30 font-semibold py-1">
             {activeFollowUpsCount} {activeFollowUpsCount === 1 ? "напоминание ждёт" : "напоминания ждут"} отправки
           </Badge>
         </div>
       </div>
+
+      {/* Overdue/Stale applications alert banner (Module 4) */}
+      {staleApplications.length > 0 && (
+        <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-start gap-2.5">
+            <Clock className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+            <div>
+              <h4 className="font-bold text-xs text-amber-300">
+                Пора отправить напоминание ({staleApplications.length} {staleApplications.length === 1 ? "отклик ждет" : "откликов ждут"} ответа 5+ дней)
+              </h4>
+              <p className="text-[11px] text-amber-200/80 mt-0.5">
+                {staleApplications.map((a) => `${a.company} (${a.position})`).join(", ")}
+              </p>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            onClick={() => handleGenerateAiFollowUp(staleApplications[0].company, staleApplications[0].position)}
+            disabled={isGeneratingAi}
+            className="bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold shrink-0 cursor-pointer shadow-sm shadow-amber-600/20 flex items-center gap-1.5"
+          >
+            {isGeneratingAi ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+            Написать с ИИ для {staleApplications[0].company}
+          </Button>
+        </div>
+      )}
 
       {/* Stats Ribbon */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -475,7 +572,20 @@ export default function FollowUpsPage() {
               <span>Добавить в календарь (.ics)</span>
             </Button>
 
-            <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  navigator.clipboard.writeText(cleanAIMarkdownArtifacts(editableText));
+                  showToast("✓ Текст для мессенджера (Telegram / WhatsApp) скопирован!");
+                }}
+                className="text-xs border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 flex items-center gap-1.5 cursor-pointer"
+              >
+                <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
+                <span>В Telegram / WhatsApp</span>
+              </Button>
+
               <Button
                 variant="outline"
                 size="sm"

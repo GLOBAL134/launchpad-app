@@ -30,9 +30,19 @@ import {
   TrendingUp,
   Kanban,
   FileCheck2,
+  Download,
+  Link2,
+  ExternalLink,
+  Globe,
+  Printer,
+  Target,
+  HelpCircle,
+  Loader2,
+  FileDown,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
@@ -43,6 +53,10 @@ import AtsCleanResumeModal from "@/components/AtsCleanResumeModal";
 import AiEmbedSkillModal from "@/components/AiEmbedSkillModal";
 import AiRewriteResumeModal from "@/components/AiRewriteResumeModal";
 import SaveToKanbanModal from "@/components/SaveToKanbanModal";
+import { AiBuildResumeModal } from "@/components/AiBuildResumeModal";
+import { HhCopyModal } from "@/components/HhCopyModal";
+import { AiInterviewPrepModal } from "@/components/AiInterviewPrepModal";
+import { exportResumeToDocx, exportResumeToPdf } from "@/lib/export-resume";
 import { cleanAIMarkdownArtifacts } from "@/lib/monetization";
 import { detectLanguage } from "@/lib/language";
 import { simulateAtsParser, AtsSimulationResult, XyzImprovement } from "@/lib/ats-parser-simulator";
@@ -285,6 +299,17 @@ export default function ATSScannerPage() {
   const [skillToEmbed, setSkillToEmbed] = useState("");
   const [rewriteModalOpen, setRewriteModalOpen] = useState(false);
   const [saveKanbanModalOpen, setSaveKanbanModalOpen] = useState(false);
+  const [buildResumeModalOpen, setBuildResumeModalOpen] = useState(false);
+  const [hhCopyModalOpen, setHhCopyModalOpen] = useState(false);
+  const [interviewPrepModalOpen, setInterviewPrepModalOpen] = useState(false);
+
+  // File parsing & Job import states
+  const [isParsingFile, setIsParsingFile] = useState(false);
+  const [isImportingJob, setIsImportingJob] = useState(false);
+  const [jobUrlInput, setJobUrlInput] = useState("");
+  const [jobRoleInput, setJobRoleInput] = useState("");
+  const [jobImportTab, setJobImportTab] = useState<"preset" | "url" | "ai_role">("preset");
+  const [isExportingDocx, setIsExportingDocx] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -362,25 +387,127 @@ export default function ATSScannerPage() {
     }
   };
 
-  // Handle file upload
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  // Handle file upload with server-side PDF / DOCX / TXT multi-parser (Module 1)
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement> | React.DragEvent) => {
+    let file: File | null = null;
+    if ("dataTransfer" in e) {
+      e.preventDefault();
+      file = e.dataTransfer.files?.[0] || null;
+    } else {
+      file = e.target.files?.[0] || null;
+    }
     if (!file) return;
 
     const fileSizeStr = (file.size / 1024).toFixed(1) + " KB";
     setUploadedFile({ name: file.name, size: fileSizeStr });
+    setIsParsingFile(true);
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const text = event.target?.result as string;
-      if (text && text.trim().length > 50) {
-        setResumeText(cleanAIMarkdownArtifacts(text));
-        showToast(`Файл «${file.name}» успешно загружен и обработан!`);
-      } else {
-        showToast("Файл прочитан. Проверьте содержимое в поле ввода.");
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/parse-resume-file", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.text) {
+          setResumeText(data.text);
+          showToast(`✓ Резюме «${file.name}» (${data.fileType || "DOC"}) успешно извлечено без искажений!`);
+          setIsParsingFile(false);
+          return;
+        }
       }
-    };
-    reader.readAsText(file);
+
+      // Fallback: client-side reading for text formats
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const text = event.target?.result as string;
+        if (text && text.trim().length > 30) {
+          setResumeText(cleanAIMarkdownArtifacts(text));
+          showToast(`Файл «${file.name}» загружен.`);
+        }
+      };
+      reader.readAsText(file);
+    } catch (err) {
+      console.warn("File upload error:", err);
+      showToast("Ошибка при чтении файла. Проверьте формат документа.");
+    } finally {
+      setIsParsingFile(false);
+    }
+  };
+
+  // Module 2: Import Job Vacancy by URL (HH.ru official API + Generic)
+  const handleImportJobUrl = async () => {
+    if (!jobUrlInput.trim()) return;
+    setIsImportingJob(true);
+    try {
+      const res = await fetch("/api/parse-job", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: jobUrlInput.trim() }),
+      });
+      const data = await res.json();
+      if (data.success && data.jobDesc) {
+        setJobDesc(data.jobDesc);
+        showToast(`✓ Вакансия «${data.position}» (${data.company}) успешно загружена!`);
+        setJobUrlInput("");
+      } else if (data.antiBot) {
+        showToast(data.message || "Сайт защищен капчей. Вставьте текст вакансии вручную или укажите только должность.");
+      } else {
+        showToast(data.error || "Не удалось загрузить вакансию по этой ссылке.");
+      }
+    } catch (err) {
+      showToast("Ошибка соединения при загрузке вакансии.");
+    } finally {
+      setIsImportingJob(false);
+    }
+  };
+
+  // Module 2: Generate Job Requirements from Single Role Title
+  const handleGenerateRoleRequirements = async () => {
+    if (!jobRoleInput.trim()) return;
+    setIsImportingJob(true);
+    try {
+      const res = await fetch("/api/parse-job", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ roleTitle: jobRoleInput.trim(), mode: "generate_role" }),
+      });
+      const data = await res.json();
+      if (data.success && data.jobDesc) {
+        setJobDesc(data.jobDesc);
+        showToast(`✓ Требования рынка для «${jobRoleInput}» успешно сгенерированы!`);
+        setJobRoleInput("");
+      } else {
+        showToast("Не удалось сгенерировать требования. Попробуйте ещё раз.");
+      }
+    } catch (err) {
+      showToast("Ошибка соединения при генерации требований.");
+    } finally {
+      setIsImportingJob(false);
+    }
+  };
+
+  // Module 3: Export to Word (.docx)
+  const handleExportDocx = async () => {
+    setIsExportingDocx(true);
+    try {
+      await exportResumeToDocx(resumeText);
+      showToast("✓ Файл Word (.docx) успешно сгенерирован и скачан!");
+    } catch (err) {
+      console.error("DOCX export error:", err);
+      showToast("Ошибка при создании Word документа.");
+    } finally {
+      setIsExportingDocx(false);
+    }
+  };
+
+  // Module 3: Export to Printable PDF
+  const handleExportPdf = () => {
+    exportResumeToPdf(resumeText);
   };
 
   const handleClearFile = () => {
@@ -557,14 +684,18 @@ export default function ATSScannerPage() {
         {/* Left Column: Inputs (5 Cols) */}
         <div className="lg:col-span-5 space-y-4">
           {/* Card 1: Resume Input */}
-          <Card className="bg-card border-border">
+          <Card
+            className="bg-card border-border transition-colors"
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={handleFileUpload}
+          >
             <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
                   <FileText className="w-4 h-4 text-primary" />
                   <span>1. Текст вашего резюме</span>
                 </CardTitle>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-1.5">
                   <input
                     type="file"
                     ref={fileInputRef}
@@ -576,20 +707,42 @@ export default function ATSScannerPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => fileInputRef.current?.click()}
+                    disabled={isParsingFile}
                     className="h-7 text-xs border-dashed border-primary/50 text-primary hover:bg-primary/10 cursor-pointer"
                   >
-                    <Upload className="w-3 h-3 mr-1" />
-                    Загрузить файл
+                    {isParsingFile ? (
+                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                    ) : (
+                      <Upload className="w-3 h-3 mr-1" />
+                    )}
+                    {isParsingFile ? "Чтение..." : "Файл (PDF, Word)"}
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setBuildResumeModalOpen(true)}
+                    className="h-7 text-xs bg-amber-500/10 border-amber-500/30 text-amber-300 hover:bg-amber-500/20 font-semibold cursor-pointer"
+                  >
+                    <Sparkles className="w-3 h-3 mr-1 text-amber-400" />
+                    Собрать с нуля
                   </Button>
                 </div>
               </div>
               <CardDescription className="text-xs">
-                Вставьте текст резюме или загрузите файл (.txt, .md, .docx, .pdf)
+                Вставьте текст, перетащите файл (.pdf, .docx, .txt) или соберите резюме за 1 минуту с ИИ
               </CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-3">
-              {uploadedFile && (
+              {isParsingFile && (
+                <div className="p-3 rounded-lg border border-primary/40 bg-primary/10 flex items-center gap-2 text-xs text-primary animate-pulse">
+                  <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                  <span>Извлекаем чистый текст и структуру документа без искажения шрифтов...</span>
+                </div>
+              )}
+
+              {uploadedFile && !isParsingFile && (
                 <div className="p-2.5 rounded-lg border border-primary/30 bg-primary/5 flex items-center justify-between text-xs animate-in fade-in">
                   <div className="flex items-center gap-2 text-foreground font-medium truncate">
                     <FileCheck className="w-4 h-4 text-primary shrink-0" />
@@ -608,29 +761,113 @@ export default function ATSScannerPage() {
               <Textarea
                 value={resumeText}
                 onChange={(e) => setResumeText(e.target.value)}
-                placeholder="Вставьте сюда текст вашего резюме..."
+                placeholder="Вставьте сюда текст вашего резюме или перетащите файл..."
                 rows={12}
                 className="font-mono text-xs resize-none bg-background/50 border-border"
               />
             </CardContent>
           </Card>
 
-          {/* Card 2: Job Description Input */}
+          {/* Card 2: Job Description Input & Multi-Source Importer (Module 2) */}
           <Card className="bg-card border-border">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
                   <Briefcase className="w-4 h-4 text-primary" />
-                  <span>2. Требования вакансии (Любая профессия)</span>
+                  <span>2. Требования вакансии</span>
                 </CardTitle>
                 <Badge variant="outline" className="text-[10px] text-primary border-primary/30 bg-primary/10">
                   {simulation.domainName}
                 </Badge>
               </div>
+
+              {/* Import Mode Switcher */}
+              <div className="flex gap-1.5 pt-2">
+                <button
+                  onClick={() => setJobImportTab("preset")}
+                  className={`px-2.5 py-1 text-[11px] font-semibold rounded-md transition cursor-pointer ${
+                    jobImportTab === "preset"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted/50 text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Текст вакансии
+                </button>
+                <button
+                  onClick={() => setJobImportTab("url")}
+                  className={`px-2.5 py-1 text-[11px] font-semibold rounded-md transition cursor-pointer flex items-center gap-1 ${
+                    jobImportTab === "url"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted/50 text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Link2 className="w-3 h-3 text-red-400" />
+                  <span>Ссылка (HH.ru)</span>
+                </button>
+                <button
+                  onClick={() => setJobImportTab("ai_role")}
+                  className={`px-2.5 py-1 text-[11px] font-semibold rounded-md transition cursor-pointer flex items-center gap-1 ${
+                    jobImportTab === "ai_role"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted/50 text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Wand2 className="w-3 h-3 text-amber-400" />
+                  <span>Собрать по должности</span>
+                </button>
+              </div>
             </CardHeader>
 
             <CardContent className="space-y-3">
-              {applications.length > 0 && (
+              {jobImportTab === "url" && (
+                <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl space-y-2">
+                  <span className="text-[11px] font-semibold text-red-300 block">
+                    Вставьте ссылку на вакансию (HeadHunter, SuperJob, Habr):
+                  </span>
+                  <div className="flex gap-2">
+                    <Input
+                      value={jobUrlInput}
+                      onChange={(e) => setJobUrlInput(e.target.value)}
+                      placeholder="https://hh.ru/vacancy/12345678"
+                      className="text-xs h-8 bg-background/80"
+                    />
+                    <Button
+                      size="sm"
+                      onClick={handleImportJobUrl}
+                      disabled={isImportingJob || !jobUrlInput.trim()}
+                      className="bg-red-600 hover:bg-red-500 text-white text-xs h-8 px-3 font-bold cursor-pointer"
+                    >
+                      {isImportingJob ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Загрузить"}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {jobImportTab === "ai_role" && (
+                <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl space-y-2">
+                  <span className="text-[11px] font-semibold text-amber-300 block">
+                    Укажите только профессию — ИИ соберет реальные требования рынка:
+                  </span>
+                  <div className="flex gap-2">
+                    <Input
+                      value={jobRoleInput}
+                      onChange={(e) => setJobRoleInput(e.target.value)}
+                      placeholder="Например: Главный бухгалтер или Менеджер по продажам B2B"
+                      className="text-xs h-8 bg-background/80"
+                    />
+                    <Button
+                      size="sm"
+                      onClick={handleGenerateRoleRequirements}
+                      disabled={isImportingJob || !jobRoleInput.trim()}
+                      className="bg-amber-600 hover:bg-amber-500 text-white text-xs h-8 px-3 font-bold cursor-pointer"
+                    >
+                      {isImportingJob ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Собрать"}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {applications.length > 0 && jobImportTab === "preset" && (
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-[10px] text-muted-foreground uppercase font-bold flex items-center gap-1">
@@ -686,7 +923,8 @@ export default function ATSScannerPage() {
                   className="border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 text-xs font-bold h-9 cursor-pointer"
                   title="Переписать резюме под эту вакансию с ИИ"
                 >
-                  <Wand2 className="w-3.5 h-3.5" />
+                  <Wand2 className="w-3.5 h-3.5 mr-1" />
+                  <span>ИИ</span>
                 </Button>
               </div>
             </CardContent>
@@ -777,28 +1015,89 @@ export default function ATSScannerPage() {
                 </div>
               </div>
 
-              {/* Actions row under score */}
-              <div className="mt-4 pt-3 border-t border-border/60 flex flex-wrap items-center justify-between gap-3 text-xs">
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setIsScoreCardOpen(true)}
-                    className="h-7 text-xs border-border hover:bg-muted text-emerald-400 font-semibold cursor-pointer"
-                  >
-                    <Award className="w-3.5 h-3.5 mr-1" />
-                    Сертификат ATS
-                  </Button>
+              {/* Actions row under score (Modules 3, 4, 5) */}
+              <div className="mt-4 pt-3 border-t border-border/60 space-y-2.5 text-xs">
+                {/* Top Action Row: AI Rewrite, Interview Prep, Save to Kanban */}
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => setRewriteModalOpen(true)}
+                      className="h-8 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-sm shadow-emerald-600/25 cursor-pointer flex items-center gap-1.5"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>✨ Улучшить до 90%+ с ИИ</span>
+                    </Button>
 
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setSaveKanbanModalOpen(true)}
-                    className="h-7 text-xs border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 font-semibold cursor-pointer"
-                  >
-                    <Kanban className="w-3.5 h-3.5 mr-1" />
-                    Сохранить в Канбан
-                  </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setInterviewPrepModalOpen(true)}
+                      className="h-8 text-xs border-purple-500/40 text-purple-300 hover:bg-purple-500/10 font-semibold cursor-pointer flex items-center gap-1.5"
+                    >
+                      <Target className="w-3.5 h-3.5 text-purple-400" />
+                      <span>🎯 Подготовка к интервью</span>
+                    </Button>
+
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setSaveKanbanModalOpen(true)}
+                      className="h-8 text-xs border-indigo-500/40 text-indigo-300 hover:bg-indigo-500/10 font-semibold cursor-pointer flex items-center gap-1.5"
+                    >
+                      <Kanban className="w-3.5 h-3.5 text-indigo-400" />
+                      <span>🚀 В Канбан + Письмо</span>
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Bottom Export & Sharing Row (Real DOCX, PDF, HH.ru, Certificate) */}
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-border/40">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleExportDocx}
+                      disabled={isExportingDocx}
+                      className="h-7 text-xs border-border/80 hover:bg-muted text-foreground cursor-pointer flex items-center gap-1"
+                      title="Скачать резюме в формате Microsoft Word (.docx)"
+                    >
+                      {isExportingDocx ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileDown className="w-3 h-3 text-blue-400" />}
+                      <span>Word (.docx)</span>
+                    </Button>
+
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleExportPdf}
+                      className="h-7 text-xs border-border/80 hover:bg-muted text-foreground cursor-pointer flex items-center gap-1"
+                      title="Открыть печать и сохранить как PDF с поддержкой кириллицы"
+                    >
+                      <Printer className="w-3 h-3 text-amber-400" />
+                      <span>Печать / PDF</span>
+                    </Button>
+
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setHhCopyModalOpen(true)}
+                      className="h-7 text-xs border-red-500/30 text-red-300 hover:bg-red-500/10 cursor-pointer flex items-center gap-1"
+                      title="Разбить резюме на блоки для вставки на HeadHunter"
+                    >
+                      <Copy className="w-3 h-3 text-red-400" />
+                      <span>Копировать для HH.ru</span>
+                    </Button>
+
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setIsScoreCardOpen(true)}
+                      className="h-7 text-xs border-border/80 hover:bg-muted text-emerald-400 font-medium cursor-pointer"
+                    >
+                      <Award className="w-3 h-3 mr-1" />
+                      Сертификат ATS
+                    </Button>
+                  </div>
 
                   <a
                     href={telegramShareUrl}
@@ -810,15 +1109,6 @@ export default function ATSScannerPage() {
                     Поделиться
                   </a>
                 </div>
-
-                <Button
-                  size="sm"
-                  onClick={() => setRewriteModalOpen(true)}
-                  className="h-7 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-bold cursor-pointer"
-                >
-                  <Sparkles className="w-3 h-3 mr-1" />
-                  Улучшить до 90%+
-                </Button>
               </div>
             </div>
 
@@ -1171,6 +1461,34 @@ export default function ATSScannerPage() {
         candidatePhone={userProfile.phone}
         targetRole={targetRoleTitle}
         language={language}
+      />
+
+      {/* Module 1: Build Resume from Scratch with AI */}
+      <AiBuildResumeModal
+        open={buildResumeModalOpen}
+        onOpenChange={setBuildResumeModalOpen}
+        onApplyResume={(newResume) => {
+          setResumeText(newResume);
+          showToast("✓ Резюме успешно сгенерировано с ИИ и помещено в сканер!");
+        }}
+        defaultRole={targetRoleTitle}
+      />
+
+      {/* Module 3: Smart Copy for HeadHunter */}
+      <HhCopyModal
+        open={hhCopyModalOpen}
+        onOpenChange={setHhCopyModalOpen}
+        resumeText={resumeText}
+      />
+
+      {/* Module 5: AI Interview Prep */}
+      <AiInterviewPrepModal
+        open={interviewPrepModalOpen}
+        onOpenChange={setInterviewPrepModalOpen}
+        company={scannerTargetJob?.company || "Целевая компания"}
+        position={scannerTargetJob?.position || simulation.domainName}
+        resumeText={resumeText}
+        jobDesc={jobDesc}
       />
 
       {/* Upgrade Pro Modal (Tribute) */}

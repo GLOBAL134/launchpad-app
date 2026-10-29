@@ -1,20 +1,28 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Mail, Phone, Briefcase } from "lucide-react";
+import { User, Mail, Phone, Briefcase, Download, Upload, ShieldCheck } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 
 export default function UserProfileModal() {
-  const { userProfile, updateUserProfile, isProfileModalOpen, setIsProfileModalOpen } = useApp();
+  const {
+    userProfile,
+    updateUserProfile,
+    isProfileModalOpen,
+    setIsProfileModalOpen,
+    exportBackupData,
+    importBackupData,
+  } = useApp();
 
   const [name, setName] = useState(userProfile.name);
   const [email, setEmail] = useState(userProfile.email);
   const [phone, setPhone] = useState(userProfile.phone);
   const [title, setTitle] = useState(userProfile.title);
+  const backupFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setName(userProfile.name);
@@ -22,6 +30,21 @@ export default function UserProfileModal() {
     setPhone(userProfile.phone);
     setTitle(userProfile.title);
   }, [userProfile, isProfileModalOpen]);
+
+  const handleBackupFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      if (content) {
+        importBackupData(content);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,6 +130,51 @@ export default function UserProfileModal() {
                 placeholder="+7 (999) 000-00-00"
                 className="text-xs"
               />
+            </div>
+
+            {/* Backup & Restore Data (Module 6) */}
+            <div className="pt-4 border-t border-border/80 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-foreground flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  Резервное копирование и сохранность данных
+                </span>
+                <span className="text-[10px] text-muted-foreground">JSON v2026</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-tight">
+                Все ваши резюме, вакансии и карточки хранятся локально в браузере. Выгрузите резервный файл для переноса на другое устройство:
+              </p>
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={exportBackupData}
+                  className="text-xs h-8 cursor-pointer flex items-center justify-center gap-1 border-border/80 hover:bg-primary/10"
+                >
+                  <Download className="w-3.5 h-3.5 text-primary" />
+                  <span>Экспорт (Backup)</span>
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => backupFileInputRef.current?.click()}
+                  className="text-xs h-8 cursor-pointer flex items-center justify-center gap-1 border-border/80 hover:bg-emerald-500/10"
+                >
+                  <Upload className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Импорт JSON</span>
+                </Button>
+
+                <input
+                  type="file"
+                  ref={backupFileInputRef}
+                  onChange={handleBackupFileChange}
+                  accept=".json,application/json"
+                  className="hidden"
+                />
+              </div>
             </div>
           </div>
 

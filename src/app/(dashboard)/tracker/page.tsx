@@ -18,6 +18,11 @@ import {
   PenTool,
   RotateCcw,
   Sparkles,
+  ChevronLeft,
+  Target,
+  Copy,
+  Check,
+  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,10 +44,12 @@ import { STAGE_COLUMNS, JobApplication, ApplicationStage } from "@/types";
 import { stringToColor, relativeTime } from "@/lib/utils";
 import { generateIcsCalendarFile } from "@/lib/follow-up-templates";
 import { useApp } from "@/context/AppContext";
+import { AiInterviewPrepModal } from "@/components/AiInterviewPrepModal";
 
 export default function TrackerPage() {
   const router = useRouter();
   const {
+    userProfile,
     applications,
     moveStage,
     deleteApplication,
@@ -57,6 +64,26 @@ export default function TrackerPage() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedJob, setSelectedJob] = useState<JobApplication | null>(null);
+  const [interviewPrepOpen, setInterviewPrepOpen] = useState(false);
+  const [interviewPrepJob, setInterviewPrepJob] = useState<JobApplication | null>(null);
+
+  const handleOpenInterviewPrep = (app: JobApplication) => {
+    setInterviewPrepJob(app);
+    setInterviewPrepOpen(true);
+  };
+
+  const handleShiftStage = (e: React.MouseEvent, app: JobApplication, direction: "prev" | "next") => {
+    e.stopPropagation();
+    const stageIds: ApplicationStage[] = ["wishlist", "applied", "screening", "interviewing", "offer"];
+    const currentIndex = stageIds.indexOf(app.stage as ApplicationStage);
+    if (currentIndex === -1) return;
+
+    if (direction === "prev" && currentIndex > 0) {
+      moveStage(app.id, stageIds[currentIndex - 1]);
+    } else if (direction === "next" && currentIndex < stageIds.length - 1) {
+      moveStage(app.id, stageIds[currentIndex + 1]);
+    }
+  };
 
   // Filtered applications
   const filteredApps = applications.filter((app) => {
@@ -282,8 +309,14 @@ export default function TrackerPage() {
                           </div>
                         </div>
 
-                        {/* Metadata badges */}
+                        {/* Metadata badges: Salary, Location, ATS score */}
                         <div className="flex flex-wrap items-center gap-1.5 mt-2.5 text-[10px]">
+                          {app.resume_version && (app.resume_version.includes("%") || app.resume_version.includes("ATS")) && (
+                            <span className="font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/25 flex items-center gap-1">
+                              <Sparkles className="w-2.5 h-2.5" />
+                              {app.resume_version}
+                            </span>
+                          )}
                           {app.salary_min && (
                             <span className="font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                               {app.salary_min.toLocaleString("ru-RU")} — {app.salary_max!.toLocaleString("ru-RU")} ₽
@@ -297,14 +330,38 @@ export default function TrackerPage() {
                           )}
                         </div>
 
-                        {/* Footer info: date and follow-up alert */}
+                        {/* Footer info: date, follow-up alert, and quick stage arrows */}
                         <div className="mt-2.5 pt-2 border-t border-border/50 flex items-center justify-between text-[10px] text-muted-foreground">
                           <span>{relativeTime(app.applied_at || app.created_at)}</span>
-                          {app.next_follow_up && (
-                            <span className="text-amber-400 font-semibold flex items-center gap-1">
-                              Пора написать
-                            </span>
-                          )}
+
+                          <div className="flex items-center gap-2">
+                            {app.next_follow_up && (
+                              <span className="text-amber-400 font-semibold flex items-center gap-1">
+                                Пора написать
+                              </span>
+                            )}
+
+                            {/* Quick Stage shifting arrows */}
+                            <div
+                              className="flex items-center gap-0.5 opacity-60 group-hover:opacity-100 transition-opacity"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <button
+                                onClick={(e) => handleShiftStage(e, app, "prev")}
+                                className="p-0.5 hover:bg-muted rounded text-muted-foreground hover:text-foreground cursor-pointer"
+                                title="Сдвинуть этап влево"
+                              >
+                                <ChevronLeft className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={(e) => handleShiftStage(e, app, "next")}
+                                className="p-0.5 hover:bg-muted rounded text-muted-foreground hover:text-foreground cursor-pointer"
+                                title="Сдвинуть этап вправо"
+                              >
+                                <ChevronRight className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     ))
@@ -367,6 +424,18 @@ export default function TrackerPage() {
                   size="sm"
                   variant="outline"
                   onClick={() => {
+                    handleOpenInterviewPrep(selectedJob);
+                  }}
+                  className="text-xs justify-center cursor-pointer col-span-2 border-purple-500/40 text-purple-300 hover:bg-purple-500/10 font-semibold"
+                >
+                  <Target className="w-3.5 h-3.5 mr-1.5 text-purple-400" />
+                  🎯 Подготовиться к собеседованию с ИИ под эту компанию
+                </Button>
+
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
                     handleDownloadIcs(selectedJob);
                   }}
                   className="text-xs justify-center cursor-pointer col-span-2 border-border/80 text-amber-300 hover:bg-amber-500/10"
@@ -398,6 +467,56 @@ export default function TrackerPage() {
                   ))}
                 </div>
               </div>
+
+              {/* Attached Cover Letter if present */}
+              {selectedJob.cover_letter && (
+                <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-indigo-300 flex items-center gap-1">
+                      <PenTool className="w-3 h-3" /> Прикрепленное Cover Letter
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        navigator.clipboard.writeText(selectedJob.cover_letter!);
+                        showToast("Сопроводительное письмо скопировано!");
+                      }}
+                      className="h-6 text-[10px] text-indigo-300 hover:bg-indigo-500/20 cursor-pointer"
+                    >
+                      <Copy className="w-3 h-3 mr-1" /> Скопировать
+                    </Button>
+                  </div>
+                  <div className="text-[11px] text-foreground leading-relaxed whitespace-pre-wrap max-h-32 overflow-y-auto">
+                    {selectedJob.cover_letter}
+                  </div>
+                </div>
+              )}
+
+              {/* Attached Resume Version if present */}
+              {selectedJob.resume_version && selectedJob.resume_version.length > 50 && (
+                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-emerald-300 flex items-center gap-1">
+                      <FileText className="w-3 h-3" /> Адаптированное резюме под вакансию
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        navigator.clipboard.writeText(selectedJob.resume_version!);
+                        showToast("Резюме скопировано!");
+                      }}
+                      className="h-6 text-[10px] text-emerald-300 hover:bg-emerald-500/20 cursor-pointer"
+                    >
+                      <Copy className="w-3 h-3 mr-1" /> Скопировать
+                    </Button>
+                  </div>
+                  <div className="text-[11px] text-foreground font-mono leading-relaxed whitespace-pre-wrap max-h-32 overflow-y-auto">
+                    {selectedJob.resume_version}
+                  </div>
+                </div>
+              )}
 
               {/* Compensation & Location */}
               <div className="grid grid-cols-2 gap-3 p-3 bg-muted/30 rounded-xl border border-border/60">
@@ -450,6 +569,21 @@ export default function TrackerPage() {
             </div>
           </DialogContent>
         </Dialog>
+      )}
+
+      {/* Module 5: AI Interview Prep from Kanban Card */}
+      {interviewPrepJob && (
+        <AiInterviewPrepModal
+          open={interviewPrepOpen}
+          onOpenChange={setInterviewPrepOpen}
+          company={interviewPrepJob.company}
+          position={interviewPrepJob.position}
+          resumeText={interviewPrepJob.resume_version || userProfile.title}
+          jobDesc={
+            interviewPrepJob.job_description ||
+            `Вакансия: ${interviewPrepJob.position} в компании ${interviewPrepJob.company}. Релевантный опыт, компетенции, выполнение KPI.`
+          }
+        />
       )}
     </div>
   );
