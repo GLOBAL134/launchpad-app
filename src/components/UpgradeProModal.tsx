@@ -63,7 +63,7 @@ export default function UpgradeProModal({
     if (discountCheck.valid && discountCheck.checkoutUrl) {
       setCodeSuccess(
         discountCheck.message ||
-          '🎉 Промокод START30 применен! Скидка 30% активирована (490 ₽ вместо 690 ₽). Переходим к оплате...'
+          '🎉 Промокод START30 применен! Скидка 30% активирована: 490 ₽ вместо 690 ₽. Переходим к оплате...'
       );
       setTimeout(() => {
         window.location.href = discountCheck.checkoutUrl!;
